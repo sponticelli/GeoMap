@@ -384,14 +384,12 @@ namespace GeoData
             {
                 Debug.Log($"Processing polygon coordinates: {coordinatesJson.Substring(0, Math.Min(100, coordinatesJson.Length))}...");
 
-                // Extract coordinate arrays using regex - simpler pattern to match any array of coordinate pairs
-                var ringMatches = System.Text.RegularExpressions.Regex.Matches(coordinatesJson,
-                    @"\[\s*\[\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*\](?:\s*,\s*\[\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*\])*\s*\]",
-                    System.Text.RegularExpressions.RegexOptions.Singleline);
+                // Extract rings using the balanced bracket approach
+                var ringJsons = ExtractRingsFromPolygon(coordinatesJson);
 
-                Debug.Log($"Found {ringMatches.Count} coordinate rings in polygon");
+                Debug.Log($"Found {ringJsons.Count} coordinate rings in polygon");
 
-                if (ringMatches.Count == 0)
+                if (ringJsons.Count == 0)
                 {
                     Debug.LogWarning("No coordinate rings found in polygon");
                     return null;
@@ -400,9 +398,9 @@ namespace GeoData
                 var rings = new List<PolygonRing>();
 
                 // Process each ring
-                for (int ringIndex = 0; ringIndex < ringMatches.Count; ringIndex++)
+                for (int ringIndex = 0; ringIndex < ringJsons.Count; ringIndex++)
                 {
-                    string ringJson = ringMatches[ringIndex].Value;
+                    string ringJson = ringJsons[ringIndex];
 
                     // Extract coordinate pairs - simpler pattern to match longitude,latitude pairs
                     var coordPairMatches = System.Text.RegularExpressions.Regex.Matches(ringJson,
@@ -451,9 +449,68 @@ namespace GeoData
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error processing polygon directly: {ex.Message}");
+                Debug.LogError($"Error processing polygon directly: {ex.Message}\nStack trace: {ex.StackTrace}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Extracts individual ring structures from a Polygon coordinates array.
+        /// Uses a balanced bracket approach to correctly extract complete ring data.
+        /// </summary>
+        /// <param name="polygonJson">The Polygon coordinates JSON string.</param>
+        /// <returns>A list of ring JSON strings.</returns>
+        private static List<string> ExtractRingsFromPolygon(string polygonJson)
+        {
+            var rings = new List<string>();
+
+            try
+            {
+                // Remove outer brackets if present
+                string content = polygonJson.Trim();
+                if (content.StartsWith("[") && content.EndsWith("]"))
+                {
+                    content = content.Substring(1, content.Length - 2).Trim();
+                }
+
+                int startIndex = 0;
+                int bracketCount = 0;
+                bool inRing = false;
+
+                for (int i = 0; i < content.Length; i++)
+                {
+                    char c = content[i];
+
+                    if (c == '[')
+                    {
+                        bracketCount++;
+                        if (bracketCount == 1 && !inRing)
+                        {
+                            startIndex = i;
+                            inRing = true;
+                        }
+                    }
+                    else if (c == ']')
+                    {
+                        bracketCount--;
+                        if (bracketCount == 0 && inRing)
+                        {
+                            // Extract the complete ring
+                            string ring = content.Substring(startIndex, i - startIndex + 1);
+                            rings.Add(ring);
+                            inRing = false;
+                        }
+                    }
+                }
+
+                Debug.Log($"Extracted {rings.Count} rings from Polygon using balanced bracket approach");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error extracting rings from Polygon: {ex.Message}");
+            }
+
+            return rings;
         }
 
         /// <summary>
@@ -466,10 +523,9 @@ namespace GeoData
             {
                 Debug.Log($"Processing multi-polygon coordinates: {coordinatesJson.Substring(0, Math.Min(100, coordinatesJson.Length))}...");
 
-                // Extract polygon arrays using regex - simpler pattern to match arrays of rings
-                var polygonMatches = System.Text.RegularExpressions.Regex.Matches(coordinatesJson,
-                    @"\[\s*\[\s*\[\s*-?\d+\.?\d*\s*,\s*-?\d+\.?\d*\s*\]",
-                    System.Text.RegularExpressions.RegexOptions.Singleline);
+                // Extract complete polygon arrays using an improved regex pattern
+                // This pattern matches complete polygon structures with balanced brackets
+                var polygonMatches = ExtractPolygonsFromMultiPolygon(coordinatesJson);
 
                 Debug.Log($"Found {polygonMatches.Count} polygons in multi-polygon");
 
@@ -482,14 +538,18 @@ namespace GeoData
                 var polygons = new List<CountryPolygon>();
 
                 // Process each polygon
-                foreach (System.Text.RegularExpressions.Match polygonMatch in polygonMatches)
+                foreach (string polygonJson in polygonMatches)
                 {
-                    string polygonJson = polygonMatch.Value;
+                    Debug.Log($"Processing polygon from multi-polygon: {polygonJson.Substring(0, Math.Min(50, polygonJson.Length))}...");
                     var polygon = ProcessPolygonDirectly(polygonJson, optimize, tolerance);
 
                     if (polygon != null)
                     {
                         polygons.Add(polygon);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Failed to process polygon: {polygonJson.Substring(0, Math.Min(100, polygonJson.Length))}...");
                     }
                 }
 
@@ -497,9 +557,68 @@ namespace GeoData
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error processing multi-polygon directly: {ex.Message}");
+                Debug.LogError($"Error processing multi-polygon directly: {ex.Message}\nStack trace: {ex.StackTrace}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Extracts individual polygon structures from a MultiPolygon coordinates array.
+        /// Uses a balanced bracket approach to correctly extract complete polygon data.
+        /// </summary>
+        /// <param name="multiPolygonJson">The MultiPolygon coordinates JSON string.</param>
+        /// <returns>A list of polygon JSON strings.</returns>
+        private static List<string> ExtractPolygonsFromMultiPolygon(string multiPolygonJson)
+        {
+            var polygons = new List<string>();
+
+            try
+            {
+                // Remove outer brackets if present
+                string content = multiPolygonJson.Trim();
+                if (content.StartsWith("[") && content.EndsWith("]"))
+                {
+                    content = content.Substring(1, content.Length - 2).Trim();
+                }
+
+                int startIndex = 0;
+                int bracketCount = 0;
+                bool inPolygon = false;
+
+                for (int i = 0; i < content.Length; i++)
+                {
+                    char c = content[i];
+
+                    if (c == '[')
+                    {
+                        bracketCount++;
+                        if (bracketCount == 1 && !inPolygon)
+                        {
+                            startIndex = i;
+                            inPolygon = true;
+                        }
+                    }
+                    else if (c == ']')
+                    {
+                        bracketCount--;
+                        if (bracketCount == 0 && inPolygon)
+                        {
+                            // Extract the complete polygon
+                            string polygon = content.Substring(startIndex, i - startIndex + 1);
+                            polygons.Add(polygon);
+                            inPolygon = false;
+                        }
+                    }
+                }
+
+                Debug.Log($"Extracted {polygons.Count} polygons from MultiPolygon using balanced bracket approach");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error extracting polygons from MultiPolygon: {ex.Message}");
+            }
+
+            return polygons;
         }
     }
 }
