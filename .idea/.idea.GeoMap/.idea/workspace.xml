@@ -6,12 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="ffd361a8-93c2-4afc-8d36-c58a22c84b3d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Data/GeoJSONCollection.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Data/GeoJSONCollection.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Editor/GeoJSONCollectionEditor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Editor/GeoJSONCollectionEditor.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/SampleScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoData/GeoJSONParser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoData/GeoJSONParser.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +105,7 @@
       <updated>1747300830857</updated>
       <workItem from="1747300832150" duration="3244000" />
       <workItem from="1747332256776" duration="418000" />
-      <workItem from="1747332713777" duration="11344000" />
+      <workItem from="1747332713777" duration="12534000" />
     </task>
     <servers />
   </component>
