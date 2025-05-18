@@ -56,19 +56,9 @@ namespace GeoMap
                 List<Vector3> earthBoundarEnds = new List<Vector3>();
                 earthBoundarEnds.Clear();
 
-                bool lonSign = false;
-                int plus = 0, minus = 0;
-
                 for (int i = 0; i < count; i++)
                 {
                     var c = jo.list[i];
-                    if (c[0].f > 0)
-                    {
-                        plus++;
-                    }
-                    else
-                        minus++;
-
                     var dotMerc = GeoConvert.LatLonToMetersForEarth(c[1].f, c[0].f);
                     dotMerc += new Vector3d(center.x, center.y, center.z);
                     earthBoundarEnds.Add((Vector3)dotMerc);
