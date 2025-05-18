@@ -8,18 +8,43 @@ namespace GeoMap
 {
     public class CountryMeshBuilder : MonoBehaviour
     {
-        [Header("Border Settings")] 
+        [Header("Border Settings")]
         [SerializeField] private float borderWidth = 0.4f;
         [SerializeField] private Material borderMaterial;
-        
-        [Header("Surface Settings")] 
+
+        [Header("Surface Settings")]
         [SerializeField] private Material surfaceMaterial;
 
         public void Create(JsonNode country, Vector3 center, Transform outlineParent, Transform surfaceParent,
             bool createSurface)
         {
-            if ((country["geometry"]["type"].str != "Polygon" &&
-                 country["geometry"]["type"].str != "MultiPolygon")) return;
+            // Check if the geometry type is supported
+            string geometryType = country["geometry"]["type"].str;
+            if (geometryType != "Polygon" && geometryType != "MultiPolygon") return;
+
+            // Get the country name
+            string countryName = GetCountryName(country);
+
+            // Create parent GameObjects for MultiPolygon types
+            GameObject borderParent = null;
+            GameObject surfaceParent2 = null;
+
+            if (geometryType == "MultiPolygon")
+            {
+                // Create parent for border meshes
+                borderParent = new GameObject(countryName);
+                borderParent.transform.SetParent(outlineParent, false);
+
+                // Create parent for surface meshes if needed
+                if (createSurface)
+                {
+                    surfaceParent2 = new GameObject(countryName + " layer");
+                    surfaceParent2.transform.SetParent(surfaceParent, false);
+                }
+            }
+
+            // Process each polygon in the coordinates
+            int polygonIndex = 0;
             foreach (var bb in country["geometry"]["coordinates"].list)
             {
                 var jo = ExtractCoordinates(bb);
@@ -49,20 +74,28 @@ namespace GeoMap
                     earthBoundarEnds.Add((Vector3)dotMerc);
                 }
 
-                var borderMeshContainer = BuildBorderMesh(country, outlineParent, earthBoundarEnds);
+                // Build border mesh with appropriate parent
+                Transform borderParentTransform = (geometryType == "MultiPolygon") ? borderParent.transform : outlineParent;
+                string borderName = (geometryType == "MultiPolygon") ? $"Part_{polygonIndex}" : countryName;
+                var borderMeshContainer = BuildBorderMesh(borderName, borderParentTransform, earthBoundarEnds);
 
+                // Build surface mesh with appropriate parent if needed
                 if (createSurface)
                 {
-                    BuildSurfaceMesh(country, surfaceParent, earthBoundarEnds);
+                    Transform surfaceParentTransform = (geometryType == "MultiPolygon") ? surfaceParent2.transform : surfaceParent;
+                    string surfaceName = (geometryType == "MultiPolygon") ? $"Part_{polygonIndex}" : countryName;
+                    BuildSurfaceMesh(surfaceName, surfaceParentTransform, earthBoundarEnds, geometryType == "Polygon");
                 }
+
+                polygonIndex++;
             }
         }
 
-        private void BuildSurfaceMesh(JsonNode country, Transform GeometryForMeshes, List<Vector3> earthBoundarEnds)
+        private void BuildSurfaceMesh(string name, Transform parentTransform, List<Vector3> earthBoundarEnds, bool createLayer = true)
         {
             var earthMeshBoundary2 = new GameObject("mesh").AddComponent<MeshFilter>();
             earthMeshBoundary2.gameObject.AddComponent<MeshRenderer>();
-            var earthMesh2 = earthMeshBoundary2.mesh; //earthLineBoundary 
+            var earthMesh2 = earthMeshBoundary2.mesh;
             var points = earthBoundarEnds;
             var md2 = new MeshData();
             var inp = new MeshInputData(points.Count);
@@ -78,40 +111,48 @@ namespace GeoMap
             earthMesh2.triangles = md2.Indices.ToArray();
             earthMesh2.SetUVs(0, md2.UV);
             earthMesh2.RecalculateNormals();
- 
-            earthMeshBoundary2.GetComponent<MeshRenderer>().material = surfaceMaterial; //InvisibleMat;
-            earthMeshBoundary2.transform.name = GetCountryName(country);
-            if (earthMeshBoundary2.transform.name.Contains("Lesotho"))
+
+            earthMeshBoundary2.GetComponent<MeshRenderer>().material = surfaceMaterial;
+            earthMeshBoundary2.transform.name = name;
+
+            if (name.Contains("Lesotho"))
                 earthMeshBoundary2.transform.localPosition -= new Vector3(0, 0, 1);
 
-
-            bool containsLayer = false;
-            GameObject parentLayer = null;
-            for (int child = 0; child < GeometryForMeshes.childCount; child++)
+            // Set parent directly if we're not creating a layer (for MultiPolygon parts)
+            if (!createLayer)
             {
-                if (GeometryForMeshes.GetChild(child).name
-                    .Contains(earthMeshBoundary2.transform.name + " layer"))
-                {
-                    containsLayer = true;
-                    parentLayer = GeometryForMeshes.GetChild(child).gameObject;
-                }
-            }
-
-            if (containsLayer)
-            {
-                earthMeshBoundary2.transform.parent = parentLayer.transform;
+                earthMeshBoundary2.transform.SetParent(parentTransform, false);
             }
             else
             {
-                parentLayer = new GameObject(earthMeshBoundary2.transform.name + " layer");
-                parentLayer.transform.parent = GeometryForMeshes;
-                earthMeshBoundary2.transform.parent = parentLayer.transform;
+                // For single polygons, maintain the original layer structure
+                bool containsLayer = false;
+                GameObject parentLayer = null;
+                for (int child = 0; child < parentTransform.childCount; child++)
+                {
+                    if (parentTransform.GetChild(child).name.Contains(name + " layer"))
+                    {
+                        containsLayer = true;
+                        parentLayer = parentTransform.GetChild(child).gameObject;
+                    }
+                }
+
+                if (containsLayer)
+                {
+                    earthMeshBoundary2.transform.parent = parentLayer.transform;
+                }
+                else
+                {
+                    parentLayer = new GameObject(name + " layer");
+                    parentLayer.transform.parent = parentTransform;
+                    earthMeshBoundary2.transform.parent = parentLayer.transform;
+                }
             }
 
             earthMeshBoundary2.gameObject.AddComponent<MeshCollider>();
         }
 
-        private MeshFilter BuildBorderMesh(JsonNode country, Transform GeometryTransform, List<Vector3> earthBoundarEnds)
+        private MeshFilter BuildBorderMesh(string name, Transform parentTransform, List<Vector3> earthBoundarEnds)
         {
             var meshContainer = new GameObject("mesh").AddComponent<MeshFilter>();
             meshContainer.gameObject.AddComponent<MeshRenderer>();
@@ -125,14 +166,14 @@ namespace GeoMap
             countryMesh.SetUVs(0, md.UV);
             countryMesh.RecalculateNormals();
 
-            meshContainer.name = GetCountryName(country);
+            meshContainer.name = name;
 
             meshContainer.GetComponent<MeshRenderer>().material = borderMaterial;
-            meshContainer.transform.SetParent(GeometryTransform, false);
-            
+            meshContainer.transform.SetParent(parentTransform, false);
+
             return meshContainer;
         }
-        
+
         private string GetCountryName(JsonNode country)
         {
             if (country["properties"]["id"] != null)
@@ -169,7 +210,7 @@ namespace GeoMap
 
             return jo;
         }
-        
+
         private void CreateMeshForPolygon(MeshInputData corners, MeshData meshdata, List<Vector3> ends, bool temp)
         {
             var mesh = new TriangularMesh();
