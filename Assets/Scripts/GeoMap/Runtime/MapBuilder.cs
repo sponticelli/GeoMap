@@ -5,8 +5,15 @@ namespace GeoMap
 {
     public class MapBuilder : MonoBehaviour
     {
+        [Header("Data")]
         [SerializeField] private TextAsset geoGeometryJson;
+        [SerializeField] private bool createSurface = true;
 
+        [Header("References")]
+        [SerializeField] private CountryMeshBuilder countryMeshBuilder;
+        [SerializeField] private Transform countryOutlineParent;
+        [SerializeField] private Transform countrySurfacdParent;
+        
 
         private void Start()
         {
@@ -27,8 +34,7 @@ namespace GeoMap
             int featureCount = featuresNode.Count;
             foreach (JsonNode featureNode in featuresNode.list)
             {
-                Debug.Log(featureNode["properties"]["name"]);
-
+                countryMeshBuilder.Create(featureNode, transform.position, countryOutlineParent, countrySurfacdParent,createSurface);
             }
         }
     }
