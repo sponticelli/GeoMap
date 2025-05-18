@@ -133,7 +133,7 @@ namespace GeoMap
                 }
                 else
                 {
-                    parentLayer = new GameObject(name + " layer");
+                    parentLayer = new GameObject(name + " Surface");
                     parentLayer.transform.parent = parentTransform;
                     surfaceMeshObject.transform.parent = parentLayer.transform;
                 }

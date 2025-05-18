@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffd361a8-93c2-4afc-8d36-c58a22c84b3d" name="Changes" comment="" />
+    <list default="true" id="ffd361a8-93c2-4afc-8d36-c58a22c84b3d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/futuristic-glowing-world-map-network-connection-3d-blue-earth-map-background-with-plexus-lines_514961-718.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Materials/futuristic-glowing-world-map-network-connection-3d-blue-earth-map-background-with-plexus-lines_514961-718.png.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CountryMeshBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CountryMeshBuilder.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
