@@ -6,13 +6,13 @@ namespace Ludo.ComputationalGeometry
     /// Provides methods for finding optimal vertex locations in a triangulation to improve triangle quality.
     /// </summary>
     /// <remarks>
-    /// The NewLocation class implements algorithms for finding new vertex positions that improve
+    /// The VertexPositionOptimizer class implements algorithms for finding new vertex positions that improve
     /// triangle quality by optimizing angles and edge lengths. It is primarily used during mesh
     /// refinement and quality improvement operations to determine where to place new vertices
     /// or relocate existing ones for better triangulation quality.
     /// </remarks>
-    [System.Serializable]
-    public class NewLocation
+    [Serializable]
+    public class VertexPositionOptimizer
     {
         /// <summary>
         /// Epsilon value used for floating-point comparisons.
@@ -30,17 +30,17 @@ namespace Ludo.ComputationalGeometry
         private TriangulationSettings behavior;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewLocation"/> class.
+        /// Initializes a new instance of the <see cref="VertexPositionOptimizer"/> class.
         /// </summary>
         /// <param name="triangularMesh">The mesh for which to find new vertex locations.</param>
         /// <remarks>
         /// The constructor initializes the class with a reference to the mesh and its behavior settings,
         /// which contain the quality constraints used to determine optimal vertex positions.
         /// </remarks>
-        public NewLocation(TriangularMesh triangularMesh)
+        public VertexPositionOptimizer(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            this.behavior = triangularMesh.behavior;
+            _triangularMesh = triangularMesh;
+            behavior = triangularMesh.behavior;
         }
 
         /// <summary>
@@ -59,18 +59,18 @@ namespace Ludo.ComputationalGeometry
         /// a maximum angle constraint is specified in the behavior settings. The new location is typically
         /// near the circumcenter of the triangle but may be adjusted to satisfy quality constraints.
         /// </remarks>
-        public Point FindLocation(
+        public Point FindPosition(
             Vertex torg,
             Vertex tdest,
             Vertex tapex,
             ref double xi,
             ref double eta,
             bool offcenter,
-            Otri badotri)
+            OrientedTriangle badotri)
         {
-            return this.behavior.MaxAngle == 0.0
-                ? this.FindNewLocationWithoutMaxAngle(torg, tdest, tapex, ref xi, ref eta, true, badotri)
-                : this.FindNewLocation(torg, tdest, tapex, ref xi, ref eta, true, badotri);
+            return behavior.MaxAngle == 0.0
+                ? FindPositionWithoutMaxAngle(torg, tdest, tapex, ref xi, ref eta, true, badotri)
+                : FindNewPosition(torg, tdest, tapex, ref xi, ref eta, true, badotri);
         }
 
         /// <summary>
@@ -90,18 +90,18 @@ namespace Ludo.ComputationalGeometry
         /// with the circumcenter of the triangle and may adjust the location based on minimum
         /// angle constraints and other quality factors.
         /// </remarks>
-        private Point FindNewLocationWithoutMaxAngle(
+        private Point FindPositionWithoutMaxAngle(
             Vertex torg,
             Vertex tdest,
             Vertex tapex,
             ref double xi,
             ref double eta,
             bool offcenter,
-            Otri badotri)
+            OrientedTriangle badotri)
         {
-            double offconstant = this.behavior.offconstant;
+            double offconstant = behavior.offconstant;
             int num1 = 0;
-            Otri neighotri = new Otri();
+            OrientedTriangle neighotri = new OrientedTriangle();
             double[] thirdpoint = new double[2];
             double num2 = 0.0;
             double num3 = 0.0;
@@ -131,15 +131,15 @@ namespace Ludo.ComputationalGeometry
             }
             else
             {
-                num16 = 0.5 / Primitives.CounterClockwise((Point)tdest, (Point)tapex, (Point)torg);
+                num16 = 0.5 / Primitives.CounterClockwise(tdest, tapex, torg);
                 --Statistic.CounterClockwiseCount;
             }
 
             double num17 = (num13 * dodist - num11 * aodist) * num16;
             double num18 = (num10 * aodist - num12 * dodist) * num16;
             Point point1 = new Point(torg.x + num17, torg.y + num18);
-            Otri deltri = badotri;
-            int num19 = this.LongestShortestEdge(aodist, dadist, dodist);
+            OrientedTriangle deltri = badotri;
+            int num19 = LongestShortestEdge(aodist, dadist, dodist);
             double num20;
             double num21;
             double d1;
@@ -156,9 +156,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = aodist;
                     d2 = dadist;
                     num22 = dodist;
-                    point2 = (Point)tdest;
-                    point3 = (Point)torg;
-                    point4 = (Point)tapex;
+                    point2 = tdest;
+                    point3 = torg;
+                    point4 = tapex;
                     break;
                 case 132:
                     num20 = num12;
@@ -166,9 +166,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = aodist;
                     d2 = dodist;
                     num22 = dadist;
-                    point2 = (Point)tdest;
-                    point3 = (Point)tapex;
-                    point4 = (Point)torg;
+                    point2 = tdest;
+                    point3 = tapex;
+                    point4 = torg;
                     break;
                 case 213:
                     num20 = num14;
@@ -176,9 +176,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dadist;
                     d2 = aodist;
                     num22 = dodist;
-                    point2 = (Point)torg;
-                    point3 = (Point)tdest;
-                    point4 = (Point)tapex;
+                    point2 = torg;
+                    point3 = tdest;
+                    point4 = tapex;
                     break;
                 case 231:
                     num20 = num14;
@@ -186,9 +186,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dadist;
                     d2 = dodist;
                     num22 = aodist;
-                    point2 = (Point)torg;
-                    point3 = (Point)tapex;
-                    point4 = (Point)tdest;
+                    point2 = torg;
+                    point3 = tapex;
+                    point4 = tdest;
                     break;
                 case 312:
                     num20 = num10;
@@ -196,9 +196,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dodist;
                     d2 = aodist;
                     num22 = dadist;
-                    point2 = (Point)tapex;
-                    point3 = (Point)tdest;
-                    point4 = (Point)torg;
+                    point2 = tapex;
+                    point3 = tdest;
+                    point4 = torg;
                     break;
                 default:
                     num20 = num10;
@@ -206,9 +206,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dodist;
                     d2 = dadist;
                     num22 = aodist;
-                    point2 = (Point)tapex;
-                    point3 = (Point)torg;
-                    point4 = (Point)tdest;
+                    point2 = tapex;
+                    point3 = torg;
+                    point4 = tdest;
                     break;
             }
 
@@ -262,7 +262,7 @@ namespace Ludo.ComputationalGeometry
             {
                 double num29 = (d2 + d1 - num22) / (2.0 * Math.Sqrt(d2) * Math.Sqrt(d1));
                 bool isObtuse = num29 < 0.0 || Math.Abs(num29 - 0.0) <= 1E-50;
-                num7 = this.DoSmoothing(deltri, torg, tdest, tapex, ref newloc);
+                num7 = DoSmoothing(deltri, torg, tdest, tapex, ref newloc);
                 if (num7 > 0)
                 {
                     ++Statistic.RelocationCount;
@@ -273,21 +273,21 @@ namespace Ludo.ComputationalGeometry
                     switch (num7)
                     {
                         case 1:
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                         case 2:
                             deltri.LnextSelf();
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                         case 3:
                             deltri.LprevSelf();
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                     }
                 }
                 else
                 {
-                    double r = Math.Sqrt(d1) / (2.0 * Math.Sin(this.behavior.MinAngle * Math.PI / 180.0));
+                    double r = Math.Sqrt(d1) / (2.0 * Math.Sin(behavior.MinAngle * Math.PI / 180.0));
                     double num30 = (point3.x + point4.x) / 2.0;
                     double num31 = (point3.y + point4.y) / 2.0;
                     double num32 = num30 + Math.Sqrt(r * r - d1 / 4.0) * (point3.y - point4.y) / Math.Sqrt(d1);
@@ -312,7 +312,7 @@ namespace Ludo.ComputationalGeometry
                         y3_1 = num35;
                     }
 
-                    int num41 = this.GetNeighborsVertex(badotri, point3.x, point3.y, point2.x, point2.y, ref thirdpoint,
+                    int num41 = GetNeighborsVertex(badotri, point3.x, point3.y, point2.x, point2.y, ref thirdpoint,
                         ref neighotri)
                         ? 1
                         : 0;
@@ -327,16 +327,16 @@ namespace Ludo.ComputationalGeometry
                         Vertex tapex1 = vertex2;
                         ref double local1 = ref num2;
                         ref double local2 = ref num3;
-                        Point circumcenter = Primitives.FindCircumcenter((Point)torg1, (Point)tdest1, (Point)tapex1,
+                        Point circumcenter = Primitives.FindCircumcenter(torg1, tdest1, tapex1,
                             ref local1, ref local2);
                         double num44 = point3.y - point2.y;
                         double num45 = point2.x - point3.x;
                         double x2 = point1.x + num44;
                         double y2 = point1.y + num45;
-                        this.CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
+                        CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
                         double num46;
                         double num47;
-                        if (this.ChooseCorrectPoint((point3.x + point2.x) / 2.0, (point3.y + point2.y) / 2.0, p1[3],
+                        if (ChooseCorrectPoint((point3.x + point2.x) / 2.0, (point3.y + point2.y) / 2.0, p1[3],
                                 p1[4], point1.x, point1.y, isObtuse))
                         {
                             num46 = p1[3];
@@ -348,13 +348,13 @@ namespace Ludo.ComputationalGeometry
                             num47 = p1[2];
                         }
 
-                        this.PointBetweenPoints(num46, num47, point1.x, point1.y, circumcenter.x, circumcenter.y,
+                        PointBetweenPoints(num46, num47, point1.x, point1.y, circumcenter.x, circumcenter.y,
                             ref p2);
                         if (p1[0] > 0.0)
                         {
                             if (Math.Abs(p2[0] - 1.0) <= 1E-50)
                             {
-                                if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
+                                if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
                                         circumcenter.y))
                                 {
                                     num42 = num17;
@@ -366,7 +366,7 @@ namespace Ludo.ComputationalGeometry
                                     num43 = p2[3] - torg.y;
                                 }
                             }
-                            else if (this.IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num46, num47))
+                            else if (IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num46, num47))
                             {
                                 double num48 = Math.Sqrt((num46 - point1.x) * (num46 - point1.x) +
                                                          (num47 - point1.y) * (num47 - point1.y));
@@ -376,7 +376,7 @@ namespace Ludo.ComputationalGeometry
                                 double num52 = num50 / num48;
                                 double x3_2 = num46 + num51 * num4 * Math.Sqrt(d1);
                                 double y3_2 = num47 + num52 * num4 * Math.Sqrt(d1);
-                                if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_2, y3_2))
+                                if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_2, y3_2))
                                 {
                                     num42 = num17;
                                     num43 = num18;
@@ -404,7 +404,7 @@ namespace Ludo.ComputationalGeometry
                         }
                     }
 
-                    int num53 = this.GetNeighborsVertex(badotri, point4.x, point4.y, point2.x, point2.y, ref thirdpoint,
+                    int num53 = GetNeighborsVertex(badotri, point4.x, point4.y, point2.x, point2.y, ref thirdpoint,
                         ref neighotri)
                         ? 1
                         : 0;
@@ -419,16 +419,16 @@ namespace Ludo.ComputationalGeometry
                         Vertex tapex2 = vertex4;
                         ref double local3 = ref num2;
                         ref double local4 = ref num3;
-                        Point circumcenter = Primitives.FindCircumcenter((Point)torg2, (Point)tdest2, (Point)tapex2,
+                        Point circumcenter = Primitives.FindCircumcenter(torg2, tdest2, tapex2,
                             ref local3, ref local4);
                         double num56 = point4.y - point2.y;
                         double num57 = point2.x - point4.x;
                         double x2 = point1.x + num56;
                         double y2 = point1.y + num57;
-                        this.CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
+                        CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
                         double num58;
                         double num59;
-                        if (this.ChooseCorrectPoint((point4.x + point2.x) / 2.0, (point4.y + point2.y) / 2.0, p1[3],
+                        if (ChooseCorrectPoint((point4.x + point2.x) / 2.0, (point4.y + point2.y) / 2.0, p1[3],
                                 p1[4], point1.x, point1.y, false))
                         {
                             num58 = p1[3];
@@ -440,13 +440,13 @@ namespace Ludo.ComputationalGeometry
                             num59 = p1[2];
                         }
 
-                        this.PointBetweenPoints(num58, num59, point1.x, point1.y, circumcenter.x, circumcenter.y,
+                        PointBetweenPoints(num58, num59, point1.x, point1.y, circumcenter.x, circumcenter.y,
                             ref p2);
                         if (p1[0] > 0.0)
                         {
                             if (Math.Abs(p2[0] - 1.0) <= 1E-50)
                             {
-                                if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
+                                if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
                                         circumcenter.y))
                                 {
                                     num54 = num17;
@@ -458,7 +458,7 @@ namespace Ludo.ComputationalGeometry
                                     num55 = p2[3] - torg.y;
                                 }
                             }
-                            else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num58, num59))
+                            else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num58, num59))
                             {
                                 double num60 = Math.Sqrt((num58 - point1.x) * (num58 - point1.x) +
                                                          (num59 - point1.y) * (num59 - point1.y));
@@ -468,7 +468,7 @@ namespace Ludo.ComputationalGeometry
                                 double num64 = num62 / num60;
                                 double x3_3 = num58 + num63 * num4 * Math.Sqrt(d1);
                                 double y3_3 = num59 + num64 * num4 * Math.Sqrt(d1);
-                                if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_3, y3_3))
+                                if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_3, y3_3))
                                 {
                                     num54 = num17;
                                     num55 = num18;
@@ -551,18 +551,18 @@ namespace Ludo.ComputationalGeometry
         /// It uses geometric calculations to find a location that balances these constraints
         /// and produces high-quality triangles.
         /// </remarks>
-        private Point FindNewLocation(
+        private Point FindNewPosition(
             Vertex torg,
             Vertex tdest,
             Vertex tapex,
             ref double xi,
             ref double eta,
             bool offcenter,
-            Otri badotri)
+            OrientedTriangle badotri)
         {
-            double offconstant = this.behavior.offconstant;
+            double offconstant = behavior.offconstant;
             int num1 = 0;
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             double[] thirdpoint = new double[2];
             double num2 = 0.0;
             double num3 = 0.0;
@@ -596,15 +596,15 @@ namespace Ludo.ComputationalGeometry
             }
             else
             {
-                num18 = 0.5 / Primitives.CounterClockwise((Point)tdest, (Point)tapex, (Point)torg);
+                num18 = 0.5 / Primitives.CounterClockwise(tdest, tapex, torg);
                 --Statistic.CounterClockwiseCount;
             }
 
             double num19 = (num15 * dodist - num13 * aodist) * num18;
             double num20 = (num12 * aodist - num14 * dodist) * num18;
             Point point1 = new Point(torg.x + num19, torg.y + num20);
-            Otri deltri = badotri;
-            int num21 = this.LongestShortestEdge(aodist, dadist, dodist);
+            OrientedTriangle deltri = badotri;
+            int num21 = LongestShortestEdge(aodist, dadist, dodist);
             double num22;
             double num23;
             double d1;
@@ -621,9 +621,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = aodist;
                     d2 = dadist;
                     d3 = dodist;
-                    point2 = (Point)tdest;
-                    point3 = (Point)torg;
-                    point4 = (Point)tapex;
+                    point2 = tdest;
+                    point3 = torg;
+                    point4 = tapex;
                     break;
                 case 132:
                     num22 = num14;
@@ -631,9 +631,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = aodist;
                     d2 = dodist;
                     d3 = dadist;
-                    point2 = (Point)tdest;
-                    point3 = (Point)tapex;
-                    point4 = (Point)torg;
+                    point2 = tdest;
+                    point3 = tapex;
+                    point4 = torg;
                     break;
                 case 213:
                     num22 = num16;
@@ -641,9 +641,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dadist;
                     d2 = aodist;
                     d3 = dodist;
-                    point2 = (Point)torg;
-                    point3 = (Point)tdest;
-                    point4 = (Point)tapex;
+                    point2 = torg;
+                    point3 = tdest;
+                    point4 = tapex;
                     break;
                 case 231:
                     num22 = num16;
@@ -651,9 +651,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dadist;
                     d2 = dodist;
                     d3 = aodist;
-                    point2 = (Point)torg;
-                    point3 = (Point)tapex;
-                    point4 = (Point)tdest;
+                    point2 = torg;
+                    point3 = tapex;
+                    point4 = tdest;
                     break;
                 case 312:
                     num22 = num12;
@@ -661,9 +661,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dodist;
                     d2 = aodist;
                     d3 = dadist;
-                    point2 = (Point)tapex;
-                    point3 = (Point)tdest;
-                    point4 = (Point)torg;
+                    point2 = tapex;
+                    point3 = tdest;
+                    point4 = torg;
                     break;
                 default:
                     num22 = num12;
@@ -671,9 +671,9 @@ namespace Ludo.ComputationalGeometry
                     d1 = dodist;
                     d2 = dadist;
                     d3 = aodist;
-                    point2 = (Point)tapex;
-                    point3 = (Point)torg;
-                    point4 = (Point)tdest;
+                    point2 = tapex;
+                    point3 = torg;
+                    point4 = tdest;
                     break;
             }
 
@@ -727,7 +727,7 @@ namespace Ludo.ComputationalGeometry
             {
                 double num30 = (d2 + d1 - d3) / (2.0 * Math.Sqrt(d2) * Math.Sqrt(d1));
                 bool isObtuse = num30 < 0.0 || Math.Abs(num30 - 0.0) <= 1E-50;
-                num7 = this.DoSmoothing(deltri, torg, tdest, tapex, ref newloc);
+                num7 = DoSmoothing(deltri, torg, tdest, tapex, ref newloc);
                 if (num7 > 0)
                 {
                     ++Statistic.RelocationCount;
@@ -738,22 +738,22 @@ namespace Ludo.ComputationalGeometry
                     switch (num7)
                     {
                         case 1:
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                         case 2:
                             deltri.LnextSelf();
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                         case 3:
                             deltri.LprevSelf();
-                            this._triangularMesh.DeleteVertex(ref deltri);
+                            _triangularMesh.DeleteVertex(ref deltri);
                             break;
                     }
                 }
                 else
                 {
                     double num31 = Math.Acos((d2 + d3 - d1) / (2.0 * Math.Sqrt(d2) * Math.Sqrt(d3))) * 180.0 / Math.PI;
-                    double num32 = this.behavior.MinAngle <= num31 ? num31 + 0.5 : this.behavior.MinAngle;
+                    double num32 = behavior.MinAngle <= num31 ? num31 + 0.5 : behavior.MinAngle;
                     double r = Math.Sqrt(d1) / (2.0 * Math.Sin(num32 * Math.PI / 180.0));
                     double num33 = (point3.x + point4.x) / 2.0;
                     double num34 = (point3.y + point4.y) / 2.0;
@@ -779,8 +779,8 @@ namespace Ludo.ComputationalGeometry
                         y3_1 = num38;
                     }
 
-                    bool neighborsVertex1 = this.GetNeighborsVertex(badotri, point3.x, point3.y, point2.x, point2.y,
-                        ref thirdpoint, ref otri);
+                    bool neighborsVertex1 = GetNeighborsVertex(badotri, point3.x, point3.y, point2.x, point2.y,
+                        ref thirdpoint, ref orientedTriangle);
                     double num44 = num19;
                     double num45 = num20;
                     double num46 = Math.Sqrt((x3_1 - num33) * (x3_1 - num33) + (y3_1 - num34) * (y3_1 - num34));
@@ -788,7 +788,7 @@ namespace Ludo.ComputationalGeometry
                     double num48 = (y3_1 - num34) / num46;
                     double num49 = x3_1 + num47 * r;
                     double num50 = y3_1 + num48 * r;
-                    double num51 = (2.0 * this.behavior.MaxAngle + num32 - 180.0) * Math.PI / 180.0;
+                    double num51 = (2.0 * behavior.MaxAngle + num32 - 180.0) * Math.PI / 180.0;
                     double x3_2 = num49 * Math.Cos(num51) + num50 * Math.Sin(num51) + x3_1 - x3_1 * Math.Cos(num51) -
                                   y3_1 * Math.Sin(num51);
                     double y3_2 = -num49 * Math.Sin(num51) + num50 * Math.Cos(num51) + y3_1 + x3_1 * Math.Sin(num51) -
@@ -801,7 +801,7 @@ namespace Ludo.ComputationalGeometry
                     double num53;
                     double num54;
                     double num55;
-                    if (this.ChooseCorrectPoint(x1_1, y1_1, point3.x, point3.y, x3_2, y3_2, true))
+                    if (ChooseCorrectPoint(x1_1, y1_1, point3.x, point3.y, x3_2, y3_2, true))
                     {
                         num52 = x3_2;
                         num53 = y3_2;
@@ -822,23 +822,23 @@ namespace Ludo.ComputationalGeometry
                     double num57;
                     if (!neighborsVertex1)
                     {
-                        Vertex torg1 = otri.Org();
-                        Vertex vertex1 = otri.Dest();
-                        Vertex vertex2 = otri.Apex();
+                        Vertex torg1 = orientedTriangle.Org();
+                        Vertex vertex1 = orientedTriangle.Dest();
+                        Vertex vertex2 = orientedTriangle.Apex();
                         Vertex tdest1 = vertex1;
                         Vertex tapex1 = vertex2;
                         ref double local1 = ref num2;
                         ref double local2 = ref num3;
-                        Point circumcenter = Primitives.FindCircumcenter((Point)torg1, (Point)tdest1, (Point)tapex1,
+                        Point circumcenter = Primitives.FindCircumcenter(torg1, tdest1, tapex1,
                             ref local1, ref local2);
                         double num58 = point3.y - point2.y;
                         double num59 = point2.x - point3.x;
                         double x2 = point1.x + num58;
                         double y2 = point1.y + num59;
-                        this.CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
+                        CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
                         double num60;
                         double num61;
-                        if (this.ChooseCorrectPoint(x1_2, y1_2, p1[3], p1[4], point1.x, point1.y, isObtuse))
+                        if (ChooseCorrectPoint(x1_2, y1_2, p1[3], p1[4], point1.x, point1.y, isObtuse))
                         {
                             num60 = p1[3];
                             num61 = p1[4];
@@ -855,34 +855,34 @@ namespace Ludo.ComputationalGeometry
                         num57 = point4.y - point3.y;
                         double x4 = num52;
                         double y4 = num53;
-                        this.LineLineIntersection(point1.x, point1.y, x2, y2, x, y, x4, y4, ref p3);
+                        LineLineIntersection(point1.x, point1.y, x2, y2, x, y, x4, y4, ref p3);
                         if (p3[0] > 0.0)
                         {
                             num10 = p3[1];
                             num11 = p3[2];
                         }
 
-                        this.PointBetweenPoints(num60, num61, point1.x, point1.y, circumcenter.x, circumcenter.y,
+                        PointBetweenPoints(num60, num61, point1.x, point1.y, circumcenter.x, circumcenter.y,
                             ref p2);
                         if (p1[0] > 0.0)
                         {
                             if (Math.Abs(p2[0] - 1.0) <= 1E-50)
                             {
-                                this.PointBetweenPoints(p2[2], p2[3], point1.x, point1.y, num10, num11, ref p4);
+                                PointBetweenPoints(p2[2], p2[3], point1.x, point1.y, num10, num11, ref p4);
                                 if (Math.Abs(p4[0] - 1.0) <= 1E-50 && p3[0] > 0.0)
                                 {
                                     if ((point2.x - num52) * (point2.x - num52) +
                                         (point2.y - num53) * (point2.y - num53) >
                                         num5 * ((point2.x - num10) * (point2.x - num10) +
                                                 (point2.y - num11) * (point2.y - num11)) &&
-                                        this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num52, num53) &&
-                                        this.MinDistanceToNeighbor(num52, num53, ref otri) >
-                                        this.MinDistanceToNeighbor(num10, num11, ref otri))
+                                        IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num52, num53) &&
+                                        MinDistanceToNeighbor(num52, num53, ref orientedTriangle) >
+                                        MinDistanceToNeighbor(num10, num11, ref orientedTriangle))
                                     {
                                         num44 = num52 - torg.x;
                                         num45 = num53 - torg.y;
                                     }
-                                    else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
+                                    else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
                                                  num11))
                                     {
                                         double num62 = Math.Sqrt((num10 - point1.x) * (num10 - point1.x) +
@@ -893,7 +893,7 @@ namespace Ludo.ComputationalGeometry
                                         double num66 = num64 / num62;
                                         num10 += num65 * num4 * Math.Sqrt(d1);
                                         num11 += num66 * num4 * Math.Sqrt(d1);
-                                        if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
+                                        if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
                                                 num11))
                                         {
                                             num44 = num19;
@@ -911,7 +911,7 @@ namespace Ludo.ComputationalGeometry
                                         num45 = p4[3] - torg.y;
                                     }
                                 }
-                                else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
+                                else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
                                              circumcenter.y))
                                 {
                                     num44 = num19;
@@ -925,21 +925,21 @@ namespace Ludo.ComputationalGeometry
                             }
                             else
                             {
-                                this.PointBetweenPoints(num60, num61, point1.x, point1.y, num10, num11, ref p4);
+                                PointBetweenPoints(num60, num61, point1.x, point1.y, num10, num11, ref p4);
                                 if (Math.Abs(p4[0] - 1.0) <= 1E-50 && p3[0] > 0.0)
                                 {
                                     if ((point2.x - num52) * (point2.x - num52) +
                                         (point2.y - num53) * (point2.y - num53) >
                                         num5 * ((point2.x - num10) * (point2.x - num10) +
                                                 (point2.y - num11) * (point2.y - num11)) &&
-                                        this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num52, num53) &&
-                                        this.MinDistanceToNeighbor(num52, num53, ref otri) >
-                                        this.MinDistanceToNeighbor(num10, num11, ref otri))
+                                        IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num52, num53) &&
+                                        MinDistanceToNeighbor(num52, num53, ref orientedTriangle) >
+                                        MinDistanceToNeighbor(num10, num11, ref orientedTriangle))
                                     {
                                         num44 = num52 - torg.x;
                                         num45 = num53 - torg.y;
                                     }
-                                    else if (this.IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num10,
+                                    else if (IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num10,
                                                  num11))
                                     {
                                         double num67 = Math.Sqrt((num10 - point1.x) * (num10 - point1.x) +
@@ -950,7 +950,7 @@ namespace Ludo.ComputationalGeometry
                                         double num71 = num69 / num67;
                                         num10 += num70 * num4 * Math.Sqrt(d1);
                                         num11 += num71 * num4 * Math.Sqrt(d1);
-                                        if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
+                                        if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
                                                 num11))
                                         {
                                             num44 = num19;
@@ -968,7 +968,7 @@ namespace Ludo.ComputationalGeometry
                                         num45 = p4[3] - torg.y;
                                     }
                                 }
-                                else if (this.IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num60, num61))
+                                else if (IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num60, num61))
                                 {
                                     double num72 = Math.Sqrt((num60 - point1.x) * (num60 - point1.x) +
                                                              (num61 - point1.y) * (num61 - point1.y));
@@ -978,7 +978,7 @@ namespace Ludo.ComputationalGeometry
                                     double num76 = num74 / num72;
                                     double x3_3 = num60 + num75 * num4 * Math.Sqrt(d1);
                                     double y3_3 = num61 + num76 * num4 * Math.Sqrt(d1);
-                                    if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_3, y3_3))
+                                    if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_3, y3_3))
                                     {
                                         num44 = num19;
                                         num45 = num20;
@@ -1007,31 +1007,31 @@ namespace Ludo.ComputationalGeometry
                         }
                     }
 
-                    bool neighborsVertex2 = this.GetNeighborsVertex(badotri, point4.x, point4.y, point2.x, point2.y,
-                        ref thirdpoint, ref otri);
+                    bool neighborsVertex2 = GetNeighborsVertex(badotri, point4.x, point4.y, point2.x, point2.y,
+                        ref thirdpoint, ref orientedTriangle);
                     double num77 = num19;
                     double num78 = num20;
                     double x1_3 = (point4.x + point2.x) / 2.0;
                     double y1_3 = (point4.y + point2.y) / 2.0;
                     if (!neighborsVertex2)
                     {
-                        Vertex torg2 = otri.Org();
-                        Vertex vertex3 = otri.Dest();
-                        Vertex vertex4 = otri.Apex();
+                        Vertex torg2 = orientedTriangle.Org();
+                        Vertex vertex3 = orientedTriangle.Dest();
+                        Vertex vertex4 = orientedTriangle.Apex();
                         Vertex tdest2 = vertex3;
                         Vertex tapex2 = vertex4;
                         ref double local3 = ref num2;
                         ref double local4 = ref num3;
-                        Point circumcenter = Primitives.FindCircumcenter((Point)torg2, (Point)tdest2, (Point)tapex2,
+                        Point circumcenter = Primitives.FindCircumcenter(torg2, tdest2, tapex2,
                             ref local3, ref local4);
                         double num79 = point4.y - point2.y;
                         double num80 = point2.x - point4.x;
                         double x2 = point1.x + num79;
                         double y2 = point1.y + num80;
-                        this.CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
+                        CircleLineIntersection(point1.x, point1.y, x2, y2, x3_1, y3_1, r, ref p1);
                         double num81;
                         double num82;
-                        if (this.ChooseCorrectPoint(x1_3, y1_3, p1[3], p1[4], point1.x, point1.y, false))
+                        if (ChooseCorrectPoint(x1_3, y1_3, p1[3], p1[4], point1.x, point1.y, false))
                         {
                             num81 = p1[3];
                             num82 = p1[4];
@@ -1048,34 +1048,34 @@ namespace Ludo.ComputationalGeometry
                         num57 = point3.y - point4.y;
                         double x4 = num54;
                         double y4 = num55;
-                        this.LineLineIntersection(point1.x, point1.y, x2, y2, x, y, x4, y4, ref p3);
+                        LineLineIntersection(point1.x, point1.y, x2, y2, x, y, x4, y4, ref p3);
                         if (p3[0] > 0.0)
                         {
                             num10 = p3[1];
                             num11 = p3[2];
                         }
 
-                        this.PointBetweenPoints(num81, num82, point1.x, point1.y, circumcenter.x, circumcenter.y,
+                        PointBetweenPoints(num81, num82, point1.x, point1.y, circumcenter.x, circumcenter.y,
                             ref p2);
                         if (p1[0] > 0.0)
                         {
                             if (Math.Abs(p2[0] - 1.0) <= 1E-50)
                             {
-                                this.PointBetweenPoints(p2[2], p2[3], point1.x, point1.y, num10, num11, ref p4);
+                                PointBetweenPoints(p2[2], p2[3], point1.x, point1.y, num10, num11, ref p4);
                                 if (Math.Abs(p4[0] - 1.0) <= 1E-50 && p3[0] > 0.0)
                                 {
                                     if ((point2.x - num54) * (point2.x - num54) +
                                         (point2.y - num55) * (point2.y - num55) >
                                         num5 * ((point2.x - num10) * (point2.x - num10) +
                                                 (point2.y - num11) * (point2.y - num11)) &&
-                                        this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num54, num55) &&
-                                        this.MinDistanceToNeighbor(num54, num55, ref otri) >
-                                        this.MinDistanceToNeighbor(num10, num11, ref otri))
+                                        IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num54, num55) &&
+                                        MinDistanceToNeighbor(num54, num55, ref orientedTriangle) >
+                                        MinDistanceToNeighbor(num10, num11, ref orientedTriangle))
                                     {
                                         num77 = num54 - torg.x;
                                         num78 = num55 - torg.y;
                                     }
-                                    else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
+                                    else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num10,
                                                  num11))
                                     {
                                         double num83 = Math.Sqrt((num10 - point1.x) * (num10 - point1.x) +
@@ -1086,7 +1086,7 @@ namespace Ludo.ComputationalGeometry
                                         double num87 = num85 / num83;
                                         double x3_4 = num10 + num86 * num4 * Math.Sqrt(d1);
                                         double y3_4 = num11 + num87 * num4 * Math.Sqrt(d1);
-                                        if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_4, y3_4))
+                                        if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_4, y3_4))
                                         {
                                             num77 = num19;
                                             num78 = num20;
@@ -1103,7 +1103,7 @@ namespace Ludo.ComputationalGeometry
                                         num78 = p4[3] - torg.y;
                                     }
                                 }
-                                else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
+                                else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, circumcenter.x,
                                              circumcenter.y))
                                 {
                                     num77 = num19;
@@ -1117,21 +1117,21 @@ namespace Ludo.ComputationalGeometry
                             }
                             else
                             {
-                                this.PointBetweenPoints(num81, num82, point1.x, point1.y, num10, num11, ref p4);
+                                PointBetweenPoints(num81, num82, point1.x, point1.y, num10, num11, ref p4);
                                 if (Math.Abs(p4[0] - 1.0) <= 1E-50 && p3[0] > 0.0)
                                 {
                                     if ((point2.x - num54) * (point2.x - num54) +
                                         (point2.y - num55) * (point2.y - num55) >
                                         num5 * ((point2.x - num10) * (point2.x - num10) +
                                                 (point2.y - num11) * (point2.y - num11)) &&
-                                        this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num54, num55) &&
-                                        this.MinDistanceToNeighbor(num54, num55, ref otri) >
-                                        this.MinDistanceToNeighbor(num10, num11, ref otri))
+                                        IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num54, num55) &&
+                                        MinDistanceToNeighbor(num54, num55, ref orientedTriangle) >
+                                        MinDistanceToNeighbor(num10, num11, ref orientedTriangle))
                                     {
                                         num77 = num54 - torg.x;
                                         num78 = num55 - torg.y;
                                     }
-                                    else if (this.IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num10,
+                                    else if (IsBadTriangleAngle(point4.x, point4.y, point3.x, point3.y, num10,
                                                  num11))
                                     {
                                         double num88 = Math.Sqrt((num10 - point1.x) * (num10 - point1.x) +
@@ -1142,7 +1142,7 @@ namespace Ludo.ComputationalGeometry
                                         double num92 = num90 / num88;
                                         double x3_5 = num10 + num91 * num4 * Math.Sqrt(d1);
                                         double y3_5 = num11 + num92 * num4 * Math.Sqrt(d1);
-                                        if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_5, y3_5))
+                                        if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_5, y3_5))
                                         {
                                             num77 = num19;
                                             num78 = num20;
@@ -1159,7 +1159,7 @@ namespace Ludo.ComputationalGeometry
                                         num78 = p4[3] - torg.y;
                                     }
                                 }
-                                else if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num81, num82))
+                                else if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, num81, num82))
                                 {
                                     double num93 = Math.Sqrt((num81 - point1.x) * (num81 - point1.x) +
                                                              (num82 - point1.y) * (num82 - point1.y));
@@ -1169,7 +1169,7 @@ namespace Ludo.ComputationalGeometry
                                     double num97 = num95 / num93;
                                     double x3_6 = num81 + num96 * num4 * Math.Sqrt(d1);
                                     double y3_6 = num82 + num97 * num4 * Math.Sqrt(d1);
-                                    if (this.IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_6, y3_6))
+                                    if (IsBadTriangleAngle(point3.x, point3.y, point4.x, point4.y, x3_6, y3_6))
                                     {
                                         num77 = num19;
                                         num78 = num20;
@@ -1387,7 +1387,7 @@ namespace Ludo.ComputationalGeometry
         }
 
         private int DoSmoothing(
-            Otri badotri,
+            OrientedTriangle badotri,
             Vertex torg,
             Vertex tdest,
             Vertex tapex,
@@ -1401,11 +1401,11 @@ namespace Ludo.ComputationalGeometry
             double[] points1 = new double[500];
             double[] points2 = new double[500];
             double[] points3 = new double[500];
-            int starPoints1 = this.GetStarPoints(badotri, torg, tdest, tapex, 1, ref points1);
+            int starPoints1 = GetStarPoints(badotri, torg, tdest, tapex, 1, ref points1);
             if (torg.type == VertexType.FreeVertex && starPoints1 != 0 &&
-                this.ValidPolygonAngles(starPoints1, points1) && (this.behavior.MaxAngle != 0.0
-                    ? this.GetWedgeIntersection(starPoints1, points1, ref newloc)
-                    : this.GetWedgeIntersectionWithoutMaxAngle(starPoints1, points1, ref newloc)))
+                ValidPolygonAngles(starPoints1, points1) && (behavior.MaxAngle != 0.0
+                    ? GetWedgeIntersection(starPoints1, points1, ref newloc)
+                    : GetWedgeIntersectionWithoutMaxAngle(starPoints1, points1, ref newloc)))
             {
                 numArray[0] = newloc[0];
                 numArray[1] = newloc[1];
@@ -1413,11 +1413,11 @@ namespace Ludo.ComputationalGeometry
                 num2 = 1;
             }
 
-            int starPoints2 = this.GetStarPoints(badotri, torg, tdest, tapex, 2, ref points2);
+            int starPoints2 = GetStarPoints(badotri, torg, tdest, tapex, 2, ref points2);
             if (tdest.type == VertexType.FreeVertex && starPoints2 != 0 &&
-                this.ValidPolygonAngles(starPoints2, points2) && (this.behavior.MaxAngle != 0.0
-                    ? this.GetWedgeIntersection(starPoints2, points2, ref newloc)
-                    : this.GetWedgeIntersectionWithoutMaxAngle(starPoints2, points2, ref newloc)))
+                ValidPolygonAngles(starPoints2, points2) && (behavior.MaxAngle != 0.0
+                    ? GetWedgeIntersection(starPoints2, points2, ref newloc)
+                    : GetWedgeIntersectionWithoutMaxAngle(starPoints2, points2, ref newloc)))
             {
                 numArray[2] = newloc[0];
                 numArray[3] = newloc[1];
@@ -1425,11 +1425,11 @@ namespace Ludo.ComputationalGeometry
                 num3 = 2;
             }
 
-            int starPoints3 = this.GetStarPoints(badotri, torg, tdest, tapex, 3, ref points3);
+            int starPoints3 = GetStarPoints(badotri, torg, tdest, tapex, 3, ref points3);
             if (tapex.type == VertexType.FreeVertex && starPoints3 != 0 &&
-                this.ValidPolygonAngles(starPoints3, points3) && (this.behavior.MaxAngle != 0.0
-                    ? this.GetWedgeIntersection(starPoints3, points3, ref newloc)
-                    : this.GetWedgeIntersectionWithoutMaxAngle(starPoints3, points3, ref newloc)))
+                ValidPolygonAngles(starPoints3, points3) && (behavior.MaxAngle != 0.0
+                    ? GetWedgeIntersection(starPoints3, points3, ref newloc)
+                    : GetWedgeIntersectionWithoutMaxAngle(starPoints3, points3, ref newloc)))
             {
                 numArray[4] = newloc[0];
                 numArray[5] = newloc[1];
@@ -1465,14 +1465,14 @@ namespace Ludo.ComputationalGeometry
         }
 
         private int GetStarPoints(
-            Otri badotri,
+            OrientedTriangle badotri,
             Vertex p,
             Vertex q,
             Vertex r,
             int whichPoint,
             ref double[] points)
         {
-            Otri neighotri = new Otri();
+            OrientedTriangle neighotri = new OrientedTriangle();
             double first_x = 0.0;
             double first_y = 0.0;
             double second_x = 0.0;
@@ -1509,14 +1509,14 @@ namespace Ludo.ComputationalGeometry
                     break;
             }
 
-            Otri badotri1 = badotri;
+            OrientedTriangle badotri1 = badotri;
             points[index1] = second_x;
             int index2 = index1 + 1;
             points[index2] = second_y;
             int index3 = index2 + 1;
             thirdpoint[0] = second_x;
             thirdpoint[1] = second_y;
-            while (!this.GetNeighborsVertex(badotri1, first_x, first_y, second_x, second_y, ref thirdpoint,
+            while (!GetNeighborsVertex(badotri1, first_x, first_y, second_x, second_y, ref thirdpoint,
                        ref neighotri))
             {
                 badotri1 = neighotri;
@@ -1536,19 +1536,19 @@ namespace Ludo.ComputationalGeometry
         }
 
         private bool GetNeighborsVertex(
-            Otri badotri,
+            OrientedTriangle badotri,
             double first_x,
             double first_y,
             double second_x,
             double second_y,
             ref double[] thirdpoint,
-            ref Otri neighotri)
+            ref OrientedTriangle neighotri)
         {
-            Otri o2 = new Otri();
+            OrientedTriangle o2 = new OrientedTriangle();
             bool neighborsVertex = false;
-            Vertex vertex1 = (Vertex)null;
-            Vertex vertex2 = (Vertex)null;
-            Vertex vertex3 = (Vertex)null;
+            Vertex vertex1 = null;
+            Vertex vertex2 = null;
+            Vertex vertex3 = null;
             int num1 = 0;
             int num2 = 0;
             for (badotri.orient = 0; badotri.orient < 3; ++badotri.orient)
@@ -1645,7 +1645,6 @@ namespace Ludo.ComputationalGeometry
                     if (num2 == 0)
                     {
                         neighborsVertex = true;
-                        break;
                     }
 
                     break;
@@ -1671,10 +1670,10 @@ namespace Ludo.ComputationalGeometry
             double y1 = points[2 * numpoints - 3];
             double x3 = points[2 * numpoints - 2];
             double y3 = points[2 * numpoints - 1];
-            double num1 = this.behavior.MinAngle * Math.PI / 180.0;
+            double num1 = behavior.MinAngle * Math.PI / 180.0;
             double num2;
             double num3;
-            if (this.behavior.goodAngle == 1.0)
+            if (behavior.goodAngle == 1.0)
             {
                 num2 = 0.0;
                 num3 = 0.0;
@@ -1728,14 +1727,14 @@ namespace Ludo.ComputationalGeometry
                 double num17 = num13;
                 for (int index2 = 1; index2 < 4; ++index2)
                 {
-                    double num18 = num12 * Math.Cos((Math.PI / 3.0 - num1) * (double)index2) +
-                                   num13 * Math.Sin((Math.PI / 3.0 - num1) * (double)index2) + numArray1[index1 / 2] -
-                                   numArray1[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * (double)index2) -
-                                   numArray2[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * (double)index2);
-                    double num19 = -num12 * Math.Sin((Math.PI / 3.0 - num1) * (double)index2) +
-                                   num13 * Math.Cos((Math.PI / 3.0 - num1) * (double)index2) + numArray2[index1 / 2] +
-                                   numArray1[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * (double)index2) -
-                                   numArray2[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * (double)index2);
+                    double num18 = num12 * Math.Cos((Math.PI / 3.0 - num1) * index2) +
+                                   num13 * Math.Sin((Math.PI / 3.0 - num1) * index2) + numArray1[index1 / 2] -
+                                   numArray1[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * index2) -
+                                   numArray2[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * index2);
+                    double num19 = -num12 * Math.Sin((Math.PI / 3.0 - num1) * index2) +
+                                   num13 * Math.Cos((Math.PI / 3.0 - num1) * index2) + numArray2[index1 / 2] +
+                                   numArray1[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * index2) -
+                                   numArray2[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * index2);
                     numArray4[index1 * 16 /*0x10*/ + 8 + 4 * (index2 - 1)] = num18;
                     numArray4[index1 * 16 /*0x10*/ + 9 + 4 * (index2 - 1)] = num19;
                     numArray4[index1 * 16 /*0x10*/ + 10 + 4 * (index2 - 1)] = num16;
@@ -1748,14 +1747,14 @@ namespace Ludo.ComputationalGeometry
                 double num21 = num13;
                 for (int index3 = 1; index3 < 4; ++index3)
                 {
-                    double num22 = num12 * Math.Cos((Math.PI / 3.0 - num1) * (double)index3) -
-                                   num13 * Math.Sin((Math.PI / 3.0 - num1) * (double)index3) + numArray1[index1 / 2] -
-                                   numArray1[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * (double)index3) +
-                                   numArray2[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * (double)index3);
-                    double num23 = num12 * Math.Sin((Math.PI / 3.0 - num1) * (double)index3) +
-                                   num13 * Math.Cos((Math.PI / 3.0 - num1) * (double)index3) + numArray2[index1 / 2] -
-                                   numArray1[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * (double)index3) -
-                                   numArray2[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * (double)index3);
+                    double num22 = num12 * Math.Cos((Math.PI / 3.0 - num1) * index3) -
+                                   num13 * Math.Sin((Math.PI / 3.0 - num1) * index3) + numArray1[index1 / 2] -
+                                   numArray1[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * index3) +
+                                   numArray2[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * index3);
+                    double num23 = num12 * Math.Sin((Math.PI / 3.0 - num1) * index3) +
+                                   num13 * Math.Cos((Math.PI / 3.0 - num1) * index3) + numArray2[index1 / 2] -
+                                   numArray1[index1 / 2] * Math.Sin((Math.PI / 3.0 - num1) * index3) -
+                                   numArray2[index1 / 2] * Math.Cos((Math.PI / 3.0 - num1) * index3);
                     numArray4[index1 * 16 /*0x10*/ + 20 + 4 * (index3 - 1)] = num20;
                     numArray4[index1 * 16 /*0x10*/ + 21 + 4 * (index3 - 1)] = num21;
                     numArray4[index1 * 16 /*0x10*/ + 22 + 4 * (index3 - 1)] = num22;
@@ -1766,7 +1765,7 @@ namespace Ludo.ComputationalGeometry
 
                 if (index1 == 0)
                 {
-                    this.LineLineIntersection(x1, y1, x2, y2, x3, y3, x4, y4, ref p);
+                    LineLineIntersection(x1, y1, x2, y2, x3, y3, x4, y4, ref p);
                     if (p[0] == 1.0)
                     {
                         convexPoly[0] = p[1];
@@ -1803,7 +1802,7 @@ namespace Ludo.ComputationalGeometry
                 int numvertices = 8;
                 for (int index = 0; index < 32 /*0x20*/; index += 4)
                 {
-                    numpoints1 = this.HalfPlaneIntersection(numvertices, ref convexPoly,
+                    numpoints1 = HalfPlaneIntersection(numvertices, ref convexPoly,
                         numArray4[32 /*0x20*/ * num24 + index], numArray4[32 /*0x20*/ * num24 + 1 + index],
                         numArray4[32 /*0x20*/ * num24 + 2 + index], numArray4[32 /*0x20*/ * num24 + 3 + index]);
                     if (numpoints1 == 0)
@@ -1815,7 +1814,7 @@ namespace Ludo.ComputationalGeometry
                 {
                     for (int index5 = 0; index5 < 32 /*0x20*/; index5 += 4)
                     {
-                        numpoints1 = this.HalfPlaneIntersection(numvertices, ref convexPoly,
+                        numpoints1 = HalfPlaneIntersection(numvertices, ref convexPoly,
                             numArray4[32 /*0x20*/ * (num27 + num24 * num25) + index5],
                             numArray4[32 /*0x20*/ * (num27 + num24 * num25) + 1 + index5],
                             numArray4[32 /*0x20*/ * (num27 + num24 * num25) + 2 + index5],
@@ -1829,8 +1828,8 @@ namespace Ludo.ComputationalGeometry
                     num25 = (num25 + 1) % 2;
                 }
 
-                this.FindPolyCentroid(numpoints1, convexPoly, ref newloc);
-                if (!this.behavior.fixedArea)
+                FindPolyCentroid(numpoints1, convexPoly, ref newloc);
+                if (!behavior.fixedArea)
                     return true;
             }
 
@@ -1854,15 +1853,15 @@ namespace Ludo.ComputationalGeometry
             double y1 = points[2 * numpoints - 3];
             double x3 = points[2 * numpoints - 2];
             double y3 = points[2 * numpoints - 1];
-            double num2 = this.behavior.MinAngle * Math.PI / 180.0;
+            double num2 = behavior.MinAngle * Math.PI / 180.0;
             double num3 = Math.Sin(num2);
             double num4 = Math.Cos(num2);
-            double num5 = this.behavior.MaxAngle * Math.PI / 180.0;
+            double num5 = behavior.MaxAngle * Math.PI / 180.0;
             double num6 = Math.Sin(num5);
             double num7 = Math.Cos(num5);
             double num8;
             double num9;
-            if (this.behavior.goodAngle == 1.0)
+            if (behavior.goodAngle == 1.0)
             {
                 num8 = 0.0;
                 num9 = 0.0;
@@ -1914,7 +1913,7 @@ namespace Ludo.ComputationalGeometry
                 num21 = num19 - numArray2[index1 / 2];
                 double num22 = num18;
                 double num23 = num19;
-                double num24 = 2.0 * this.behavior.MaxAngle + this.behavior.MinAngle - 180.0;
+                double num24 = 2.0 * behavior.MaxAngle + behavior.MinAngle - 180.0;
                 double num25;
                 double num26;
                 if (num24 <= 0.0)
@@ -1943,20 +1942,20 @@ namespace Ludo.ComputationalGeometry
                 }
 
                 double num27 = num24 * Math.PI / 180.0;
-                for (int index2 = 1; (double)index2 < num25; ++index2)
+                for (int index2 = 1; index2 < num25; ++index2)
                 {
                     if (num25 != 1.0)
                     {
-                        double num28 = num18 * Math.Cos(num27 / (num25 - 1.0) * (double)index2) +
-                                       num19 * Math.Sin(num27 / (num25 - 1.0) * (double)index2) +
+                        double num28 = num18 * Math.Cos(num27 / (num25 - 1.0) * index2) +
+                                       num19 * Math.Sin(num27 / (num25 - 1.0) * index2) +
                                        numArray1[index1 / 2] -
-                                       numArray1[index1 / 2] * Math.Cos(num27 / (num25 - 1.0) * (double)index2) -
-                                       numArray2[index1 / 2] * Math.Sin(num27 / (num25 - 1.0) * (double)index2);
-                        double num29 = -num18 * Math.Sin(num27 / (num25 - 1.0) * (double)index2) +
-                                       num19 * Math.Cos(num27 / (num25 - 1.0) * (double)index2) +
+                                       numArray1[index1 / 2] * Math.Cos(num27 / (num25 - 1.0) * index2) -
+                                       numArray2[index1 / 2] * Math.Sin(num27 / (num25 - 1.0) * index2);
+                        double num29 = -num18 * Math.Sin(num27 / (num25 - 1.0) * index2) +
+                                       num19 * Math.Cos(num27 / (num25 - 1.0) * index2) +
                                        numArray2[index1 / 2] +
-                                       numArray1[index1 / 2] * Math.Sin(num27 / (num25 - 1.0) * (double)index2) -
-                                       numArray2[index1 / 2] * Math.Cos(num27 / (num25 - 1.0) * (double)index2);
+                                       numArray1[index1 / 2] * Math.Sin(num27 / (num25 - 1.0) * index2) -
+                                       numArray2[index1 / 2] * Math.Cos(num27 / (num25 - 1.0) * index2);
                         numArray4[index1 * 20 + 8 + 4 * (index2 - 1)] = num28;
                         numArray4[index1 * 20 + 9 + 4 * (index2 - 1)] = num29;
                         numArray4[index1 * 20 + 10 + 4 * (index2 - 1)] = num22;
@@ -1976,20 +1975,20 @@ namespace Ludo.ComputationalGeometry
                 numArray4[index1 * 20 + 23] = y4_2;
                 double num30 = num18;
                 double num31 = num19;
-                for (int index3 = 1; (double)index3 < num26; ++index3)
+                for (int index3 = 1; index3 < num26; ++index3)
                 {
                     if (num26 != 1.0)
                     {
-                        double num32 = num18 * Math.Cos(num27 / (num26 - 1.0) * (double)index3) -
-                                       num19 * Math.Sin(num27 / (num26 - 1.0) * (double)index3) +
+                        double num32 = num18 * Math.Cos(num27 / (num26 - 1.0) * index3) -
+                                       num19 * Math.Sin(num27 / (num26 - 1.0) * index3) +
                                        numArray1[index1 / 2] -
-                                       numArray1[index1 / 2] * Math.Cos(num27 / (num26 - 1.0) * (double)index3) +
-                                       numArray2[index1 / 2] * Math.Sin(num27 / (num26 - 1.0) * (double)index3);
-                        double num33 = num18 * Math.Sin(num27 / (num26 - 1.0) * (double)index3) +
-                                       num19 * Math.Cos(num27 / (num26 - 1.0) * (double)index3) +
+                                       numArray1[index1 / 2] * Math.Cos(num27 / (num26 - 1.0) * index3) +
+                                       numArray2[index1 / 2] * Math.Sin(num27 / (num26 - 1.0) * index3);
+                        double num33 = num18 * Math.Sin(num27 / (num26 - 1.0) * index3) +
+                                       num19 * Math.Cos(num27 / (num26 - 1.0) * index3) +
                                        numArray2[index1 / 2] -
-                                       numArray1[index1 / 2] * Math.Sin(num27 / (num26 - 1.0) * (double)index3) -
-                                       numArray2[index1 / 2] * Math.Cos(num27 / (num26 - 1.0) * (double)index3);
+                                       numArray1[index1 / 2] * Math.Sin(num27 / (num26 - 1.0) * index3) -
+                                       numArray2[index1 / 2] * Math.Cos(num27 / (num26 - 1.0) * index3);
                         numArray4[index1 * 20 + 24 + 4 * (index3 - 1)] = num30;
                         numArray4[index1 * 20 + 25 + 4 * (index3 - 1)] = num31;
                         numArray4[index1 * 20 + 26 + 4 * (index3 - 1)] = num32;
@@ -2012,10 +2011,10 @@ namespace Ludo.ComputationalGeometry
                     switch (num1)
                     {
                         case 4:
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
-                            this.LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_2, y4_2, ref p3);
-                            this.LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p4);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
+                            LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_2, y4_2, ref p3);
+                            LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p4);
                             if (p1[0] == 1.0 && p2[0] == 1.0 && p3[0] == 1.0 && p4[0] == 1.0)
                             {
                                 convexPoly[0] = p1[1];
@@ -2026,14 +2025,13 @@ namespace Ludo.ComputationalGeometry
                                 convexPoly[5] = p3[2];
                                 convexPoly[6] = p4[1];
                                 convexPoly[7] = p4[2];
-                                break;
                             }
 
                             break;
                         case 6:
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
-                            this.LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
+                            LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
                             if (p1[0] == 1.0 && p2[0] == 1.0 && p3[0] == 1.0)
                             {
                                 convexPoly[0] = p1[1];
@@ -2048,14 +2046,13 @@ namespace Ludo.ComputationalGeometry
                                 convexPoly[9] = numArray4[index1 * 20 + 27];
                                 convexPoly[10] = p3[1];
                                 convexPoly[11] = p3[2];
-                                break;
                             }
 
                             break;
                         case 8:
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
-                            this.LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
+                            LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
                             if (p1[0] == 1.0 && p2[0] == 1.0 && p3[0] == 1.0)
                             {
                                 convexPoly[0] = p1[1];
@@ -2074,14 +2071,13 @@ namespace Ludo.ComputationalGeometry
                                 convexPoly[13] = numArray4[index1 * 20 + 31 /*0x1F*/];
                                 convexPoly[14] = p3[1];
                                 convexPoly[15] = p3[2];
-                                break;
                             }
 
                             break;
                         case 10:
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
-                            this.LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
-                            this.LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_1, y4_1, ref p1);
+                            LineLineIntersection(x1, y1, x2_1, y2_1, x3, y3, x4_2, y4_2, ref p2);
+                            LineLineIntersection(x1, y1, x2_2, y2_2, x3, y3, x4_1, y4_1, ref p3);
                             if (p1[0] == 1.0 && p2[0] == 1.0 && p3[0] == 1.0)
                             {
                                 convexPoly[0] = p1[1];
@@ -2104,7 +2100,6 @@ namespace Ludo.ComputationalGeometry
                                 convexPoly[17] = numArray4[index1 * 20 + 35];
                                 convexPoly[18] = p3[1];
                                 convexPoly[19] = p3[2];
-                                break;
                             }
 
                             break;
@@ -2131,7 +2126,7 @@ namespace Ludo.ComputationalGeometry
                         (num1 != 6 || index != 12 && index != 16 /*0x10*/ && index != 28 && index != 32 /*0x20*/) &&
                         (num1 != 8 || index != 16 /*0x10*/ && index != 32 /*0x20*/))
                     {
-                        numpoints1 = this.HalfPlaneIntersection(numvertices, ref convexPoly,
+                        numpoints1 = HalfPlaneIntersection(numvertices, ref convexPoly,
                             numArray4[40 * num34 + index], numArray4[40 * num34 + 1 + index],
                             numArray4[40 * num34 + 2 + index], numArray4[40 * num34 + 3 + index]);
                         if (numpoints1 == 0)
@@ -2149,7 +2144,7 @@ namespace Ludo.ComputationalGeometry
                             (num1 != 6 || index5 != 12 && index5 != 16 /*0x10*/ && index5 != 28 && index5 != 32 /*0x20*/
                             ) && (num1 != 8 || index5 != 16 /*0x10*/ && index5 != 32 /*0x20*/))
                         {
-                            numpoints1 = this.HalfPlaneIntersection(numvertices, ref convexPoly,
+                            numpoints1 = HalfPlaneIntersection(numvertices, ref convexPoly,
                                 numArray4[40 * (num37 + num34 * num35) + index5],
                                 numArray4[40 * (num37 + num34 * num35) + 1 + index5],
                                 numArray4[40 * (num37 + num34 * num35) + 2 + index5],
@@ -2164,18 +2159,18 @@ namespace Ludo.ComputationalGeometry
                     num35 = (num35 + 1) % 2;
                 }
 
-                this.FindPolyCentroid(numpoints1, convexPoly, ref newloc);
-                if (this.behavior.MaxAngle == 0.0)
+                FindPolyCentroid(numpoints1, convexPoly, ref newloc);
+                if (behavior.MaxAngle == 0.0)
                     return true;
                 int num38 = 0;
                 for (int index = 0; index < numpoints * 2 - 2; index += 2)
                 {
-                    if (this.IsBadTriangleAngle(newloc[0], newloc[1], points[index], points[index + 1],
+                    if (IsBadTriangleAngle(newloc[0], newloc[1], points[index], points[index + 1],
                             points[index + 2], points[index + 3]))
                         ++num38;
                 }
 
-                if (this.IsBadTriangleAngle(newloc[0], newloc[1], points[0], points[1], points[numpoints * 2 - 2],
+                if (IsBadTriangleAngle(newloc[0], newloc[1], points[0], points[1], points[numpoints * 2 - 2],
                         points[numpoints * 2 - 1]))
                     ++num38;
                 if (num38 == 0)
@@ -2189,15 +2184,15 @@ namespace Ludo.ComputationalGeometry
                         newloc[1] = 0.0;
                         for (int index8 = 0; index8 < 2 * numpoints; index8 += 2)
                         {
-                            double num40 = 1.0 / (double)numpoints;
+                            double num40 = 1.0 / numpoints;
                             if (index8 == index6)
                             {
-                                newloc[0] = newloc[0] + 0.1 * (double)index7 * num40 * points[index8];
-                                newloc[1] = newloc[1] + 0.1 * (double)index7 * num40 * points[index8 + 1];
+                                newloc[0] = newloc[0] + 0.1 * index7 * num40 * points[index8];
+                                newloc[1] = newloc[1] + 0.1 * index7 * num40 * points[index8 + 1];
                             }
                             else
                             {
-                                double num41 = (1.0 - 0.1 * (double)index7 * num40) / ((double)numpoints - 1.0);
+                                double num41 = (1.0 - 0.1 * index7 * num40) / (numpoints - 1.0);
                                 newloc[0] = newloc[0] + num41 * points[index8];
                                 newloc[1] = newloc[1] + num41 * points[index8 + 1];
                             }
@@ -2206,12 +2201,12 @@ namespace Ludo.ComputationalGeometry
                         int num42 = 0;
                         for (int index9 = 0; index9 < numpoints * 2 - 2; index9 += 2)
                         {
-                            if (this.IsBadTriangleAngle(newloc[0], newloc[1], points[index9], points[index9 + 1],
+                            if (IsBadTriangleAngle(newloc[0], newloc[1], points[index9], points[index9 + 1],
                                     points[index9 + 2], points[index9 + 3]))
                                 ++num42;
                         }
 
-                        if (this.IsBadTriangleAngle(newloc[0], newloc[1], points[0], points[1],
+                        if (IsBadTriangleAngle(newloc[0], newloc[1], points[0], points[1],
                                 points[numpoints * 2 - 2], points[numpoints * 2 - 1]))
                             ++num42;
                         if (num42 == 0)
@@ -2229,17 +2224,17 @@ namespace Ludo.ComputationalGeometry
             {
                 if (index == numpoints - 1)
                 {
-                    if (this.IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[0], points[1],
+                    if (IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[0], points[1],
                             points[2], points[3]))
                         return false;
                 }
                 else if (index == numpoints - 2)
                 {
-                    if (this.IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[(index + 1) * 2],
+                    if (IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[(index + 1) * 2],
                             points[(index + 1) * 2 + 1], points[0], points[1]))
                         return false;
                 }
-                else if (this.IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[(index + 1) * 2],
+                else if (IsBadPolygonAngle(points[index * 2], points[index * 2 + 1], points[(index + 1) * 2],
                              points[(index + 1) * 2 + 1], points[(index + 2) * 2], points[(index + 2) * 2 + 1]))
                     return false;
             }
@@ -2265,7 +2260,7 @@ namespace Ludo.ComputationalGeometry
             double d2 = num3 * num3 + num4 * num4;
             double num7 = num5 * num5 + num6 * num6;
             return Math.Acos((d1 + d2 - num7) / (2.0 * Math.Sqrt(d1) * Math.Sqrt(d2))) <
-                   2.0 * Math.Acos(Math.Sqrt(this.behavior.goodAngle));
+                   2.0 * Math.Acos(Math.Sqrt(behavior.goodAngle));
         }
 
         private void LineLineIntersection(
@@ -2312,12 +2307,12 @@ namespace Ludo.ComputationalGeometry
                 new double[2],
                 new double[2]
             };
-            double[] numArray = (double[])null;
+            double[] numArray = null;
             int num1 = 0;
             int num2 = 0;
             double num3 = x2 - x1;
             double num4 = y2 - y1;
-            int num5 = this.SplitConvexPolygon(numvertices, convexPoly, x1, y1, x2, y2, ref polys);
+            int num5 = SplitConvexPolygon(numvertices, convexPoly, x1, y1, x2, y2, ref polys);
             if (num5 == 3)
             {
                 num1 = numvertices;
@@ -2328,7 +2323,7 @@ namespace Ludo.ComputationalGeometry
                 {
                     double num6 = 1E+17;
                     double num7 = -1E+17;
-                    for (int index2 = 1; (double)index2 <= 2.0 * polys[index1][0] - 1.0; index2 += 2)
+                    for (int index2 = 1; index2 <= 2.0 * polys[index1][0] - 1.0; index2 += 2)
                     {
                         double num8 = num3 * (polys[index1][index2 + 1] - y1) - num4 * (polys[index1][index2] - x1);
                         num6 = num8 < num6 ? num8 : num6;
@@ -2345,7 +2340,7 @@ namespace Ludo.ComputationalGeometry
 
                 if (num2 == 1)
                 {
-                    for (; (double)num1 < numArray[0]; ++num1)
+                    for (; num1 < numArray[0]; ++num1)
                     {
                         convexPoly[2 * num1] = numArray[2 * num1 + 1];
                         convexPoly[2 * num1 + 1] = numArray[2 * num1 + 2];
@@ -2383,7 +2378,7 @@ namespace Ludo.ComputationalGeometry
             for (int index1 = 0; index1 < 2 * numvertices; index1 += 2)
             {
                 int index2 = index1 + 2 >= 2 * numvertices ? 0 : index1 + 2;
-                this.LineLineSegmentIntersection(x1, y1, x2, y2, convexPoly[index1], convexPoly[index1 + 1],
+                LineLineSegmentIntersection(x1, y1, x2, y2, convexPoly[index1], convexPoly[index1 + 1],
                     convexPoly[index2], convexPoly[index2 + 1], ref p);
                 if (Math.Abs(p[0] - 0.0) <= num4)
                 {
@@ -2424,9 +2419,9 @@ namespace Ludo.ComputationalGeometry
                                 numArray1[2 * num2] = convexPoly[index2 + 1];
                                 if (index1 + 4 < 2 * numvertices)
                                 {
-                                    int num13 = this.LinePointLocation(x1, y1, x2, y2, convexPoly[index1],
+                                    int num13 = LinePointLocation(x1, y1, x2, y2, convexPoly[index1],
                                         convexPoly[index1 + 1]);
-                                    int num14 = this.LinePointLocation(x1, y1, x2, y2, convexPoly[index1 + 4],
+                                    int num14 = LinePointLocation(x1, y1, x2, y2, convexPoly[index1 + 4],
                                         convexPoly[index1 + 5]);
                                     if (num13 != num14 && num13 != 0 && num14 != 0)
                                     {
@@ -2435,10 +2430,7 @@ namespace Ludo.ComputationalGeometry
                                         numArray2[2 * num3 - 1] = convexPoly[index2];
                                         numArray2[2 * num3] = convexPoly[index2 + 1];
                                         ++num1;
-                                        continue;
                                     }
-
-                                    continue;
                                 }
 
                                 continue;
@@ -2455,8 +2447,9 @@ namespace Ludo.ComputationalGeometry
                                 continue;
                         }
                     }
-                    else if (Math.Abs(p[1] - convexPoly[index1]) > num4 ||
-                             Math.Abs(p[2] - convexPoly[index1 + 1]) > num4)
+
+                    if (Math.Abs(p[1] - convexPoly[index1]) > num4 ||
+                        Math.Abs(p[2] - convexPoly[index1 + 1]) > num4)
                     {
                         ++num9;
                         ++num2;
@@ -2508,8 +2501,8 @@ namespace Ludo.ComputationalGeometry
             else
             {
                 num15 = num1 == 0 ? 1 : 2;
-                numArray1[0] = (double)num2;
-                numArray2[0] = (double)num3;
+                numArray1[0] = num2;
+                numArray2[0] = num3;
                 polys[0] = numArray1;
                 if (num1 == 2)
                     polys[1] = numArray2;
@@ -2583,8 +2576,8 @@ namespace Ludo.ComputationalGeometry
                 centroid[1] = centroid[1] + points[index + 1];
             }
 
-            centroid[0] = centroid[0] / (double)numpoints;
-            centroid[1] = centroid[1] / (double)numpoints;
+            centroid[0] = centroid[0] / numpoints;
+            centroid[1] = centroid[1] / numpoints;
         }
 
         private void CircleLineIntersection(
@@ -2754,8 +2747,8 @@ namespace Ludo.ComputationalGeometry
                     ? (num13 + num14 - num16) / (2.0 * Math.Sqrt(num13 * num14))
                     : (num13 + num16 - num14) / (2.0 * Math.Sqrt(num13 * num16)))
                 : (num14 + num16 - num13) / (2.0 * Math.Sqrt(num14 * num16));
-            return num17 > this.behavior.goodAngle ||
-                   this.behavior.MaxAngle != 0.0 && num21 < this.behavior.maxGoodAngle;
+            return num17 > behavior.goodAngle ||
+                   behavior.MaxAngle != 0.0 && num21 < behavior.maxGoodAngle;
         }
 
         /// <summary>
@@ -2770,9 +2763,9 @@ namespace Ludo.ComputationalGeometry
         /// which could lead to numerical instability or poor triangle quality. It locates the triangle
         /// containing the proposed location and checks distances to its vertices.
         /// </remarks>
-        private double MinDistanceToNeighbor(double newlocX, double newlocY, ref Otri searchtri)
+        private double MinDistanceToNeighbor(double newlocX, double newlocY, ref OrientedTriangle searchtri)
         {
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             PointLocationResult pointLocationResult = PointLocationResult.Outside;
             Point point = new Point(newlocX, newlocY);
             Vertex pa = searchtri.Org();
@@ -2780,43 +2773,43 @@ namespace Ludo.ComputationalGeometry
             if (pa.x == point.x && pa.y == point.y)
             {
                 pointLocationResult = PointLocationResult.OnVertex;
-                searchtri.Copy(ref otri);
+                searchtri.Copy(ref orientedTriangle);
             }
             else if (pb.x == point.x && pb.y == point.y)
             {
                 searchtri.LnextSelf();
                 pointLocationResult = PointLocationResult.OnVertex;
-                searchtri.Copy(ref otri);
+                searchtri.Copy(ref orientedTriangle);
             }
             else
             {
-                double num = Primitives.CounterClockwise((Point)pa, (Point)pb, point);
+                double num = Primitives.CounterClockwise(pa, pb, point);
                 if (num < 0.0)
                 {
                     searchtri.SymSelf();
-                    searchtri.Copy(ref otri);
-                    pointLocationResult = this._triangularMesh.locator.PreciseLocate(point, ref otri, false);
+                    searchtri.Copy(ref orientedTriangle);
+                    pointLocationResult = _triangularMesh.locator.PreciseLocate(point, ref orientedTriangle, false);
                 }
                 else if (num == 0.0)
                 {
                     if (pa.x < point.x == point.x < pb.x && pa.y < point.y == point.y < pb.y)
                     {
                         pointLocationResult = PointLocationResult.OnEdge;
-                        searchtri.Copy(ref otri);
+                        searchtri.Copy(ref orientedTriangle);
                     }
                 }
                 else
                 {
-                    searchtri.Copy(ref otri);
-                    pointLocationResult = this._triangularMesh.locator.PreciseLocate(point, ref otri, false);
+                    searchtri.Copy(ref orientedTriangle);
+                    pointLocationResult = _triangularMesh.locator.PreciseLocate(point, ref orientedTriangle, false);
                 }
             }
 
             if (pointLocationResult == PointLocationResult.OnVertex || pointLocationResult == PointLocationResult.Outside)
                 return 0.0;
-            Vertex vertex1 = otri.Org();
-            Vertex vertex2 = otri.Dest();
-            Vertex vertex3 = otri.Apex();
+            Vertex vertex1 = orientedTriangle.Org();
+            Vertex vertex2 = orientedTriangle.Dest();
+            Vertex vertex3 = orientedTriangle.Apex();
             double neighbor = (vertex1.x - point.x) * (vertex1.x - point.x) +
                               (vertex1.y - point.y) * (vertex1.y - point.y);
             double num1 = (vertex2.x - point.x) * (vertex2.x - point.x) + (vertex2.y - point.y) * (vertex2.y - point.y);

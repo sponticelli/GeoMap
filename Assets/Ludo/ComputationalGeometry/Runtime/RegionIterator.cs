@@ -14,7 +14,7 @@ namespace Ludo.ComputationalGeometry
     /// The class uses the triangle's "infected" flag to mark visited triangles during traversal,
     /// ensuring that each triangle is processed exactly once.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class RegionIterator
     {
         /// <summary>
@@ -37,8 +37,8 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public RegionIterator(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            this.viri = new List<Triangle>();
+            _triangularMesh = triangularMesh;
+            viri = new List<Triangle>();
         }
 
         /// <summary>
@@ -55,30 +55,30 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void ProcessRegion(Action<Triangle> func)
         {
-            Otri otri = new Otri();
-            Otri o2 = new Otri();
-            Osub os = new Osub();
-            TriangulationSettings behavior = this._triangularMesh.behavior;
-            for (int index = 0; index < this.viri.Count; ++index)
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
+            OrientedTriangle o2 = new OrientedTriangle();
+            OrientedSubSegment os = new OrientedSubSegment();
+            TriangulationSettings behavior = _triangularMesh.behavior;
+            for (int index = 0; index < viri.Count; ++index)
             {
-                otri.triangle = this.viri[index];
-                otri.Uninfect();
-                func(otri.triangle);
-                for (otri.orient = 0; otri.orient < 3; ++otri.orient)
+                orientedTriangle.triangle = viri[index];
+                orientedTriangle.Uninfect();
+                func(orientedTriangle.triangle);
+                for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
                 {
-                    otri.Sym(ref o2);
-                    otri.SegPivot(ref os);
+                    orientedTriangle.Sym(ref o2);
+                    orientedTriangle.SegPivot(ref os);
                     if (o2.triangle != TriangularMesh.dummytri && !o2.IsInfected() && os.seg == TriangularMesh.dummysub)
                     {
                         o2.Infect();
-                        this.viri.Add(o2.triangle);
+                        viri.Add(o2.triangle);
                     }
                 }
-                otri.Infect();
+                orientedTriangle.Infect();
             }
-            foreach (Triangle triangle in this.viri)
+            foreach (Triangle triangle in viri)
                 triangle.infected = false;
-            this.viri.Clear();
+            viri.Clear();
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Process(Triangle triangle)
         {
-            this.Process(triangle, (Action<Triangle>) (tri => tri.region = triangle.region));
+            Process(triangle, tri => tri.region = triangle.region);
         }
 
         /// <summary>
@@ -110,13 +110,13 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Process(Triangle triangle, Action<Triangle> func)
         {
-            if (triangle != TriangularMesh.dummytri && !Otri.IsDead(triangle))
+            if (triangle != TriangularMesh.dummytri && !OrientedTriangle.IsDead(triangle))
             {
                 triangle.infected = true;
-                this.viri.Add(triangle);
-                this.ProcessRegion(func);
+                viri.Add(triangle);
+                ProcessRegion(func);
             }
-            this.viri.Clear();
+            viri.Clear();
         }
     }
 }

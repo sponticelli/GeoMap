@@ -1,9 +1,11 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
     /// Represents an edge connecting two points in a geometric mesh.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class MeshEdge
     {
         /// <summary>
@@ -39,9 +41,9 @@ namespace Ludo.ComputationalGeometry
         /// <param name="boundary">The boundary mark of the edge.</param>
         public MeshEdge(int p0, int p1, int boundary)
         {
-            this.P0 = p0;
-            this.P1 = p1;
-            this.Boundary = boundary;
+            P0 = p0;
+            P1 = p1;
+            Boundary = boundary;
         }
     }
 }

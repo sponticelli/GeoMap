@@ -19,18 +19,18 @@ namespace Ludo.ComputationalGeometry
     /// This implementation is optimized for robustness and efficiency, using exact
     /// geometric predicates for numerical stability.
     /// </remarks>
-    [System.Serializable]
-    internal class SweepLine
+    [Serializable]
+    public class SweepLine
     {
         /// <summary>
         /// Seed for the random number generator.
         /// </summary>
-        private static int randomseed = 1;
+        private static int _randomseed = 1;
 
         /// <summary>
         /// Rate at which to sample triangles for the splay tree.
         /// </summary>
-        private static int SAMPLERATE = 10;
+        private static int _samplerate = 10;
 
         /// <summary>
         /// Reference to the mesh being triangulated.
@@ -40,12 +40,12 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Extreme x-coordinate used for circle events.
         /// </summary>
-        private double xminextreme;
+        private double _xminextreme;
 
         /// <summary>
         /// List of nodes in the splay tree representing the beach line.
         /// </summary>
-        private List<SweepLine.SplayNode> splaynodes;
+        private List<SplayNode> _splaynodes;
 
         /// <summary>
         /// Generates a random integer between 0 and choices-1.
@@ -57,10 +57,10 @@ namespace Ludo.ComputationalGeometry
         /// deterministic random number generation. It's used for randomly sampling
         /// triangles to add to the splay tree.
         /// </remarks>
-        private int randomnation(int choices)
+        private int Randomnation(int choices)
         {
-            SweepLine.randomseed = (SweepLine.randomseed * 1366 + 150889) % 714025;
-            return SweepLine.randomseed / (714025 / choices + 1);
+            _randomseed = (_randomseed * 1366 + 150889) % 714025;
+            return _randomseed / (714025 / choices + 1);
         }
 
         /// <summary>
@@ -73,30 +73,30 @@ namespace Ludo.ComputationalGeometry
         /// This method maintains the heap property of the priority queue, ensuring that
         /// events are processed in the correct order (by y-coordinate, then by x-coordinate).
         /// </remarks>
-        private void HeapInsert(SweepLine.SweepEvent[] heap, int heapsize, SweepLine.SweepEvent newevent)
+        private void HeapInsert(SweepEvent[] heap, int heapsize, SweepEvent newevent)
         {
-            double xkey = newevent.xkey;
-            double ykey = newevent.ykey;
+            double xkey = newevent.Xkey;
+            double ykey = newevent.Ykey;
             int index1 = heapsize;
             bool flag = index1 > 0;
             while (flag)
             {
                 int index2 = index1 - 1 >> 1;
-                if (heap[index2].ykey < ykey || heap[index2].ykey == ykey && heap[index2].xkey <= xkey)
+                if (heap[index2].Ykey < ykey || heap[index2].Ykey == ykey && heap[index2].Xkey <= xkey)
                 {
                     flag = false;
                 }
                 else
                 {
                     heap[index1] = heap[index2];
-                    heap[index1].heapposition = index1;
+                    heap[index1].Heapposition = index1;
                     index1 = index2;
                     flag = index1 > 0;
                 }
             }
 
             heap[index1] = newevent;
-            newevent.heapposition = index1;
+            newevent.Heapposition = index1;
         }
 
         /// <summary>
@@ -110,22 +110,22 @@ namespace Ludo.ComputationalGeometry
         /// modified or after the root has been removed. It ensures that the smallest
         /// event (by y-coordinate, then by x-coordinate) is at the root of the heap.
         /// </remarks>
-        private void Heapify(SweepLine.SweepEvent[] heap, int heapsize, int eventnum)
+        private void Heapify(SweepEvent[] heap, int heapsize, int eventnum)
         {
-            SweepLine.SweepEvent sweepEvent = heap[eventnum];
-            double xkey = sweepEvent.xkey;
-            double ykey = sweepEvent.ykey;
+            SweepEvent sweepEvent = heap[eventnum];
+            double xkey = sweepEvent.Xkey;
+            double ykey = sweepEvent.Ykey;
             int index1 = 2 * eventnum + 1;
             bool flag = index1 < heapsize;
             while (flag)
             {
-                int index2 = heap[index1].ykey < ykey || heap[index1].ykey == ykey && heap[index1].xkey < xkey
+                int index2 = heap[index1].Ykey < ykey || heap[index1].Ykey == ykey && heap[index1].Xkey < xkey
                     ? index1
                     : eventnum;
                 int index3 = index1 + 1;
-                if (index3 < heapsize && (heap[index3].ykey < heap[index2].ykey ||
-                                          heap[index3].ykey == heap[index2].ykey &&
-                                          heap[index3].xkey < heap[index2].xkey))
+                if (index3 < heapsize && (heap[index3].Ykey < heap[index2].Ykey ||
+                                          heap[index3].Ykey == heap[index2].Ykey &&
+                                          heap[index3].Xkey < heap[index2].Xkey))
                     index2 = index3;
                 if (index2 == eventnum)
                 {
@@ -134,9 +134,9 @@ namespace Ludo.ComputationalGeometry
                 else
                 {
                     heap[eventnum] = heap[index2];
-                    heap[eventnum].heapposition = eventnum;
+                    heap[eventnum].Heapposition = eventnum;
                     heap[index2] = sweepEvent;
-                    sweepEvent.heapposition = index2;
+                    sweepEvent.Heapposition = index2;
                     eventnum = index2;
                     index1 = 2 * eventnum + 1;
                     flag = index1 < heapsize;
@@ -155,25 +155,25 @@ namespace Ludo.ComputationalGeometry
         /// It replaces the deleted event with the last event in the heap and then
         /// either bubbles it up or down as needed to maintain the heap property.
         /// </remarks>
-        private void HeapDelete(SweepLine.SweepEvent[] heap, int heapsize, int eventnum)
+        private void HeapDelete(SweepEvent[] heap, int heapsize, int eventnum)
         {
-            SweepLine.SweepEvent sweepEvent = heap[heapsize - 1];
+            SweepEvent sweepEvent = heap[heapsize - 1];
             if (eventnum > 0)
             {
-                double xkey = sweepEvent.xkey;
-                double ykey = sweepEvent.ykey;
+                double xkey = sweepEvent.Xkey;
+                double ykey = sweepEvent.Ykey;
                 bool flag;
                 do
                 {
                     int index = eventnum - 1 >> 1;
-                    if (heap[index].ykey < ykey || heap[index].ykey == ykey && heap[index].xkey <= xkey)
+                    if (heap[index].Ykey < ykey || heap[index].Ykey == ykey && heap[index].Xkey <= xkey)
                     {
                         flag = false;
                     }
                     else
                     {
                         heap[eventnum] = heap[index];
-                        heap[eventnum].heapposition = eventnum;
+                        heap[eventnum].Heapposition = eventnum;
                         eventnum = index;
                         flag = eventnum > 0;
                     }
@@ -181,8 +181,8 @@ namespace Ludo.ComputationalGeometry
             }
 
             heap[eventnum] = sweepEvent;
-            sweepEvent.heapposition = eventnum;
-            this.Heapify(heap, heapsize - 1, eventnum);
+            sweepEvent.Heapposition = eventnum;
+            Heapify(heap, heapsize - 1, eventnum);
         }
 
         /// <summary>
@@ -194,17 +194,17 @@ namespace Ludo.ComputationalGeometry
         /// input vertices. Each vertex event is placed in the queue according to its
         /// y-coordinate (primary key) and x-coordinate (secondary key).
         /// </remarks>
-        private void CreateHeap(out SweepLine.SweepEvent[] eventheap)
+        private void CreateHeap(out SweepEvent[] eventheap)
         {
-            int length = 3 * this._triangularMesh.invertices / 2;
-            eventheap = new SweepLine.SweepEvent[length];
+            int length = 3 * _triangularMesh.invertices / 2;
+            eventheap = new SweepEvent[length];
             int num = 0;
-            foreach (Vertex vertex in this._triangularMesh.vertices.Values)
-                this.HeapInsert(eventheap, num++, new SweepLine.SweepEvent()
+            foreach (Vertex vertex in _triangularMesh.vertices.Values)
+                HeapInsert(eventheap, num++, new SweepEvent
                 {
-                    vertexEvent = vertex,
-                    xkey = vertex.x,
-                    ykey = vertex.y
+                    VertexEvent = vertex,
+                    Xkey = vertex.x,
+                    Ykey = vertex.y
                 });
         }
 
@@ -223,65 +223,65 @@ namespace Ludo.ComputationalGeometry
         /// The splay operation is a key component of the splay tree data structure, which
         /// is used to represent the beach line in Fortune's algorithm.
         /// </remarks>
-        private SweepLine.SplayNode Splay(
-            SweepLine.SplayNode splaytree,
+        private SplayNode Splay(
+            SplayNode splaytree,
             Point searchpoint,
-            ref Otri searchtri)
+            ref OrientedTriangle searchtri)
         {
             if (splaytree == null)
-                return (SweepLine.SplayNode)null;
-            if ((Point)splaytree.keyedge.Dest() == (Point)splaytree.keydest)
+                return null;
+            if (splaytree.Keyedge.Dest() == splaytree.Keydest)
             {
-                bool flag1 = this.RightOfHyperbola(ref splaytree.keyedge, searchpoint);
-                SweepLine.SplayNode splaytree1;
+                bool flag1 = RightOfHyperbola(ref splaytree.Keyedge, searchpoint);
+                SplayNode splaytree1;
                 if (flag1)
                 {
-                    splaytree.keyedge.Copy(ref searchtri);
-                    splaytree1 = splaytree.rchild;
+                    splaytree.Keyedge.Copy(ref searchtri);
+                    splaytree1 = splaytree.Rchild;
                 }
                 else
-                    splaytree1 = splaytree.lchild;
+                    splaytree1 = splaytree.Lchild;
 
                 if (splaytree1 == null)
                     return splaytree;
-                if ((Point)splaytree1.keyedge.Dest() != (Point)splaytree1.keydest)
+                if (splaytree1.Keyedge.Dest() != splaytree1.Keydest)
                 {
-                    splaytree1 = this.Splay(splaytree1, searchpoint, ref searchtri);
+                    splaytree1 = Splay(splaytree1, searchpoint, ref searchtri);
                     if (splaytree1 == null)
                     {
                         if (flag1)
-                            splaytree.rchild = (SweepLine.SplayNode)null;
+                            splaytree.Rchild = null;
                         else
-                            splaytree.lchild = (SweepLine.SplayNode)null;
+                            splaytree.Lchild = null;
                         return splaytree;
                     }
                 }
 
-                bool flag2 = this.RightOfHyperbola(ref splaytree1.keyedge, searchpoint);
-                SweepLine.SplayNode splayNode;
+                bool flag2 = RightOfHyperbola(ref splaytree1.Keyedge, searchpoint);
+                SplayNode splayNode;
                 if (flag2)
                 {
-                    splaytree1.keyedge.Copy(ref searchtri);
-                    splayNode = this.Splay(splaytree1.rchild, searchpoint, ref searchtri);
-                    splaytree1.rchild = splayNode;
+                    splaytree1.Keyedge.Copy(ref searchtri);
+                    splayNode = Splay(splaytree1.Rchild, searchpoint, ref searchtri);
+                    splaytree1.Rchild = splayNode;
                 }
                 else
                 {
-                    splayNode = this.Splay(splaytree1.lchild, searchpoint, ref searchtri);
-                    splaytree1.lchild = splayNode;
+                    splayNode = Splay(splaytree1.Lchild, searchpoint, ref searchtri);
+                    splaytree1.Lchild = splayNode;
                 }
 
                 if (splayNode == null)
                 {
                     if (flag1)
                     {
-                        splaytree.rchild = splaytree1.lchild;
-                        splaytree1.lchild = splaytree;
+                        splaytree.Rchild = splaytree1.Lchild;
+                        splaytree1.Lchild = splaytree;
                     }
                     else
                     {
-                        splaytree.lchild = splaytree1.rchild;
-                        splaytree1.rchild = splaytree;
+                        splaytree.Lchild = splaytree1.Rchild;
+                        splaytree1.Rchild = splaytree;
                     }
 
                     return splaytree1;
@@ -291,63 +291,63 @@ namespace Ludo.ComputationalGeometry
                 {
                     if (flag1)
                     {
-                        splaytree.rchild = splaytree1.lchild;
-                        splaytree1.lchild = splaytree;
+                        splaytree.Rchild = splaytree1.Lchild;
+                        splaytree1.Lchild = splaytree;
                     }
                     else
                     {
-                        splaytree.lchild = splayNode.rchild;
-                        splayNode.rchild = splaytree;
+                        splaytree.Lchild = splayNode.Rchild;
+                        splayNode.Rchild = splaytree;
                     }
 
-                    splaytree1.rchild = splayNode.lchild;
-                    splayNode.lchild = splaytree1;
+                    splaytree1.Rchild = splayNode.Lchild;
+                    splayNode.Lchild = splaytree1;
                 }
                 else
                 {
                     if (flag1)
                     {
-                        splaytree.rchild = splayNode.lchild;
-                        splayNode.lchild = splaytree;
+                        splaytree.Rchild = splayNode.Lchild;
+                        splayNode.Lchild = splaytree;
                     }
                     else
                     {
-                        splaytree.lchild = splaytree1.rchild;
-                        splaytree1.rchild = splaytree;
+                        splaytree.Lchild = splaytree1.Rchild;
+                        splaytree1.Rchild = splaytree;
                     }
 
-                    splaytree1.lchild = splayNode.rchild;
-                    splayNode.rchild = splaytree1;
+                    splaytree1.Lchild = splayNode.Rchild;
+                    splayNode.Rchild = splaytree1;
                 }
 
                 return splayNode;
             }
 
-            SweepLine.SplayNode splayNode1 = this.Splay(splaytree.lchild, searchpoint, ref searchtri);
-            SweepLine.SplayNode splayNode2 = this.Splay(splaytree.rchild, searchpoint, ref searchtri);
-            this.splaynodes.Remove(splaytree);
+            SplayNode splayNode1 = Splay(splaytree.Lchild, searchpoint, ref searchtri);
+            SplayNode splayNode2 = Splay(splaytree.Rchild, searchpoint, ref searchtri);
+            _splaynodes.Remove(splaytree);
             if (splayNode1 == null)
                 return splayNode2;
             if (splayNode2 == null)
                 return splayNode1;
-            if (splayNode1.rchild == null)
+            if (splayNode1.Rchild == null)
             {
-                splayNode1.rchild = splayNode2.lchild;
-                splayNode2.lchild = splayNode1;
+                splayNode1.Rchild = splayNode2.Lchild;
+                splayNode2.Lchild = splayNode1;
                 return splayNode2;
             }
 
-            if (splayNode2.lchild == null)
+            if (splayNode2.Lchild == null)
             {
-                splayNode2.lchild = splayNode1.rchild;
-                splayNode1.rchild = splayNode2;
+                splayNode2.Lchild = splayNode1.Rchild;
+                splayNode1.Rchild = splayNode2;
                 return splayNode1;
             }
 
-            SweepLine.SplayNode rchild = splayNode1.rchild;
-            while (rchild.rchild != null)
-                rchild = rchild.rchild;
-            rchild.rchild = splayNode2;
+            SplayNode rchild = splayNode1.Rchild;
+            while (rchild.Rchild != null)
+                rchild = rchild.Rchild;
+            rchild.Rchild = splayNode2;
             return splayNode1;
         }
 
@@ -363,31 +363,31 @@ namespace Ludo.ComputationalGeometry
         /// in Fortune's algorithm. The insertion position is determined by the search point,
         /// which is typically the site being processed.
         /// </remarks>
-        private SweepLine.SplayNode SplayInsert(
-            SweepLine.SplayNode splayroot,
-            Otri newkey,
+        private SplayNode SplayInsert(
+            SplayNode splayroot,
+            OrientedTriangle newkey,
             Point searchpoint)
         {
-            SweepLine.SplayNode splayNode = new SweepLine.SplayNode();
-            this.splaynodes.Add(splayNode);
-            newkey.Copy(ref splayNode.keyedge);
-            splayNode.keydest = newkey.Dest();
+            SplayNode splayNode = new SplayNode();
+            _splaynodes.Add(splayNode);
+            newkey.Copy(ref splayNode.Keyedge);
+            splayNode.Keydest = newkey.Dest();
             if (splayroot == null)
             {
-                splayNode.lchild = (SweepLine.SplayNode)null;
-                splayNode.rchild = (SweepLine.SplayNode)null;
+                splayNode.Lchild = null;
+                splayNode.Rchild = null;
             }
-            else if (this.RightOfHyperbola(ref splayroot.keyedge, searchpoint))
+            else if (RightOfHyperbola(ref splayroot.Keyedge, searchpoint))
             {
-                splayNode.lchild = splayroot;
-                splayNode.rchild = splayroot.rchild;
-                splayroot.rchild = (SweepLine.SplayNode)null;
+                splayNode.Lchild = splayroot;
+                splayNode.Rchild = splayroot.Rchild;
+                splayroot.Rchild = null;
             }
             else
             {
-                splayNode.lchild = splayroot.lchild;
-                splayNode.rchild = splayroot;
-                splayroot.lchild = (SweepLine.SplayNode)null;
+                splayNode.Lchild = splayroot.Lchild;
+                splayNode.Rchild = splayroot;
+                splayroot.Lchild = null;
             }
 
             return splayNode;
@@ -408,17 +408,17 @@ namespace Ludo.ComputationalGeometry
         /// is processed. The insertion position is determined by the center of the circle
         /// formed by the three vertices.
         /// </remarks>
-        private SweepLine.SplayNode CircleTopInsert(
-            SweepLine.SplayNode splayroot,
-            Otri newkey,
+        private SplayNode CircleTopInsert(
+            SplayNode splayroot,
+            OrientedTriangle newkey,
             Vertex pa,
             Vertex pb,
             Vertex pc,
             double topy)
         {
             Point searchpoint = new Point();
-            Otri searchtri = new Otri();
-            double num1 = Primitives.CounterClockwise((Point)pa, (Point)pb, (Point)pc);
+            OrientedTriangle searchtri = new OrientedTriangle();
+            double num1 = Primitives.CounterClockwise(pa, pb, pc);
             double num2 = pa.x - pc.x;
             double num3 = pa.y - pc.y;
             double num4 = pb.x - pc.x;
@@ -427,7 +427,7 @@ namespace Ludo.ComputationalGeometry
             double num7 = num4 * num4 + num5 * num5;
             searchpoint.x = pc.x - (num3 * num7 - num5 * num6) / (2.0 * num1);
             searchpoint.y = topy;
-            return this.SplayInsert(this.Splay(splayroot, searchpoint, ref searchtri), newkey, searchpoint);
+            return SplayInsert(Splay(splayroot, searchpoint, ref searchtri), newkey, searchpoint);
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace Ludo.ComputationalGeometry
         /// The test is based on the relative positions of the site defining the parabola and
         /// the new site, taking into account the current position of the sweep line.
         /// </remarks>
-        private bool RightOfHyperbola(ref Otri fronttri, Point newsite)
+        private bool RightOfHyperbola(ref OrientedTriangle fronttri, Point newsite)
         {
             ++Statistic.HyperbolaCount;
             Vertex vertex1 = fronttri.Dest();
@@ -504,17 +504,17 @@ namespace Ludo.ComputationalGeometry
         /// it is removed from the event queue to prevent it from being processed.
         /// </remarks>
         private void Check4DeadEvent(
-            ref Otri checktri,
-            SweepLine.SweepEvent[] eventheap,
+            ref OrientedTriangle checktri,
+            SweepEvent[] eventheap,
             ref int heapsize)
         {
-            SweepLine.SweepEventVertex sweepEventVertex = checktri.Org() as SweepLine.SweepEventVertex;
-            if (!((Point)sweepEventVertex != (Point)null))
+            SweepEventVertex sweepEventVertex = checktri.Org() as SweepEventVertex;
+            if (!(sweepEventVertex != null))
                 return;
-            int heapposition = sweepEventVertex.evt.heapposition;
-            this.HeapDelete(eventheap, heapsize, heapposition);
+            int heapposition = sweepEventVertex.Evt.Heapposition;
+            HeapDelete(eventheap, heapsize, heapposition);
             --heapsize;
-            checktri.SetOrg((Vertex)null);
+            checktri.SetOrg(null);
         }
 
         /// <summary>
@@ -531,18 +531,18 @@ namespace Ludo.ComputationalGeometry
         /// It first splays the tree to bring the node closest to the search vertex to the root,
         /// then walks along the beach line to find the exact insertion position.
         /// </remarks>
-        private SweepLine.SplayNode FrontLocate(
-            SweepLine.SplayNode splayroot,
-            Otri bottommost,
+        private SplayNode FrontLocate(
+            SplayNode splayroot,
+            OrientedTriangle bottommost,
             Vertex searchvertex,
-            ref Otri searchtri,
+            ref OrientedTriangle searchtri,
             ref bool farright)
         {
             bottommost.Copy(ref searchtri);
-            splayroot = this.Splay(splayroot, (Point)searchvertex, ref searchtri);
+            splayroot = Splay(splayroot, searchvertex, ref searchtri);
             bool flag;
             for (flag = false;
-                 !flag && this.RightOfHyperbola(ref searchtri, (Point)searchvertex);
+                 !flag && RightOfHyperbola(ref searchtri, searchvertex);
                  flag = searchtri.Equal(bottommost))
                 searchtri.OnextSelf();
             farright = flag;
@@ -559,34 +559,34 @@ namespace Ludo.ComputationalGeometry
         /// It removes the ghost triangles that were added during the algorithm to handle
         /// the convex hull and other special cases.
         /// </remarks>
-        private int RemoveGhosts(ref Otri startghost)
+        private int RemoveGhosts(ref OrientedTriangle startghost)
         {
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Otri o2_3 = new Otri();
-            bool flag = !this._triangularMesh.behavior.Poly;
-            startghost.Lprev(ref o2_1);
-            o2_1.SymSelf();
-            TriangularMesh.dummytri.neighbors[0] = o2_1;
-            startghost.Copy(ref o2_2);
+            OrientedTriangle o21 = new OrientedTriangle();
+            OrientedTriangle o22 = new OrientedTriangle();
+            OrientedTriangle o23 = new OrientedTriangle();
+            bool flag = !_triangularMesh.behavior.Poly;
+            startghost.Lprev(ref o21);
+            o21.SymSelf();
+            TriangularMesh.dummytri.neighbors[0] = o21;
+            startghost.Copy(ref o22);
             int num = 0;
             do
             {
                 ++num;
-                o2_2.Lnext(ref o2_3);
-                o2_2.LprevSelf();
-                o2_2.SymSelf();
-                if (flag && o2_2.triangle != TriangularMesh.dummytri)
+                o22.Lnext(ref o23);
+                o22.LprevSelf();
+                o22.SymSelf();
+                if (flag && o22.triangle != TriangularMesh.dummytri)
                 {
-                    Vertex vertex = o2_2.Org();
+                    Vertex vertex = o22.Org();
                     if (vertex.mark == 0)
                         vertex.mark = 1;
                 }
 
-                o2_2.Dissolve();
-                o2_3.Sym(ref o2_2);
-                this._triangularMesh.TriangleDealloc(o2_3.triangle);
-            } while (!o2_2.Equal(startghost));
+                o22.Dissolve();
+                o23.Sym(ref o22);
+                _triangularMesh.TriangleDealloc(o23.triangle);
+            } while (!o22.Equal(startghost));
 
             return num;
         }
@@ -615,20 +615,20 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int Triangulate(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            this.xminextreme = 10.0 * triangularMesh.bounds.Xmin - 9.0 * triangularMesh.bounds.Xmax;
-            Otri otri1 = new Otri();
-            Otri otri2 = new Otri();
-            Otri newkey = new Otri();
-            Otri otri3 = new Otri();
-            Otri otri4 = new Otri();
-            Otri otri5 = new Otri();
-            Otri o2 = new Otri();
+            _triangularMesh = triangularMesh;
+            _xminextreme = 10.0 * triangularMesh.bounds.Xmin - 9.0 * triangularMesh.bounds.Xmax;
+            OrientedTriangle otri1 = new OrientedTriangle();
+            OrientedTriangle otri2 = new OrientedTriangle();
+            OrientedTriangle newkey = new OrientedTriangle();
+            OrientedTriangle otri3 = new OrientedTriangle();
+            OrientedTriangle otri4 = new OrientedTriangle();
+            OrientedTriangle otri5 = new OrientedTriangle();
+            OrientedTriangle o2 = new OrientedTriangle();
             bool farright = false;
-            this.splaynodes = new List<SweepLine.SplayNode>();
-            SweepLine.SplayNode splayroot = (SweepLine.SplayNode)null;
-            SweepLine.SweepEvent[] eventheap;
-            this.CreateHeap(out eventheap);
+            _splaynodes = new List<SplayNode>();
+            SplayNode splayroot = null;
+            SweepEvent[] eventheap;
+            CreateHeap(out eventheap);
             int invertices = triangularMesh.invertices;
             triangularMesh.MakeTriangle(ref newkey);
             triangularMesh.MakeTriangle(ref otri3);
@@ -639,13 +639,13 @@ namespace Ludo.ComputationalGeometry
             newkey.LnextSelf();
             otri3.LprevSelf();
             newkey.Bond(ref otri3);
-            Vertex vertexEvent1 = eventheap[0].vertexEvent;
-            this.HeapDelete(eventheap, invertices, 0);
+            Vertex vertexEvent1 = eventheap[0].VertexEvent;
+            HeapDelete(eventheap, invertices, 0);
             int heapsize = invertices - 1;
             while (heapsize != 0)
             {
-                Vertex vertexEvent2 = eventheap[0].vertexEvent;
-                this.HeapDelete(eventheap, heapsize, 0);
+                Vertex vertexEvent2 = eventheap[0].VertexEvent;
+                HeapDelete(eventheap, heapsize, 0);
                 --heapsize;
                 if (vertexEvent1.x == vertexEvent2.x && vertexEvent1.y == vertexEvent2.y)
                 {
@@ -663,36 +663,36 @@ namespace Ludo.ComputationalGeometry
                     Vertex vertex = vertexEvent2;
                     while (heapsize > 0)
                     {
-                        SweepLine.SweepEvent sweepEvent1 = eventheap[0];
-                        this.HeapDelete(eventheap, heapsize, 0);
+                        SweepEvent sweepEvent1 = eventheap[0];
+                        HeapDelete(eventheap, heapsize, 0);
                         --heapsize;
                         bool flag = true;
-                        if (sweepEvent1.xkey < triangularMesh.bounds.Xmin)
+                        if (sweepEvent1.Xkey < triangularMesh.bounds.Xmin)
                         {
-                            Otri otriEvent = sweepEvent1.otriEvent;
-                            otriEvent.Oprev(ref otri4);
-                            this.Check4DeadEvent(ref otri4, eventheap, ref heapsize);
-                            otriEvent.Onext(ref otri5);
-                            this.Check4DeadEvent(ref otri5, eventheap, ref heapsize);
+                            OrientedTriangle orientedTriangleEvent = sweepEvent1.OrientedTriangleEvent;
+                            orientedTriangleEvent.Oprev(ref otri4);
+                            Check4DeadEvent(ref otri4, eventheap, ref heapsize);
+                            orientedTriangleEvent.Onext(ref otri5);
+                            Check4DeadEvent(ref otri5, eventheap, ref heapsize);
                             if (otri4.Equal(otri1))
-                                otriEvent.Lprev(ref otri1);
-                            triangularMesh.Flip(ref otriEvent);
-                            otriEvent.SetApex((Vertex)null);
-                            otriEvent.Lprev(ref newkey);
-                            otriEvent.Lnext(ref otri3);
+                                orientedTriangleEvent.Lprev(ref otri1);
+                            triangularMesh.Flip(ref orientedTriangleEvent);
+                            orientedTriangleEvent.SetApex(null);
+                            orientedTriangleEvent.Lprev(ref newkey);
+                            orientedTriangleEvent.Lnext(ref otri3);
                             newkey.Sym(ref otri4);
-                            if (this.randomnation(SweepLine.SAMPLERATE) == 0)
+                            if (Randomnation(_samplerate) == 0)
                             {
-                                otriEvent.SymSelf();
-                                Vertex pa = otriEvent.Dest();
-                                Vertex pb = otriEvent.Apex();
-                                Vertex pc = otriEvent.Org();
-                                splayroot = this.CircleTopInsert(splayroot, newkey, pa, pb, pc, sweepEvent1.ykey);
+                                orientedTriangleEvent.SymSelf();
+                                Vertex pa = orientedTriangleEvent.Dest();
+                                Vertex pb = orientedTriangleEvent.Apex();
+                                Vertex pc = orientedTriangleEvent.Org();
+                                splayroot = CircleTopInsert(splayroot, newkey, pa, pb, pc, sweepEvent1.Ykey);
                             }
                         }
                         else
                         {
-                            Vertex vertexEvent3 = sweepEvent1.vertexEvent;
+                            Vertex vertexEvent3 = sweepEvent1.VertexEvent;
                             if (vertexEvent3.x == vertex.x && vertexEvent3.y == vertex.y)
                             {
                                 vertexEvent3.type = VertexType.UndeadVertex;
@@ -702,13 +702,13 @@ namespace Ludo.ComputationalGeometry
                             else
                             {
                                 vertex = vertexEvent3;
-                                splayroot = this.FrontLocate(splayroot, otri1, vertexEvent3, ref otri2, ref farright);
+                                splayroot = FrontLocate(splayroot, otri1, vertexEvent3, ref otri2, ref farright);
                                 otri1.Copy(ref otri2);
                                 for (farright = false;
-                                     !farright && this.RightOfHyperbola(ref otri2, (Point)vertexEvent3);
+                                     !farright && RightOfHyperbola(ref otri2, vertexEvent3);
                                      farright = otri2.Equal(otri1))
                                     otri2.OnextSelf();
-                                this.Check4DeadEvent(ref otri2, eventheap, ref heapsize);
+                                Check4DeadEvent(ref otri2, eventheap, ref heapsize);
                                 otri2.Copy(ref otri5);
                                 otri2.Sym(ref otri4);
                                 triangularMesh.MakeTriangle(ref newkey);
@@ -728,12 +728,12 @@ namespace Ludo.ComputationalGeometry
                                 otri3.Bond(ref otri5);
                                 if (!farright && otri5.Equal(otri1))
                                     newkey.Copy(ref otri1);
-                                if (this.randomnation(SweepLine.SAMPLERATE) == 0)
-                                    splayroot = this.SplayInsert(splayroot, newkey, (Point)vertexEvent3);
-                                else if (this.randomnation(SweepLine.SAMPLERATE) == 0)
+                                if (Randomnation(_samplerate) == 0)
+                                    splayroot = SplayInsert(splayroot, newkey, vertexEvent3);
+                                else if (Randomnation(_samplerate) == 0)
                                 {
                                     otri3.Lnext(ref o2);
-                                    splayroot = this.SplayInsert(splayroot, o2, (Point)vertexEvent3);
+                                    splayroot = SplayInsert(splayroot, o2, vertexEvent3);
                                 }
                             }
                         }
@@ -743,38 +743,38 @@ namespace Ludo.ComputationalGeometry
                             Vertex pa1 = otri4.Apex();
                             Vertex pb1 = newkey.Dest();
                             Vertex pc1 = newkey.Apex();
-                            double ccwabc1 = Primitives.CounterClockwise((Point)pa1, (Point)pb1, (Point)pc1);
+                            double ccwabc1 = Primitives.CounterClockwise(pa1, pb1, pc1);
                             if (ccwabc1 > 0.0)
                             {
-                                SweepLine.SweepEvent sweepEvent2 = new SweepLine.SweepEvent();
-                                sweepEvent2.xkey = this.xminextreme;
-                                sweepEvent2.ykey = this.CircleTop(pa1, pb1, pc1, ccwabc1);
-                                sweepEvent2.otriEvent = newkey;
-                                this.HeapInsert(eventheap, heapsize, sweepEvent2);
+                                SweepEvent sweepEvent2 = new SweepEvent();
+                                sweepEvent2.Xkey = _xminextreme;
+                                sweepEvent2.Ykey = CircleTop(pa1, pb1, pc1, ccwabc1);
+                                sweepEvent2.OrientedTriangleEvent = newkey;
+                                HeapInsert(eventheap, heapsize, sweepEvent2);
                                 ++heapsize;
-                                newkey.SetOrg((Vertex)new SweepLine.SweepEventVertex(sweepEvent2));
+                                newkey.SetOrg(new SweepEventVertex(sweepEvent2));
                             }
 
                             Vertex pa2 = otri3.Apex();
                             Vertex pb2 = otri3.Org();
                             Vertex pc2 = otri5.Apex();
-                            double ccwabc2 = Primitives.CounterClockwise((Point)pa2, (Point)pb2, (Point)pc2);
+                            double ccwabc2 = Primitives.CounterClockwise(pa2, pb2, pc2);
                             if (ccwabc2 > 0.0)
                             {
-                                SweepLine.SweepEvent sweepEvent3 = new SweepLine.SweepEvent();
-                                sweepEvent3.xkey = this.xminextreme;
-                                sweepEvent3.ykey = this.CircleTop(pa2, pb2, pc2, ccwabc2);
-                                sweepEvent3.otriEvent = otri5;
-                                this.HeapInsert(eventheap, heapsize, sweepEvent3);
+                                SweepEvent sweepEvent3 = new SweepEvent();
+                                sweepEvent3.Xkey = _xminextreme;
+                                sweepEvent3.Ykey = CircleTop(pa2, pb2, pc2, ccwabc2);
+                                sweepEvent3.OrientedTriangleEvent = otri5;
+                                HeapInsert(eventheap, heapsize, sweepEvent3);
                                 ++heapsize;
-                                otri5.SetOrg((Vertex)new SweepLine.SweepEventVertex(sweepEvent3));
+                                otri5.SetOrg(new SweepEventVertex(sweepEvent3));
                             }
                         }
                     }
 
-                    this.splaynodes.Clear();
+                    _splaynodes.Clear();
                     otri1.LprevSelf();
-                    return this.RemoveGhosts(ref otri1);
+                    return RemoveGhosts(ref otri1);
                 }
             }
 
@@ -794,27 +794,27 @@ namespace Ludo.ComputationalGeometry
             /// <summary>
             /// The x-coordinate of the event.
             /// </summary>
-            public double xkey;
+            public double Xkey;
 
             /// <summary>
             /// The y-coordinate of the event.
             /// </summary>
-            public double ykey;
+            public double Ykey;
 
             /// <summary>
             /// The vertex associated with the event (for vertex events).
             /// </summary>
-            public Vertex vertexEvent;
+            public Vertex VertexEvent;
 
             /// <summary>
             /// The triangle associated with the event (for circle events).
             /// </summary>
-            public Otri otriEvent;
+            public OrientedTriangle OrientedTriangleEvent;
 
             /// <summary>
             /// The position of the event in the heap.
             /// </summary>
-            public int heapposition;
+            public int Heapposition;
         }
 
         /// <summary>
@@ -830,13 +830,13 @@ namespace Ludo.ComputationalGeometry
             /// <summary>
             /// The circle event associated with this vertex.
             /// </summary>
-            public SweepLine.SweepEvent evt;
+            public SweepEvent Evt;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="SweepEventVertex"/> class.
             /// </summary>
             /// <param name="e">The circle event associated with this vertex.</param>
-            public SweepEventVertex(SweepLine.SweepEvent e) => this.evt = e;
+            public SweepEventVertex(SweepEvent e) => Evt = e;
         }
 
         /// <summary>
@@ -852,22 +852,22 @@ namespace Ludo.ComputationalGeometry
             /// <summary>
             /// The triangle associated with this node.
             /// </summary>
-            public Otri keyedge;
+            public OrientedTriangle Keyedge;
 
             /// <summary>
             /// The destination vertex of the triangle's edge.
             /// </summary>
-            public Vertex keydest;
+            public Vertex Keydest;
 
             /// <summary>
             /// The left child of this node in the splay tree.
             /// </summary>
-            public SweepLine.SplayNode lchild;
+            public SplayNode Lchild;
 
             /// <summary>
             /// The right child of this node in the splay tree.
             /// </summary>
-            public SweepLine.SplayNode rchild;
+            public SplayNode Rchild;
         }
     }
 }

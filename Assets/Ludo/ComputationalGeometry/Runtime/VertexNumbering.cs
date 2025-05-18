@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -8,8 +10,8 @@ namespace Ludo.ComputationalGeometry
     /// the performance of numerical algorithms and the bandwidth of resulting matrices.
     /// Different numbering schemes optimize for different computational characteristics.
     /// </remarks>
-    [System.Serializable]
-    public enum NodeNumbering
+    [Serializable]
+    public enum VertexNumbering
     {
         /// <summary>
         /// Indicates that no specific numbering scheme has been applied to the mesh.

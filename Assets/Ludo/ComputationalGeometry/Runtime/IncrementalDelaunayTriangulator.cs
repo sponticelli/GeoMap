@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace Ludo.ComputationalGeometry
     /// all input vertices, then inserts each vertex and updates the triangulation to maintain
     /// the Delaunay property. After all vertices are inserted, the bounding triangle is removed.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class IncrementalDelaunayTriangulator
     {
         /// <summary>
@@ -28,20 +30,20 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void GetBoundingBox()
         {
-            Otri newotri = new Otri();
-            AxisAlignedBoundingBox2D bounds = this._triangularMesh.bounds;
+            OrientedTriangle newotri = new OrientedTriangle();
+            AxisAlignedBoundingBox2D bounds = _triangularMesh.bounds;
             double num = bounds.Width;
             if (bounds.Height > num)
                 num = bounds.Height;
             if (num == 0.0)
                 num = 1.0;
-            this._triangularMesh.infvertex1 = new Vertex(bounds.Xmin - 50.0 * num, bounds.Ymin - 40.0 * num);
-            this._triangularMesh.infvertex2 = new Vertex(bounds.Xmax + 50.0 * num, bounds.Ymin - 40.0 * num);
-            this._triangularMesh.infvertex3 = new Vertex(0.5 * (bounds.Xmin + bounds.Xmax), bounds.Ymax + 60.0 * num);
-            this._triangularMesh.MakeTriangle(ref newotri);
-            newotri.SetOrg(this._triangularMesh.infvertex1);
-            newotri.SetDest(this._triangularMesh.infvertex2);
-            newotri.SetApex(this._triangularMesh.infvertex3);
+            _triangularMesh.infvertex1 = new Vertex(bounds.Xmin - 50.0 * num, bounds.Ymin - 40.0 * num);
+            _triangularMesh.infvertex2 = new Vertex(bounds.Xmax + 50.0 * num, bounds.Ymin - 40.0 * num);
+            _triangularMesh.infvertex3 = new Vertex(0.5 * (bounds.Xmin + bounds.Xmax), bounds.Ymax + 60.0 * num);
+            _triangularMesh.MakeTriangle(ref newotri);
+            newotri.SetOrg(_triangularMesh.infvertex1);
+            newotri.SetDest(_triangularMesh.infvertex2);
+            newotri.SetApex(_triangularMesh.infvertex3);
             TriangularMesh.dummytri.neighbors[0] = newotri;
         }
 
@@ -57,13 +59,13 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private int RemoveBox()
         {
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Otri o2_3 = new Otri();
-            Otri o2_4 = new Otri();
-            Otri o2_5 = new Otri();
-            Otri o2_6 = new Otri();
-            bool flag = !this._triangularMesh.behavior.Poly;
+            OrientedTriangle o2_1 = new OrientedTriangle();
+            OrientedTriangle o2_2 = new OrientedTriangle();
+            OrientedTriangle o2_3 = new OrientedTriangle();
+            OrientedTriangle o2_4 = new OrientedTriangle();
+            OrientedTriangle o2_5 = new OrientedTriangle();
+            OrientedTriangle o2_6 = new OrientedTriangle();
+            bool flag = !_triangularMesh.behavior.Poly;
             o2_4.triangle = TriangularMesh.dummytri;
             o2_4.orient = 0;
             o2_4.SymSelf();
@@ -97,12 +99,12 @@ namespace Ludo.ComputationalGeometry
                 o2_6.Dissolve();
                 o2_4.Lnext(ref o2_1);
                 o2_1.Sym(ref o2_4);
-                this._triangularMesh.TriangleDealloc(o2_1.triangle);
+                _triangularMesh.TriangleDealloc(o2_1.triangle);
                 if (o2_4.triangle == TriangularMesh.dummytri)
                     o2_6.Copy(ref o2_4);
             }
 
-            this._triangularMesh.TriangleDealloc(o2_5.triangle);
+            _triangularMesh.TriangleDealloc(o2_5.triangle);
             return num;
         }
 
@@ -122,13 +124,13 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int Triangulate(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            Otri searchtri = new Otri();
-            this.GetBoundingBox();
+            _triangularMesh = triangularMesh;
+            OrientedTriangle searchtri = new OrientedTriangle();
+            GetBoundingBox();
             foreach (Vertex newvertex in triangularMesh.vertices.Values)
             {
                 searchtri.triangle = TriangularMesh.dummytri;
-                Osub splitseg = new Osub();
+                OrientedSubSegment splitseg = new OrientedSubSegment();
                 if (triangularMesh.InsertVertex(newvertex, ref searchtri, ref splitseg, false, false) ==
                     VertexInsertionOutcome.Duplicate)
                 {
@@ -137,7 +139,7 @@ namespace Ludo.ComputationalGeometry
                 }
             }
 
-            return this.RemoveBox();
+            return RemoveBox();
         }
     }
 }

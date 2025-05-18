@@ -12,43 +12,43 @@ namespace Ludo.ComputationalGeometry
     /// It ensures each edge is enumerated exactly once by comparing triangle IDs and
     /// using the dummy triangle check to handle boundary edges.
     /// </remarks>
-    [System.Serializable]
-    public class MeshEdgeEnumerator : IEnumerator<MeshEdge>, IDisposable, IEnumerator
+    [Serializable]
+    public class MeshEdgeEnumerator : IEnumerator<MeshEdge>
     {
         /// <summary>
         /// Enumerator for the triangles in the mesh.
         /// </summary>
-        private IEnumerator<Triangle> triangles;
+        private IEnumerator<Triangle> _triangles;
 
         /// <summary>
         /// The current oriented triangle being processed.
         /// </summary>
-        private Otri tri;
+        private OrientedTriangle _orientedTriangle;
 
         /// <summary>
         /// The neighboring triangle across the current edge.
         /// </summary>
-        private Otri neighbor;
+        private OrientedTriangle _neighborTriangle;
 
         /// <summary>
         /// The subsegment associated with the current edge, if any.
         /// </summary>
-        private Osub sub;
+        private OrientedSubSegment _orientedSubSegment;
 
         /// <summary>
         /// The current edge being enumerated.
         /// </summary>
-        private MeshEdge current;
+        private MeshEdge _current;
 
         /// <summary>
         /// The first vertex of the current edge.
         /// </summary>
-        private Vertex p1;
+        private Vertex _p1;
 
         /// <summary>
         /// The second vertex of the current edge.
         /// </summary>
-        private Vertex p2;
+        private Vertex _p2;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeshEdgeEnumerator"/> class for the specified mesh.
@@ -60,28 +60,28 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public MeshEdgeEnumerator(TriangularMesh triangularMesh)
         {
-            this.triangles = (IEnumerator<Triangle>) triangularMesh.triangles.Values.GetEnumerator();
-            this.triangles.MoveNext();
-            this.tri.triangle = this.triangles.Current;
-            this.tri.orient = 0;
+            _triangles = triangularMesh.triangles.Values.GetEnumerator();
+            _triangles.MoveNext();
+            _orientedTriangle.triangle = _triangles.Current;
+            _orientedTriangle.orient = 0;
         }
 
         /// <summary>
         /// Gets the current edge in the enumeration.
         /// </summary>
         /// <value>The current edge.</value>
-        public MeshEdge Current => this.current;
+        public MeshEdge Current => _current;
 
         /// <summary>
         /// Releases all resources used by the <see cref="MeshEdgeEnumerator"/>.
         /// </summary>
-        public void Dispose() => this.triangles.Dispose();
+        public void Dispose() => _triangles.Dispose();
 
         /// <summary>
         /// Gets the current edge in the enumeration as an object.
         /// </summary>
         /// <value>The current edge as an object.</value>
-        object IEnumerator.Current => (object) this.current;
+        object IEnumerator.Current => _current;
 
         /// <summary>
         /// Advances the enumerator to the next edge in the mesh.
@@ -101,27 +101,27 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public bool MoveNext()
         {
-            if (this.tri.triangle == null)
+            if (_orientedTriangle.triangle == null)
                 return false;
-            this.current = (MeshEdge) null;
-            while (this.current == null)
+            _current = null;
+            while (_current == null)
             {
-                if (this.tri.orient == 3)
+                if (_orientedTriangle.orient == 3)
                 {
-                    if (!this.triangles.MoveNext())
+                    if (!_triangles.MoveNext())
                         return false;
-                    this.tri.triangle = this.triangles.Current;
-                    this.tri.orient = 0;
+                    _orientedTriangle.triangle = _triangles.Current;
+                    _orientedTriangle.orient = 0;
                 }
-                this.tri.Sym(ref this.neighbor);
-                if (this.tri.triangle.id < this.neighbor.triangle.id || this.neighbor.triangle == TriangularMesh.dummytri)
+                _orientedTriangle.Sym(ref _neighborTriangle);
+                if (_orientedTriangle.triangle.id < _neighborTriangle.triangle.id || _neighborTriangle.triangle == TriangularMesh.dummytri)
                 {
-                    this.p1 = this.tri.Org();
-                    this.p2 = this.tri.Dest();
-                    this.tri.SegPivot(ref this.sub);
-                    this.current = new MeshEdge(this.p1.id, this.p2.id, this.sub.seg.boundary);
+                    _p1 = _orientedTriangle.Org();
+                    _p2 = _orientedTriangle.Dest();
+                    _orientedTriangle.SegPivot(ref _orientedSubSegment);
+                    _current = new MeshEdge(_p1.id, _p2.id, _orientedSubSegment.seg.boundary);
                 }
-                ++this.tri.orient;
+                ++_orientedTriangle.orient;
             }
             return true;
         }
@@ -129,6 +129,6 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first edge in the collection.
         /// </summary>
-        public void Reset() => this.triangles.Reset();
+        public void Reset() => _triangles.Reset();
     }
 }

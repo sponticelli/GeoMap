@@ -13,7 +13,7 @@ namespace Ludo.ComputationalGeometry
     /// The key operations include orientation tests (CounterClockwise), in-circle tests (InCircle),
     /// and geometric constructions like finding the circumcenter of a triangle.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public static class Primitives
     {
         /// <summary>
@@ -52,23 +52,23 @@ namespace Ludo.ComputationalGeometry
         {
             bool flag = true;
             double num1 = 0.5;
-            Primitives.epsilon = 1.0;
-            Primitives.splitter = 1.0;
+            epsilon = 1.0;
+            splitter = 1.0;
             double num2 = 1.0;
             double num3;
             do
             {
                 num3 = num2;
-                Primitives.epsilon *= num1;
+                epsilon *= num1;
                 if (flag)
-                    Primitives.splitter *= 2.0;
+                    splitter *= 2.0;
                 flag = !flag;
-                num2 = 1.0 + Primitives.epsilon;
+                num2 = 1.0 + epsilon;
             } while (num2 != 1.0 && num2 != num3);
 
-            ++Primitives.splitter;
-            Primitives.ccwerrboundA = (3.0 + 16.0 * Primitives.epsilon) * Primitives.epsilon;
-            Primitives.iccerrboundA = (10.0 + 96.0 * Primitives.epsilon) * Primitives.epsilon;
+            ++splitter;
+            ccwerrboundA = (3.0 + 16.0 * epsilon) * epsilon;
+            iccerrboundA = (10.0 + 96.0 * epsilon) * epsilon;
         }
 
         /// <summary>
@@ -113,8 +113,8 @@ namespace Ludo.ComputationalGeometry
                 num4 = -num1 - num2;
             }
 
-            double num5 = Primitives.ccwerrboundA * num4;
-            return num3 >= num5 || -num3 >= num5 ? num3 : (double)Primitives.CounterClockwiseDecimal(pa, pb, pc);
+            double num5 = ccwerrboundA * num4;
+            return num3 >= num5 || -num3 >= num5 ? num3 : (double)CounterClockwiseDecimal(pa, pb, pc);
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace Ludo.ComputationalGeometry
                 return num16;
             double num17 = (Math.Abs(num7) + Math.Abs(num8)) * num9 + (Math.Abs(num10) + Math.Abs(num11)) * num12 +
                            (Math.Abs(num13) + Math.Abs(num14)) * num15;
-            double num18 = Primitives.iccerrboundA * num17;
-            return num16 > num18 || -num16 > num18 ? num16 : (double)Primitives.InCircleDecimal(pa, pb, pc, pd);
+            double num18 = iccerrboundA * num17;
+            return num16 > num18 || -num16 > num18 ? num16 : (double)InCircleDecimal(pa, pb, pc, pd);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public static double NonRegular(Point pa, Point pb, Point pc, Point pd)
         {
-            return Primitives.InCircle(pa, pb, pc, pd);
+            return InCircle(pa, pb, pc, pd);
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Ludo.ComputationalGeometry
             }
             else
             {
-                num8 = 0.5 / Primitives.CounterClockwise(tdest, tapex, torg);
+                num8 = 0.5 / CounterClockwise(tdest, tapex, torg);
                 --Statistic.CounterClockwiseCount;
             }
 
@@ -390,7 +390,7 @@ namespace Ludo.ComputationalGeometry
             }
             else
             {
-                num7 = 0.5 / Primitives.CounterClockwise(tdest, tapex, torg);
+                num7 = 0.5 / CounterClockwise(tdest, tapex, torg);
                 --Statistic.CounterClockwiseCount;
             }
 

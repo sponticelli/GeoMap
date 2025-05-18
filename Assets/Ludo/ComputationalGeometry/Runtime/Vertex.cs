@@ -5,12 +5,12 @@ namespace Ludo.ComputationalGeometry
     /// <summary>
     /// Represents a vertex in a geometric mesh, extending the Point class with additional properties.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class Vertex : Point
     {
         internal int hash;
         internal VertexType type;
-        internal Otri tri;
+        internal OrientedTriangle tri;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vertex"/> class with default coordinates (0,0), boundary mark 0, and no attributes.
@@ -51,16 +51,16 @@ namespace Ludo.ComputationalGeometry
         public Vertex(double x, double y, int mark, int attribs)
             : base(x, y, mark)
         {
-            this.type = VertexType.InputVertex;
+            type = VertexType.InputVertex;
             if (attribs <= 0)
                 return;
-            this.attributes = new double[attribs];
+            attributes = new double[attribs];
         }
 
         /// <summary>
         /// Gets the type of the vertex.
         /// </summary>
-        public VertexType Type => this.type;
+        public VertexType Type => type;
 
         /// <summary>
         /// Gets the coordinate value at the specified index (0 for x, 1 for y).
@@ -73,9 +73,9 @@ namespace Ludo.ComputationalGeometry
             get
             {
                 if (i == 0)
-                    return this.x;
+                    return x;
                 if (i == 1)
-                    return this.y;
+                    return y;
                 throw new ArgumentOutOfRangeException("Index must be 0 or 1.");
             }
         }
@@ -84,6 +84,6 @@ namespace Ludo.ComputationalGeometry
         /// Returns a hash code for the current vertex.
         /// </summary>
         /// <returns>A hash code for the current vertex.</returns>
-        public override int GetHashCode() => this.hash;
+        public override int GetHashCode() => hash;
     }
 }

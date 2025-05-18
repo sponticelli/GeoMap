@@ -10,13 +10,13 @@ namespace Ludo.ComputationalGeometry
     /// by reordering the vertices of a graph. This implementation is used for mesh optimization
     /// to improve computational efficiency in numerical methods.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class MeshBandwidthOptimizer
     {
         /// <summary>
         /// The number of nodes in the mesh.
         /// </summary>
-        private int node_num;
+        private int _nodeNum;
 
         /// <summary>
         /// The adjacency _graph representing the mesh connectivity.
@@ -35,42 +35,42 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int[] Renumber(TriangularMesh triangularMesh)
         {
-            this.node_num = triangularMesh.vertices.Count;
-            triangularMesh.Renumber(NodeNumbering.Linear);
-            this._graph = new MeshAdjacencyGraph(triangularMesh);
-            int num1 = this._graph.Bandwidth();
-            int[] rcm = this.GenerateRcm();
-            int[] perm_inv = this.PermInverse(this.node_num, rcm);
-            int num2 = this.PermBandwidth(rcm, perm_inv);
-            return perm_inv;
+            _nodeNum = triangularMesh.vertices.Count;
+            triangularMesh.Renumber(VertexNumbering.Linear);
+            _graph = new MeshAdjacencyGraph(triangularMesh);
+            int num1 = _graph.Bandwidth();
+            int[] rcm = GenerateRcm();
+            int[] permInv = PermInverse(_nodeNum, rcm);
+            int num2 = PermBandwidth(rcm, permInv);
+            return permInv;
         }
 
         /// <summary>
         /// Calculates the bandwidth of the _graph after applying the permutation.
         /// </summary>
         /// <param name="perm">The permutation array.</param>
-        /// <param name="perm_inv">The inverse permutation array.</param>
+        /// <param name="permInv">The inverse permutation array.</param>
         /// <returns>The bandwidth of the permuted _graph.</returns>
         /// <remarks>
         /// The bandwidth is calculated as the maximum distance of any non-zero element from the diagonal,
         /// plus one (for the diagonal itself).
         /// </remarks>
-        private int PermBandwidth(int[] perm, int[] perm_inv)
+        private int PermBandwidth(int[] perm, int[] permInv)
         {
-            int[] adjacencyRow = this._graph.AdjacencyRow;
-            int[] adjacency = this._graph.Adjacency;
-            int val1_1 = 0;
-            int val1_2 = 0;
-            for (int index1 = 0; index1 < this.node_num; ++index1)
+            int[] adjacencyRow = _graph.AdjacencyRow;
+            int[] adjacency = _graph.Adjacency;
+            int val11 = 0;
+            int val12 = 0;
+            for (int index1 = 0; index1 < _nodeNum; ++index1)
             {
                 for (int index2 = adjacencyRow[perm[index1]]; index2 <= adjacencyRow[perm[index1] + 1] - 1; ++index2)
                 {
-                    int num = perm_inv[adjacency[index2 - 1]];
-                    val1_1 = Math.Max(val1_1, index1 - num);
-                    val1_2 = Math.Max(val1_2, num - index1);
+                    int num = permInv[adjacency[index2 - 1]];
+                    val11 = Math.Max(val11, index1 - num);
+                    val12 = Math.Max(val12, num - index1);
                 }
             }
-            return val1_1 + 1 + val1_2;
+            return val11 + 1 + val12;
         }
 
         /// <summary>
@@ -84,24 +84,28 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private int[] GenerateRcm()
         {
-            int[] rcm = new int[this.node_num];
+            int[] rcm = new int[_nodeNum];
             int iccsze = 0;
-            int level_num = 0;
-            int[] level_row = new int[this.node_num + 1];
-            int[] mask = new int[this.node_num];
-            for (int index = 0; index < this.node_num; ++index)
+            int levelNum = 0;
+            int[] levelRow = new int[_nodeNum + 1];
+            int[] mask = new int[_nodeNum];
+            for (int index = 0; index < _nodeNum; ++index)
+            {
                 mask[index] = 1;
+            }
             int num = 1;
-            for (int index = 0; index < this.node_num; ++index)
+            for (int index = 0; index < _nodeNum; ++index)
             {
                 if (mask[index] != 0)
                 {
                     int root = index;
-                    this.FindRoot(ref root, mask, ref level_num, level_row, rcm, num - 1);
-                    this.Rcm(root, mask, rcm, num - 1, ref iccsze);
+                    FindRoot(ref root, mask, ref levelNum, levelRow, rcm, num - 1);
+                    Rcm(root, mask, rcm, num - 1, ref iccsze);
                     num += iccsze;
-                    if (this.node_num < num)
+                    if (_nodeNum < num)
+                    {
                         return rcm;
+                    }
                 }
             }
             return rcm;
@@ -122,13 +126,15 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void Rcm(int root, int[] mask, int[] perm, int offset, ref int iccsze)
         {
-            int[] adjacencyRow = this._graph.AdjacencyRow;
-            int[] adjacency = this._graph.Adjacency;
-            int[] deg = new int[this.node_num];
-            this.Degree(root, mask, deg, ref iccsze, perm, offset);
+            int[] adjacencyRow = _graph.AdjacencyRow;
+            int[] adjacency = _graph.Adjacency;
+            int[] deg = new int[_nodeNum];
+            Degree(root, mask, deg, ref iccsze, perm, offset);
             mask[root] = 0;
             if (iccsze <= 1)
+            {
                 return;
+            }
             int num1 = 0;
             int num2 = 1;
             while (num1 < num2)
@@ -172,7 +178,7 @@ namespace Ludo.ComputationalGeometry
                     }
                 }
             }
-            this.ReverseVector(perm, offset, iccsze);
+            ReverseVector(perm, offset, iccsze);
         }
 
         /// <summary>
@@ -180,8 +186,8 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="root">The initial root vertex, which may be updated to a better choice.</param>
         /// <param name="mask">Array indicating which vertices have been processed (0) or not (1).</param>
-        /// <param name="level_num">The number of levels in the level structure.</param>
-        /// <param name="level_row">Array containing the starting indices of each level in the level array.</param>
+        /// <param name="levelNum">The number of levels in the level structure.</param>
+        /// <param name="levelRow">Array containing the starting indices of each level in the level array.</param>
         /// <param name="level">Array containing the vertices in each level.</param>
         /// <param name="offset">The offset in the level array where to start filling.</param>
         /// <remarks>
@@ -192,22 +198,24 @@ namespace Ludo.ComputationalGeometry
         private void FindRoot(
             ref int root,
             int[] mask,
-            ref int level_num,
-            int[] level_row,
+            ref int levelNum,
+            int[] levelRow,
             int[] level,
             int offset)
         {
-            int[] adjacencyRow = this._graph.AdjacencyRow;
-            int[] adjacency = this._graph.Adjacency;
-            int level_num1 = 0;
-            this.GetLevelSet(ref root, mask, ref level_num, level_row, level, offset);
-            int num1 = level_row[level_num] - 1;
-            if (level_num == 1 || level_num == num1)
+            int[] adjacencyRow = _graph.AdjacencyRow;
+            int[] adjacency = _graph.Adjacency;
+            int levelNum1 = 0;
+            GetLevelSet(ref root, mask, ref levelNum, levelRow, level, offset);
+            int num1 = levelRow[levelNum] - 1;
+            if (levelNum == 1 || levelNum == num1)
+            {
                 return;
+            }
             do
             {
                 int num2 = num1;
-                int num3 = level_row[level_num - 1];
+                int num3 = levelRow[levelNum - 1];
                 root = level[offset + num3 - 1];
                 if (num3 < num1)
                 {
@@ -221,7 +229,9 @@ namespace Ludo.ComputationalGeometry
                         {
                             int index4 = adjacency[index3 - 1];
                             if (mask[index4] > 0)
+                            {
                                 ++num4;
+                            }
                         }
                         if (num4 < num2)
                         {
@@ -230,13 +240,17 @@ namespace Ludo.ComputationalGeometry
                         }
                     }
                 }
-                this.GetLevelSet(ref root, mask, ref level_num1, level_row, level, offset);
-                if (level_num1 > level_num)
-                    level_num = level_num1;
+                GetLevelSet(ref root, mask, ref levelNum1, levelRow, level, offset);
+                if (levelNum1 > levelNum)
+                {
+                    levelNum = levelNum1;
+                }
                 else
+                {
                     goto label_1;
+                }
             }
-            while (num1 > level_num);
+            while (num1 > levelNum);
             goto label_16;
             label_1:
             return;
@@ -248,8 +262,8 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="root">The root vertex to start the traversal from.</param>
         /// <param name="mask">Array indicating which vertices have been processed (0) or not (1).</param>
-        /// <param name="level_num">The number of levels in the resulting level structure.</param>
-        /// <param name="level_row">Array containing the starting indices of each level in the level array.</param>
+        /// <param name="levelNum">The number of levels in the resulting level structure.</param>
+        /// <param name="levelRow">Array containing the starting indices of each level in the level array.</param>
         /// <param name="level">Array containing the vertices in each level.</param>
         /// <param name="offset">The offset in the level array where to start filling.</param>
         /// <remarks>
@@ -260,24 +274,24 @@ namespace Ludo.ComputationalGeometry
         private void GetLevelSet(
             ref int root,
             int[] mask,
-            ref int level_num,
-            int[] level_row,
+            ref int levelNum,
+            int[] levelRow,
             int[] level,
             int offset)
         {
-            int[] adjacencyRow = this._graph.AdjacencyRow;
-            int[] adjacency = this._graph.Adjacency;
+            int[] adjacencyRow = _graph.AdjacencyRow;
+            int[] adjacency = _graph.Adjacency;
             mask[root] = 0;
             level[offset] = root;
-            level_num = 0;
+            levelNum = 0;
             int num1 = 0;
             int num2 = 1;
             do
             {
                 int num3 = num1 + 1;
                 num1 = num2;
-                ++level_num;
-                level_row[level_num - 1] = num3;
+                ++levelNum;
+                levelRow[levelNum - 1] = num3;
                 for (int index1 = num3; index1 <= num1; ++index1)
                 {
                     int index2 = level[offset + index1 - 1];
@@ -296,9 +310,11 @@ namespace Ludo.ComputationalGeometry
                 }
             }
             while (num2 - num1 > 0);
-            level_row[level_num] = num1 + 1;
+            levelRow[levelNum] = num1 + 1;
             for (int index = 0; index < num2; ++index)
+            {
                 mask[level[offset + index]] = 1;
+            }
         }
 
         /// <summary>
@@ -318,8 +334,8 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void Degree(int root, int[] mask, int[] deg, ref int iccsze, int[] ls, int offset)
         {
-            int[] adjacencyRow = this._graph.AdjacencyRow;
-            int[] adjacency = this._graph.Adjacency;
+            int[] adjacencyRow = _graph.AdjacencyRow;
+            int[] adjacency = _graph.Adjacency;
             int num1 = 1;
             ls[offset] = root;
             adjacencyRow[root] = -adjacencyRow[root];
@@ -338,16 +354,12 @@ namespace Ludo.ComputationalGeometry
                     for (int index2 = num4; index2 <= num5; ++index2)
                     {
                         int index3 = adjacency[index2 - 1];
-                        if (mask[index3] != 0)
-                        {
-                            ++num6;
-                            if (0 <= adjacencyRow[index3])
-                            {
-                                adjacencyRow[index3] = -adjacencyRow[index3];
-                                ++iccsze;
-                                ls[offset + iccsze - 1] = index3;
-                            }
-                        }
+                        if (mask[index3] == 0) continue;
+                        ++num6;
+                        if (0 > adjacencyRow[index3]) continue;
+                        adjacencyRow[index3] = -adjacencyRow[index3];
+                        ++iccsze;
+                        ls[offset + iccsze - 1] = index3;
                     }
                     deg[l] = num6;
                 }
@@ -371,9 +383,11 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private int[] PermInverse(int n, int[] perm)
         {
-            int[] numArray = new int[this.node_num];
+            int[] numArray = new int[_nodeNum];
             for (int index = 0; index < n; ++index)
+            {
                 numArray[perm[index]] = index;
+            }
             return numArray;
         }
 

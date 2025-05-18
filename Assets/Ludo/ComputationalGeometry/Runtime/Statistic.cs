@@ -14,7 +14,7 @@ namespace Ludo.ComputationalGeometry
     /// This information is useful for analyzing mesh quality, diagnosing issues,
     /// and evaluating the performance of the triangulation algorithms.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class Statistic
     {
         /// <summary>
@@ -197,107 +197,107 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the length of the shortest edge in the mesh.
         /// </summary>
-        public double ShortestEdge => this.minEdge;
+        public double ShortestEdge => minEdge;
 
         /// <summary>
         /// Gets the length of the longest edge in the mesh.
         /// </summary>
-        public double LongestEdge => this.maxEdge;
+        public double LongestEdge => maxEdge;
 
         /// <summary>
         /// Gets the shortest altitude (height) of any triangle in the mesh.
         /// </summary>
-        public double ShortestAltitude => this.minAspect;
+        public double ShortestAltitude => minAspect;
 
         /// <summary>
         /// Gets the largest aspect ratio of any triangle in the mesh.
         /// </summary>
-        public double LargestAspectRatio => this.maxAspect;
+        public double LargestAspectRatio => maxAspect;
 
         /// <summary>
         /// Gets the area of the smallest triangle in the mesh.
         /// </summary>
-        public double SmallestArea => this.minArea;
+        public double SmallestArea => minArea;
 
         /// <summary>
         /// Gets the area of the largest triangle in the mesh.
         /// </summary>
-        public double LargestArea => this.maxArea;
+        public double LargestArea => maxArea;
 
         /// <summary>
         /// Gets the smallest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        public double SmallestAngle => this.minAngle;
+        public double SmallestAngle => minAngle;
 
         /// <summary>
         /// Gets the largest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        public double LargestAngle => this.maxAngle;
+        public double LargestAngle => maxAngle;
 
         /// <summary>
         /// Gets the number of vertices in the input geometry.
         /// </summary>
-        public int InputVertices => this.inVetrices;
+        public int InputVertices => inVetrices;
 
         /// <summary>
         /// Gets the number of triangles in the input geometry.
         /// </summary>
-        public int InputTriangles => this.inTriangles;
+        public int InputTriangles => inTriangles;
 
         /// <summary>
         /// Gets the number of segments in the input geometry.
         /// </summary>
-        public int InputSegments => this.inSegments;
+        public int InputSegments => inSegments;
 
         /// <summary>
         /// Gets the number of holes in the input geometry.
         /// </summary>
-        public int InputHoles => this.inHoles;
+        public int InputHoles => inHoles;
 
         /// <summary>
         /// Gets the number of vertices in the output mesh.
         /// </summary>
-        public int Vertices => this.outVertices;
+        public int Vertices => outVertices;
 
         /// <summary>
         /// Gets the number of triangles in the output mesh.
         /// </summary>
-        public int Triangles => this.outTriangles;
+        public int Triangles => outTriangles;
 
         /// <summary>
         /// Gets the number of edges in the output mesh.
         /// </summary>
-        public int Edges => this.outEdges;
+        public int Edges => outEdges;
 
         /// <summary>
         /// Gets the number of boundary edges in the output mesh.
         /// </summary>
-        public int BoundaryEdges => this.boundaryEdges;
+        public int BoundaryEdges => boundaryEdges;
 
         /// <summary>
         /// Gets the number of interior boundary edges in the output mesh.
         /// </summary>
-        public int InteriorBoundaryEdges => this.intBoundaryEdges;
+        public int InteriorBoundaryEdges => intBoundaryEdges;
 
         /// <summary>
         /// Gets the number of constrained edges in the output mesh.
         /// </summary>
-        public int ConstrainedEdges => this.constrainedEdges;
+        public int ConstrainedEdges => constrainedEdges;
 
         /// <summary>
         /// Gets the histogram of angles in the mesh.
         /// </summary>
-        public int[] AngleHistogram => this.angleTable;
+        public int[] AngleHistogram => angleTable;
 
         /// <summary>
         /// Gets the histogram of minimum angles per triangle.
         /// </summary>
-        public int[] MinAngleHistogram => this.minAngles;
+        public int[] MinAngleHistogram => minAngles;
 
         /// <summary>
         /// Gets the histogram of maximum angles per triangle.
         /// </summary>
-        public int[] MaxAngleHistogram => this.maxAngles;
+        public int[] MaxAngleHistogram => maxAngles;
 
         /// <summary>
         /// Computes a histogram of aspect ratios for the triangles in the mesh.
@@ -333,23 +333,23 @@ namespace Ludo.ComputationalGeometry
                 100000.0,
                 0.0
             };
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             Vertex[] vertexArray = new Vertex[3];
             double[] numArray3 = new double[3];
             double[] numArray4 = new double[3];
             double[] numArray5 = new double[3];
-            otri.orient = 0;
+            orientedTriangle.orient = 0;
             foreach (Triangle triangle in triangularMesh.triangles.Values)
             {
-                otri.triangle = triangle;
-                vertexArray[0] = otri.Org();
-                vertexArray[1] = otri.Dest();
-                vertexArray[2] = otri.Apex();
+                orientedTriangle.triangle = triangle;
+                vertexArray[0] = orientedTriangle.Org();
+                vertexArray[1] = orientedTriangle.Dest();
+                vertexArray[2] = orientedTriangle.Apex();
                 double num1 = 0.0;
                 for (int index1 = 0; index1 < 3; ++index1)
                 {
-                    int index2 = Statistic.plus1Mod3[index1];
-                    int index3 = Statistic.minus1Mod3[index1];
+                    int index2 = plus1Mod3[index1];
+                    int index3 = minus1Mod3[index1];
                     numArray3[index1] = vertexArray[index2].x - vertexArray[index3].x;
                     numArray4[index1] = vertexArray[index2].y - vertexArray[index3].y;
                     numArray5[index1] = numArray3[index1] * numArray3[index1] + numArray4[index1] * numArray4[index1];
@@ -390,85 +390,85 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Update(TriangularMesh triangularMesh, int sampleDegrees)
         {
-            this.inVetrices = triangularMesh.invertices;
-            this.inTriangles = triangularMesh.inelements;
-            this.inSegments = triangularMesh.insegments;
-            this.inHoles = triangularMesh.holes.Count;
-            this.outVertices = triangularMesh.vertices.Count - triangularMesh.undeads;
-            this.outTriangles = triangularMesh.triangles.Count;
-            this.outEdges = triangularMesh.edges;
-            this.boundaryEdges = triangularMesh.hullsize;
-            this.intBoundaryEdges = triangularMesh.subsegs.Count - triangularMesh.hullsize;
-            this.constrainedEdges = triangularMesh.subsegs.Count;
+            inVetrices = triangularMesh.invertices;
+            inTriangles = triangularMesh.inelements;
+            inSegments = triangularMesh.insegments;
+            inHoles = triangularMesh.holes.Count;
+            outVertices = triangularMesh.vertices.Count - triangularMesh.undeads;
+            outTriangles = triangularMesh.triangles.Count;
+            outEdges = triangularMesh.edges;
+            boundaryEdges = triangularMesh.hullsize;
+            intBoundaryEdges = triangularMesh.subsegs.Count - triangularMesh.hullsize;
+            constrainedEdges = triangularMesh.subsegs.Count;
             Point[] pointArray = new Point[3];
             sampleDegrees = 60;
             double[] numArray1 = new double[sampleDegrees / 2 - 1];
             double[] numArray2 = new double[3];
             double[] numArray3 = new double[3];
             double[] numArray4 = new double[3];
-            double num1 = Math.PI / (double)sampleDegrees;
+            double num1 = Math.PI / sampleDegrees;
             double num2 = 180.0 / Math.PI;
-            this.angleTable = new int[sampleDegrees];
-            this.minAngles = new int[sampleDegrees];
-            this.maxAngles = new int[sampleDegrees];
+            angleTable = new int[sampleDegrees];
+            minAngles = new int[sampleDegrees];
+            maxAngles = new int[sampleDegrees];
             for (int index = 0; index < sampleDegrees / 2 - 1; ++index)
             {
-                numArray1[index] = Math.Cos(num1 * (double)(index + 1));
+                numArray1[index] = Math.Cos(num1 * (index + 1));
                 numArray1[index] = numArray1[index] * numArray1[index];
             }
 
             for (int index = 0; index < sampleDegrees; ++index)
-                this.angleTable[index] = 0;
-            this.minAspect = triangularMesh.bounds.Width + triangularMesh.bounds.Height;
-            this.minAspect *= this.minAspect;
-            this.maxAspect = 0.0;
-            this.minEdge = this.minAspect;
-            this.maxEdge = 0.0;
-            this.minArea = this.minAspect;
-            this.maxArea = 0.0;
-            this.minAngle = 0.0;
-            this.maxAngle = 2.0;
+                angleTable[index] = 0;
+            minAspect = triangularMesh.bounds.Width + triangularMesh.bounds.Height;
+            minAspect *= minAspect;
+            maxAspect = 0.0;
+            minEdge = minAspect;
+            maxEdge = 0.0;
+            minArea = minAspect;
+            maxArea = 0.0;
+            minAngle = 0.0;
+            maxAngle = 2.0;
             bool flag1 = true;
             bool flag2 = true;
             foreach (Triangle triangle in triangularMesh.triangles.Values)
             {
                 double num3 = 0.0;
                 double num4 = 1.0;
-                pointArray[0] = (Point)triangle.vertices[0];
-                pointArray[1] = (Point)triangle.vertices[1];
-                pointArray[2] = (Point)triangle.vertices[2];
+                pointArray[0] = triangle.vertices[0];
+                pointArray[1] = triangle.vertices[1];
+                pointArray[2] = triangle.vertices[2];
                 double num5 = 0.0;
                 for (int index1 = 0; index1 < 3; ++index1)
                 {
-                    int index2 = Statistic.plus1Mod3[index1];
-                    int index3 = Statistic.minus1Mod3[index1];
+                    int index2 = plus1Mod3[index1];
+                    int index3 = minus1Mod3[index1];
                     numArray2[index1] = pointArray[index2].X - pointArray[index3].X;
                     numArray3[index1] = pointArray[index2].Y - pointArray[index3].Y;
                     numArray4[index1] = numArray2[index1] * numArray2[index1] + numArray3[index1] * numArray3[index1];
                     if (numArray4[index1] > num5)
                         num5 = numArray4[index1];
-                    if (numArray4[index1] > this.maxEdge)
-                        this.maxEdge = numArray4[index1];
-                    if (numArray4[index1] < this.minEdge)
-                        this.minEdge = numArray4[index1];
+                    if (numArray4[index1] > maxEdge)
+                        maxEdge = numArray4[index1];
+                    if (numArray4[index1] < minEdge)
+                        minEdge = numArray4[index1];
                 }
 
                 double num6 = Math.Abs((pointArray[2].X - pointArray[0].X) * (pointArray[1].Y - pointArray[0].Y) -
                                        (pointArray[1].X - pointArray[0].X) * (pointArray[2].Y - pointArray[0].Y));
-                if (num6 < this.minArea)
-                    this.minArea = num6;
-                if (num6 > this.maxArea)
-                    this.maxArea = num6;
+                if (num6 < minArea)
+                    minArea = num6;
+                if (num6 > maxArea)
+                    maxArea = num6;
                 double num7 = num6 * num6 / num5;
-                if (num7 < this.minAspect)
-                    this.minAspect = num7;
+                if (num7 < minAspect)
+                    minAspect = num7;
                 double num8 = num5 / num7;
-                if (num8 > this.maxAspect)
-                    this.maxAspect = num8;
+                if (num8 > maxAspect)
+                    maxAspect = num8;
                 for (int index4 = 0; index4 < 3; ++index4)
                 {
-                    int index5 = Statistic.plus1Mod3[index4];
-                    int index6 = Statistic.minus1Mod3[index4];
+                    int index5 = plus1Mod3[index4];
+                    int index6 = minus1Mod3[index4];
                     double num9 = numArray2[index5] * numArray2[index6] + numArray3[index5] * numArray3[index6];
                     double num10 = num9 * num9 / (numArray4[index5] * numArray4[index6]);
                     int index7 = sampleDegrees / 2 - 1;
@@ -480,11 +480,11 @@ namespace Ludo.ComputationalGeometry
 
                     if (num9 <= 0.0)
                     {
-                        ++this.angleTable[index7];
-                        if (num10 > this.minAngle)
-                            this.minAngle = num10;
-                        if (flag1 && num10 < this.maxAngle)
-                            this.maxAngle = num10;
+                        ++angleTable[index7];
+                        if (num10 > minAngle)
+                            minAngle = num10;
+                        if (flag1 && num10 < maxAngle)
+                            maxAngle = num10;
                         if (num10 > num3)
                             num3 = num10;
                         if (flag2 && num10 < num4)
@@ -492,10 +492,10 @@ namespace Ludo.ComputationalGeometry
                     }
                     else
                     {
-                        ++this.angleTable[sampleDegrees - index7 - 1];
-                        if (flag1 || num10 > this.maxAngle)
+                        ++angleTable[sampleDegrees - index7 - 1];
+                        if (flag1 || num10 > maxAngle)
                         {
-                            this.maxAngle = num10;
+                            maxAngle = num10;
                             flag1 = false;
                         }
 
@@ -514,7 +514,7 @@ namespace Ludo.ComputationalGeometry
                         index9 = index10;
                 }
 
-                ++this.minAngles[index9];
+                ++minAngles[index9];
                 int index11 = sampleDegrees / 2 - 1;
                 for (int index12 = index11 - 1; index12 >= 0; --index12)
                 {
@@ -523,25 +523,25 @@ namespace Ludo.ComputationalGeometry
                 }
 
                 if (flag2)
-                    ++this.maxAngles[index11];
+                    ++maxAngles[index11];
                 else
-                    ++this.maxAngles[sampleDegrees - index11 - 1];
+                    ++maxAngles[sampleDegrees - index11 - 1];
                 flag2 = true;
             }
 
-            this.minEdge = Math.Sqrt(this.minEdge);
-            this.maxEdge = Math.Sqrt(this.maxEdge);
-            this.minAspect = Math.Sqrt(this.minAspect);
-            this.maxAspect = Math.Sqrt(this.maxAspect);
-            this.minArea *= 0.5;
-            this.maxArea *= 0.5;
-            this.minAngle = this.minAngle < 1.0 ? num2 * Math.Acos(Math.Sqrt(this.minAngle)) : 0.0;
-            if (this.maxAngle >= 1.0)
-                this.maxAngle = 180.0;
+            minEdge = Math.Sqrt(minEdge);
+            maxEdge = Math.Sqrt(maxEdge);
+            minAspect = Math.Sqrt(minAspect);
+            maxAspect = Math.Sqrt(maxAspect);
+            minArea *= 0.5;
+            maxArea *= 0.5;
+            minAngle = minAngle < 1.0 ? num2 * Math.Acos(Math.Sqrt(minAngle)) : 0.0;
+            if (maxAngle >= 1.0)
+                maxAngle = 180.0;
             else if (flag1)
-                this.maxAngle = num2 * Math.Acos(Math.Sqrt(this.maxAngle));
+                maxAngle = num2 * Math.Acos(Math.Sqrt(maxAngle));
             else
-                this.maxAngle = 180.0 - num2 * Math.Acos(Math.Sqrt(this.maxAngle));
+                maxAngle = 180.0 - num2 * Math.Acos(Math.Sqrt(maxAngle));
         }
     }
 }

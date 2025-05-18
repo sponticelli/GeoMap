@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ludo.ComputationalGeometry
@@ -7,11 +8,11 @@ namespace Ludo.ComputationalGeometry
     /// Used during mesh generation to remove triangles from specified hole locations
     /// and to assign region IDs to triangles based on region pointers.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class MeshRegionProcessor
     {
         private TriangularMesh _triangularMesh;
-        private List<Triangle> viri;
+        private List<Triangle> _triangles;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeshRegionProcessor"/> class with the specified mesh.
@@ -19,8 +20,8 @@ namespace Ludo.ComputationalGeometry
         /// <param name="triangularMesh">The triangular mesh to carve holes in.</param>
         public MeshRegionProcessor(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            this.viri = new List<Triangle>();
+            _triangularMesh = triangularMesh;
+            _triangles = new List<Triangle>();
         }
 
         /// <summary>
@@ -29,38 +30,38 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         private void InfectHull()
         {
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Otri o2_3 = new Otri();
-            Osub os = new Osub();
+            OrientedTriangle oreintedTriangle1 = new OrientedTriangle();
+            OrientedTriangle orientedTriangle2 = new OrientedTriangle();
+            OrientedTriangle orientedTriangle3 = new OrientedTriangle();
+            OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
 
             // Start at a dummy triangle and move to a real hull edge
-            o2_1.triangle = TriangularMesh.dummytri;
-            o2_1.orient = 0;
-            o2_1.SymSelf();
-            o2_1.Copy(ref o2_3);
+            oreintedTriangle1.triangle = TriangularMesh.dummytri;
+            oreintedTriangle1.orient = 0;
+            oreintedTriangle1.SymSelf();
+            oreintedTriangle1.Copy(ref orientedTriangle3);
 
             // Walk around the entire convex hull
             do
             {
-                if (!o2_1.IsInfected())
+                if (!oreintedTriangle1.IsInfected())
                 {
-                    o2_1.SegPivot(ref os);
-                    if (os.seg == TriangularMesh.dummysub)
+                    oreintedTriangle1.SegPivot(ref orientedSubSegment);
+                    if (orientedSubSegment.seg == TriangularMesh.dummysub)
                     {
                         // If there's no subsegment, mark the triangle for removal
-                        if (!o2_1.IsInfected())
+                        if (!oreintedTriangle1.IsInfected())
                         {
-                            o2_1.Infect();
-                            this.viri.Add(o2_1.triangle);
+                            oreintedTriangle1.Infect();
+                            _triangles.Add(oreintedTriangle1.triangle);
                         }
                     }
-                    else if (os.seg.boundary == 0)
+                    else if (orientedSubSegment.seg.boundary == 0)
                     {
                         // Mark the segment as a boundary
-                        os.seg.boundary = 1;
-                        Vertex vertex1 = o2_1.Org();
-                        Vertex vertex2 = o2_1.Dest();
+                        orientedSubSegment.seg.boundary = 1;
+                        Vertex vertex1 = oreintedTriangle1.Org();
+                        Vertex vertex2 = oreintedTriangle1.Dest();
 
                         // Mark the vertices as boundary vertices
                         if (vertex1.mark == 0)
@@ -71,14 +72,14 @@ namespace Ludo.ComputationalGeometry
                 }
 
                 // Move to the next hull edge
-                o2_1.LnextSelf();
-                o2_1.Oprev(ref o2_2);
-                while (o2_2.triangle != TriangularMesh.dummytri)
+                oreintedTriangle1.LnextSelf();
+                oreintedTriangle1.Oprev(ref orientedTriangle2);
+                while (orientedTriangle2.triangle != TriangularMesh.dummytri)
                 {
-                    o2_2.Copy(ref o2_1);
-                    o2_1.Oprev(ref o2_2);
+                    orientedTriangle2.Copy(ref oreintedTriangle1);
+                    oreintedTriangle1.Oprev(ref orientedTriangle2);
                 }
-            } while (!o2_1.Equal(o2_3));
+            } while (!oreintedTriangle1.Equal(orientedTriangle3));
         }
 
         /// <summary>
@@ -87,172 +88,179 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         private void Plague()
         {
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Osub os = new Osub();
+            OrientedTriangle orientedTriangle1 = new OrientedTriangle();
+            OrientedTriangle orientedTriangle2 = new OrientedTriangle();
+            OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
 
             // First pass: Process each infected triangle and spread the infection
-            for (int index = 0; index < this.viri.Count; ++index)
+            for (int index = 0; index < _triangles.Count; ++index)
             {
-                o2_1.triangle = this.viri[index];
-                o2_1.Uninfect();
+                orientedTriangle1.triangle = _triangles[index];
+                orientedTriangle1.Uninfect();
 
                 // Process each edge of the triangle
-                for (o2_1.orient = 0; o2_1.orient < 3; ++o2_1.orient)
+                for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    o2_1.Sym(ref o2_2);  // Get the adjacent triangle
-                    o2_1.SegPivot(ref os);  // Get the subsegment on this edge
+                    orientedTriangle1.Sym(ref orientedTriangle2);  // Get the adjacent triangle
+                    orientedTriangle1.SegPivot(ref orientedSubSegment);  // Get the subsegment on this edge
 
-                    if (o2_2.triangle == TriangularMesh.dummytri || o2_2.IsInfected())
+                    if (orientedTriangle2.triangle == TriangularMesh.dummytri || orientedTriangle2.IsInfected())
                     {
                         // If the adjacent triangle is a dummy or already infected
-                        if (os.seg != TriangularMesh.dummysub)
+                        if (orientedSubSegment.seg == TriangularMesh.dummysub) continue;
+                        // Remove the subsegment
+                        _triangularMesh.SubsegDealloc(orientedSubSegment.seg);
+                        if (orientedTriangle2.triangle != TriangularMesh.dummytri)
                         {
-                            // Remove the subsegment
-                            this._triangularMesh.SubsegDealloc(os.seg);
-                            if (o2_2.triangle != TriangularMesh.dummytri)
-                            {
-                                o2_2.Uninfect();
-                                o2_2.SegDissolve();
-                                o2_2.Infect();
-                            }
+                            orientedTriangle2.Uninfect();
+                            orientedTriangle2.SegDissolve();
+                            orientedTriangle2.Infect();
                         }
                     }
-                    else if (os.seg == TriangularMesh.dummysub)
+                    else if (orientedSubSegment.seg == TriangularMesh.dummysub)
                     {
                         // If there's no subsegment, infect the adjacent triangle
-                        o2_2.Infect();
-                        this.viri.Add(o2_2.triangle);
+                        orientedTriangle2.Infect();
+                        _triangles.Add(orientedTriangle2.triangle);
                     }
                     else
                     {
                         // If there's a subsegment, mark it as a boundary
-                        os.TriDissolve();
-                        if (os.seg.boundary == 0)
-                            os.seg.boundary = 1;
+                        orientedSubSegment.TriDissolve();
+                        if (orientedSubSegment.seg.boundary == 0)
+                        {
+                            orientedSubSegment.seg.boundary = 1;
+                        }
 
                         // Mark the vertices as boundary vertices
-                        Vertex vertex1 = o2_2.Org();
-                        Vertex vertex2 = o2_2.Dest();
+                        Vertex vertex1 = orientedTriangle2.Org();
+                        Vertex vertex2 = orientedTriangle2.Dest();
                         if (vertex1.mark == 0)
+                        {
                             vertex1.mark = 1;
+                        }
+
                         if (vertex2.mark == 0)
+                        {
                             vertex2.mark = 1;
+                        }
                     }
                 }
 
-                o2_1.Infect();
+                orientedTriangle1.Infect();
             }
 
             // Second pass: Clean up vertices and deallocate triangles
-            foreach (Triangle triangle in this.viri)
+            foreach (Triangle triangle in _triangles)
             {
-                o2_1.triangle = triangle;
+                orientedTriangle1.triangle = triangle;
 
                 // Process each vertex of the triangle
-                for (o2_1.orient = 0; o2_1.orient < 3; ++o2_1.orient)
+                for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    Vertex vertex = o2_1.Org();
-                    if ((Point)vertex != (Point)null)
+                    Vertex vertex = orientedTriangle1.Org();
+                    if (vertex != null)
                     {
                         bool flag = true;
-                        o2_1.SetOrg((Vertex)null);
+                        orientedTriangle1.SetOrg(null);
 
                         // Check if the vertex is used by any non-infected triangles
-                        o2_1.Onext(ref o2_2);
-                        while (o2_2.triangle != TriangularMesh.dummytri && !o2_2.Equal(o2_1))
+                        orientedTriangle1.Onext(ref orientedTriangle2);
+                        while (orientedTriangle2.triangle != TriangularMesh.dummytri && !orientedTriangle2.Equal(orientedTriangle1))
                         {
-                            if (o2_2.IsInfected())
-                                o2_2.SetOrg((Vertex)null);
+                            if (orientedTriangle2.IsInfected())
+                            {
+                                orientedTriangle2.SetOrg(null);
+                            }
                             else
+                            {
                                 flag = false;
-                            o2_2.OnextSelf();
+                            }
+                            orientedTriangle2.OnextSelf();
                         }
 
-                        if (o2_2.triangle == TriangularMesh.dummytri)
+                        if (orientedTriangle2.triangle == TriangularMesh.dummytri)
                         {
-                            o2_1.Oprev(ref o2_2);
-                            while (o2_2.triangle != TriangularMesh.dummytri)
+                            orientedTriangle1.Oprev(ref orientedTriangle2);
+                            while (orientedTriangle2.triangle != TriangularMesh.dummytri)
                             {
-                                if (o2_2.IsInfected())
-                                    o2_2.SetOrg((Vertex)null);
+                                if (orientedTriangle2.IsInfected())
+                                    orientedTriangle2.SetOrg(null);
                                 else
                                     flag = false;
-                                o2_2.OprevSelf();
+                                orientedTriangle2.OprevSelf();
                             }
                         }
 
                         // If the vertex is only used by infected triangles, mark it as undead
-                        if (flag)
-                        {
-                            vertex.type = VertexType.UndeadVertex;
-                            ++this._triangularMesh.undeads;
-                        }
+                        if (!flag) continue;
+                        vertex.type = VertexType.UndeadVertex;
+                        ++_triangularMesh.undeads;
                     }
                 }
 
                 // Update the hull size and dissolve connections to adjacent triangles
-                for (o2_1.orient = 0; o2_1.orient < 3; ++o2_1.orient)
+                for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    o2_1.Sym(ref o2_2);
-                    if (o2_2.triangle == TriangularMesh.dummytri)
+                    orientedTriangle1.Sym(ref orientedTriangle2);
+                    if (orientedTriangle2.triangle == TriangularMesh.dummytri)
                     {
-                        --this._triangularMesh.hullsize;
+                        --_triangularMesh.hullsize;
                     }
                     else
                     {
-                        o2_2.Dissolve();
-                        ++this._triangularMesh.hullsize;
+                        orientedTriangle2.Dissolve();
+                        ++_triangularMesh.hullsize;
                     }
                 }
 
                 // Deallocate the triangle
-                this._triangularMesh.TriangleDealloc(o2_1.triangle);
+                _triangularMesh.TriangleDealloc(orientedTriangle1.triangle);
             }
 
-            this.viri.Clear();
+            _triangles.Clear();
         }
 
         public void CarveHoles()
         {
-            Otri searchtri = new Otri();
-            Triangle[] triangleArray = (Triangle[])null;
-            if (!this._triangularMesh.behavior.Convex)
-                this.InfectHull();
-            if (!this._triangularMesh.behavior.NoHoles)
+            OrientedTriangle searchtri = new OrientedTriangle();
+            Triangle[] triangleArray = null;
+            if (!_triangularMesh.behavior.Convex)
             {
-                foreach (Point hole in this._triangularMesh.holes)
+                InfectHull();
+            }
+            if (!_triangularMesh.behavior.NoHoles)
+            {
+                foreach (Point hole in _triangularMesh.holes)
                 {
-                    if (this._triangularMesh.bounds.Contains(hole))
+                    if (!_triangularMesh.bounds.Contains(hole)) continue;
+                    searchtri.triangle = TriangularMesh.dummytri;
+                    searchtri.orient = 0;
+                    searchtri.SymSelf();
+                    if (Primitives.CounterClockwise(searchtri.Org(), searchtri.Dest(), hole) > 0.0 &&
+                        _triangularMesh.locator.Locate(hole, ref searchtri) != PointLocationResult.Outside &&
+                        !searchtri.IsInfected())
                     {
-                        searchtri.triangle = TriangularMesh.dummytri;
-                        searchtri.orient = 0;
-                        searchtri.SymSelf();
-                        if (Primitives.CounterClockwise((Point)searchtri.Org(), (Point)searchtri.Dest(), hole) > 0.0 &&
-                            this._triangularMesh.locator.Locate(hole, ref searchtri) != PointLocationResult.Outside &&
-                            !searchtri.IsInfected())
-                        {
-                            searchtri.Infect();
-                            this.viri.Add(searchtri.triangle);
-                        }
+                        searchtri.Infect();
+                        _triangles.Add(searchtri.triangle);
                     }
                 }
             }
 
-            if (this._triangularMesh.regions.Count > 0)
+            if (_triangularMesh.regions.Count > 0)
             {
                 int index = 0;
-                triangleArray = new Triangle[this._triangularMesh.regions.Count];
-                foreach (RegionPointer region in this._triangularMesh.regions)
+                triangleArray = new Triangle[_triangularMesh.regions.Count];
+                foreach (RegionPointer region in _triangularMesh.regions)
                 {
                     triangleArray[index] = TriangularMesh.dummytri;
-                    if (this._triangularMesh.bounds.Contains(region.point))
+                    if (_triangularMesh.bounds.Contains(region.point))
                     {
                         searchtri.triangle = TriangularMesh.dummytri;
                         searchtri.orient = 0;
                         searchtri.SymSelf();
-                        if (Primitives.CounterClockwise((Point)searchtri.Org(), (Point)searchtri.Dest(), region.point) >
-                            0.0 && this._triangularMesh.locator.Locate(region.point, ref searchtri) != PointLocationResult.Outside &&
+                        if (Primitives.CounterClockwise(searchtri.Org(), searchtri.Dest(), region.point) >
+                            0.0 && _triangularMesh.locator.Locate(region.point, ref searchtri) != PointLocationResult.Outside &&
                             !searchtri.IsInfected())
                         {
                             triangleArray[index] = searchtri.triangle;
@@ -264,19 +272,19 @@ namespace Ludo.ComputationalGeometry
                 }
             }
 
-            if (this.viri.Count > 0)
-                this.Plague();
+            if (_triangles.Count > 0)
+                Plague();
             if (triangleArray != null)
             {
-                RegionIterator regionIterator = new RegionIterator(this._triangularMesh);
+                RegionIterator regionIterator = new RegionIterator(_triangularMesh);
                 for (int index = 0; index < triangleArray.Length; ++index)
                 {
-                    if (triangleArray[index] != TriangularMesh.dummytri && !Otri.IsDead(triangleArray[index]))
+                    if (triangleArray[index] != TriangularMesh.dummytri && !OrientedTriangle.IsDead(triangleArray[index]))
                         regionIterator.Process(triangleArray[index]);
                 }
             }
 
-            this.viri.Clear();
+            _triangles.Clear();
         }
     }
 }

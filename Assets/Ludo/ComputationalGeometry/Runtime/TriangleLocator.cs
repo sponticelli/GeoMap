@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -15,13 +17,13 @@ namespace Ludo.ComputationalGeometry
     ///
     /// These strategies together provide efficient point location even in large meshes.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class TriangleLocator
     {
         /// <summary>
-        /// Sampler for selecting representative triangles from the mesh.
+        /// StratifiedTriangleSampler for selecting representative triangles from the mesh.
         /// </summary>
-        private Sampler sampler;
+        private StratifiedTriangleSampler _stratifiedTriangleSampler;
 
         /// <summary>
         /// Reference to the mesh being searched.
@@ -31,7 +33,7 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// The most recently located triangle, used as a starting point for subsequent searches.
         /// </summary>
-        internal Otri recenttri;
+        internal OrientedTriangle recenttri;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TriangleLocator"/> class.
@@ -39,24 +41,24 @@ namespace Ludo.ComputationalGeometry
         /// <param name="triangularMesh">The mesh to search for point locations.</param>
         /// <remarks>
         /// The constructor initializes the locator with a reference to the mesh
-        /// and creates a sampler for selecting representative triangles.
+        /// and creates a _stratifiedTriangleSampler for selecting representative triangles.
         /// </remarks>
         public TriangleLocator(TriangularMesh triangularMesh)
         {
-            this._triangularMesh = triangularMesh;
-            this.sampler = new Sampler();
+            _triangularMesh = triangularMesh;
+            _stratifiedTriangleSampler = new StratifiedTriangleSampler();
         }
 
         /// <summary>
         /// Updates the most recently used triangle.
         /// </summary>
-        /// <param name="otri">The triangle to set as the most recently used.</param>
+        /// <param name="orientedTriangle">The triangle to set as the most recently used.</param>
         /// <remarks>
         /// This method is used to update the cached triangle after a successful location
         /// or when the mesh has been modified in a way that makes a specific triangle
         /// likely to be a good starting point for future searches.
         /// </remarks>
-        public void Update(ref Otri otri) => otri.Copy(ref this.recenttri);
+        public void Update(ref OrientedTriangle orientedTriangle) => orientedTriangle.Copy(ref recenttri);
 
         /// <summary>
         /// Resets the locator by clearing the most recently used triangle.
@@ -66,7 +68,7 @@ namespace Ludo.ComputationalGeometry
         /// such as after a retriangulation, to prevent using an invalid triangle as
         /// a starting point for future searches.
         /// </remarks>
-        public void Reset() => this.recenttri.triangle = (Triangle)null;
+        public void Reset() => recenttri.triangle = null;
 
         /// <summary>
         /// Precisely locates a point in the mesh, starting from a given triangle.
@@ -84,18 +86,18 @@ namespace Ludo.ComputationalGeometry
         /// the starting triangle is properly initialized. If stopatsubsegment is true, the
         /// search will stop at subsegment boundaries, which is useful for constrained triangulations.
         /// </remarks>
-        public PointLocationResult PreciseLocate(Point searchpoint, ref Otri searchtri, bool stopatsubsegment)
+        public PointLocationResult PreciseLocate(Point searchpoint, ref OrientedTriangle searchtri, bool stopatsubsegment)
         {
-            Otri o2 = new Otri();
-            Osub os = new Osub();
+            OrientedTriangle o2 = new OrientedTriangle();
+            OrientedSubSegment os = new OrientedSubSegment();
             Vertex pa = searchtri.Org();
             Vertex pb = searchtri.Dest();
             for (Vertex vertex = searchtri.Apex();
                  vertex.x != searchpoint.X || vertex.y != searchpoint.Y;
                  vertex = searchtri.Apex())
             {
-                double num1 = Primitives.CounterClockwise((Point)pa, (Point)vertex, searchpoint);
-                double num2 = Primitives.CounterClockwise((Point)vertex, (Point)pb, searchpoint);
+                double num1 = Primitives.CounterClockwise(pa, vertex, searchpoint);
+                double num2 = Primitives.CounterClockwise(vertex, pb, searchpoint);
                 bool flag;
                 if (num1 > 0.0)
                     flag = num2 <= 0.0 || (vertex.x - searchpoint.X) * (pb.x - pa.x) +
@@ -130,7 +132,7 @@ namespace Ludo.ComputationalGeometry
                 }
 
                 o2.Sym(ref searchtri);
-                if (this._triangularMesh.checksegments & stopatsubsegment)
+                if (_triangularMesh.checksegments & stopatsubsegment)
                 {
                     o2.SegPivot(ref os);
                     if (os.seg != TriangularMesh.dummysub)
@@ -166,18 +168,18 @@ namespace Ludo.ComputationalGeometry
         /// This approach is typically much faster than a simple linear search through all triangles,
         /// especially for large meshes or when there is spatial locality in the search points.
         /// </remarks>
-        public PointLocationResult Locate(Point searchpoint, ref Otri searchtri)
+        public PointLocationResult Locate(Point searchpoint, ref OrientedTriangle searchtri)
         {
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             Vertex vertex1 = searchtri.Org();
             double num1 = (searchpoint.X - vertex1.x) * (searchpoint.X - vertex1.x) +
                           (searchpoint.Y - vertex1.y) * (searchpoint.Y - vertex1.y);
-            if (this.recenttri.triangle != null && !Otri.IsDead(this.recenttri.triangle))
+            if (recenttri.triangle != null && !OrientedTriangle.IsDead(recenttri.triangle))
             {
-                Vertex vertex2 = this.recenttri.Org();
+                Vertex vertex2 = recenttri.Org();
                 if (vertex2.x == searchpoint.X && vertex2.y == searchpoint.Y)
                 {
-                    this.recenttri.Copy(ref searchtri);
+                    recenttri.Copy(ref searchtri);
                     return PointLocationResult.OnVertex;
                 }
 
@@ -185,23 +187,23 @@ namespace Ludo.ComputationalGeometry
                               (searchpoint.Y - vertex2.y) * (searchpoint.Y - vertex2.y);
                 if (num2 < num1)
                 {
-                    this.recenttri.Copy(ref searchtri);
+                    recenttri.Copy(ref searchtri);
                     num1 = num2;
                 }
             }
 
-            this.sampler.Update(this._triangularMesh);
-            foreach (int sample in this.sampler.GetSamples(this._triangularMesh))
+            _stratifiedTriangleSampler.Update(_triangularMesh);
+            foreach (int sample in _stratifiedTriangleSampler.GetSamples(_triangularMesh))
             {
-                otri.triangle = this._triangularMesh.triangles[sample];
-                if (!Otri.IsDead(otri.triangle))
+                orientedTriangle.triangle = _triangularMesh.triangles[sample];
+                if (!OrientedTriangle.IsDead(orientedTriangle.triangle))
                 {
-                    Vertex vertex3 = otri.Org();
+                    Vertex vertex3 = orientedTriangle.Org();
                     double num3 = (searchpoint.X - vertex3.x) * (searchpoint.X - vertex3.x) +
                                   (searchpoint.Y - vertex3.y) * (searchpoint.Y - vertex3.y);
                     if (num3 < num1)
                     {
-                        otri.Copy(ref searchtri);
+                        orientedTriangle.Copy(ref searchtri);
                         num1 = num3;
                     }
                 }
@@ -217,13 +219,13 @@ namespace Ludo.ComputationalGeometry
                 return PointLocationResult.OnVertex;
             }
 
-            double num4 = Primitives.CounterClockwise((Point)pa, (Point)pb, searchpoint);
+            double num4 = Primitives.CounterClockwise(pa, pb, searchpoint);
             if (num4 < 0.0)
                 searchtri.SymSelf();
             else if (num4 == 0.0 && pa.x < searchpoint.X == searchpoint.X < pb.x &&
                      pa.y < searchpoint.Y == searchpoint.Y < pb.y)
                 return PointLocationResult.OnEdge;
-            return this.PreciseLocate(searchpoint, ref searchtri, false);
+            return PreciseLocate(searchpoint, ref searchtri, false);
         }
     }
 }

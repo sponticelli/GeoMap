@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -14,8 +16,8 @@ namespace Ludo.ComputationalGeometry
     /// orientation 1 refers to the edge opposite vertex 1, and orientation 2 refers to
     /// the edge opposite vertex 2.
     /// </remarks>
-    [System.Serializable]
-    public struct Otri
+    [Serializable]
+    public struct OrientedTriangle
     {
         /// <summary>
         /// The triangle that this oriented triangle refers to.
@@ -61,7 +63,7 @@ namespace Ludo.ComputationalGeometry
         /// <returns>A string in the format "O-TID {hash}" or "O-TID [null]" if the triangle is null.</returns>
         public override string ToString()
         {
-            return this.triangle == null ? "O-TID [null]" : $"O-TID {this.triangle.hash}";
+            return triangle == null ? "O-TID [null]" : $"O-TID {triangle.hash}";
         }
 
         /// <summary>
@@ -72,10 +74,10 @@ namespace Ludo.ComputationalGeometry
         /// The symmetric triangle is the one that shares the current edge but is on the opposite side.
         /// This operation is equivalent to finding the triangle adjacent to the current edge.
         /// </remarks>
-        public void Sym(ref Otri o2)
+        public void Sym(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle.neighbors[this.orient].triangle;
-            o2.orient = this.triangle.neighbors[this.orient].orient;
+            o2.triangle = triangle.neighbors[orient].triangle;
+            o2.orient = triangle.neighbors[orient].orient;
         }
 
         /// <summary>
@@ -89,8 +91,8 @@ namespace Ludo.ComputationalGeometry
         public void SymSelf()
         {
             int orient = this.orient;
-            this.orient = this.triangle.neighbors[orient].orient;
-            this.triangle = this.triangle.neighbors[orient].triangle;
+            this.orient = triangle.neighbors[orient].orient;
+            triangle = triangle.neighbors[orient].triangle;
         }
 
         /// <summary>
@@ -100,10 +102,10 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This operation rotates counterclockwise around the triangle to the next edge.
         /// </remarks>
-        public void Lnext(ref Otri o2)
+        public void Lnext(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle;
-            o2.orient = Otri.plus1Mod3[this.orient];
+            o2.triangle = triangle;
+            o2.orient = plus1Mod3[orient];
         }
 
         /// <summary>
@@ -112,7 +114,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This method modifies the current triangle to rotate counterclockwise to the next edge.
         /// </remarks>
-        public void LnextSelf() => this.orient = Otri.plus1Mod3[this.orient];
+        public void LnextSelf() => orient = plus1Mod3[orient];
 
         /// <summary>
         /// Sets o2 to the previous edge (in clockwise order) of the same triangle.
@@ -121,10 +123,10 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This operation rotates clockwise around the triangle to the previous edge.
         /// </remarks>
-        public void Lprev(ref Otri o2)
+        public void Lprev(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle;
-            o2.orient = Otri.minus1Mod3[this.orient];
+            o2.triangle = triangle;
+            o2.orient = minus1Mod3[orient];
         }
 
         /// <summary>
@@ -133,7 +135,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This method modifies the current triangle to rotate clockwise to the previous edge.
         /// </remarks>
-        public void LprevSelf() => this.orient = Otri.minus1Mod3[this.orient];
+        public void LprevSelf() => orient = minus1Mod3[orient];
 
         /// <summary>
         /// Sets o2 to the next triangle counterclockwise around the origin of this triangle.
@@ -143,10 +145,10 @@ namespace Ludo.ComputationalGeometry
         /// This operation finds the triangle that shares the origin vertex with this triangle
         /// and is the next one counterclockwise around that vertex.
         /// </remarks>
-        public void Onext(ref Otri o2)
+        public void Onext(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle;
-            o2.orient = Otri.minus1Mod3[this.orient];
+            o2.triangle = triangle;
+            o2.orient = minus1Mod3[this.orient];
             int orient = o2.orient;
             o2.orient = o2.triangle.neighbors[orient].orient;
             o2.triangle = o2.triangle.neighbors[orient].triangle;
@@ -154,46 +156,46 @@ namespace Ludo.ComputationalGeometry
 
         public void OnextSelf()
         {
-            this.orient = Otri.minus1Mod3[this.orient];
+            this.orient = minus1Mod3[this.orient];
             int orient = this.orient;
-            this.orient = this.triangle.neighbors[orient].orient;
-            this.triangle = this.triangle.neighbors[orient].triangle;
+            this.orient = triangle.neighbors[orient].orient;
+            triangle = triangle.neighbors[orient].triangle;
         }
 
-        public void Oprev(ref Otri o2)
+        public void Oprev(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle.neighbors[this.orient].triangle;
-            o2.orient = this.triangle.neighbors[this.orient].orient;
-            o2.orient = Otri.plus1Mod3[o2.orient];
+            o2.triangle = triangle.neighbors[orient].triangle;
+            o2.orient = triangle.neighbors[orient].orient;
+            o2.orient = plus1Mod3[o2.orient];
         }
 
         public void OprevSelf()
         {
             int orient = this.orient;
-            this.orient = this.triangle.neighbors[orient].orient;
-            this.triangle = this.triangle.neighbors[orient].triangle;
-            this.orient = Otri.plus1Mod3[this.orient];
+            this.orient = triangle.neighbors[orient].orient;
+            triangle = triangle.neighbors[orient].triangle;
+            this.orient = plus1Mod3[this.orient];
         }
 
-        public void Dnext(ref Otri o2)
+        public void Dnext(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle.neighbors[this.orient].triangle;
-            o2.orient = this.triangle.neighbors[this.orient].orient;
-            o2.orient = Otri.minus1Mod3[o2.orient];
+            o2.triangle = triangle.neighbors[orient].triangle;
+            o2.orient = triangle.neighbors[orient].orient;
+            o2.orient = minus1Mod3[o2.orient];
         }
 
         public void DnextSelf()
         {
             int orient = this.orient;
-            this.orient = this.triangle.neighbors[orient].orient;
-            this.triangle = this.triangle.neighbors[orient].triangle;
-            this.orient = Otri.minus1Mod3[this.orient];
+            this.orient = triangle.neighbors[orient].orient;
+            triangle = triangle.neighbors[orient].triangle;
+            this.orient = minus1Mod3[this.orient];
         }
 
-        public void Dprev(ref Otri o2)
+        public void Dprev(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle;
-            o2.orient = Otri.plus1Mod3[this.orient];
+            o2.triangle = triangle;
+            o2.orient = plus1Mod3[this.orient];
             int orient = o2.orient;
             o2.orient = o2.triangle.neighbors[orient].orient;
             o2.triangle = o2.triangle.neighbors[orient].triangle;
@@ -201,17 +203,17 @@ namespace Ludo.ComputationalGeometry
 
         public void DprevSelf()
         {
-            this.orient = Otri.plus1Mod3[this.orient];
+            this.orient = plus1Mod3[this.orient];
             int orient = this.orient;
-            this.orient = this.triangle.neighbors[orient].orient;
-            this.triangle = this.triangle.neighbors[orient].triangle;
+            this.orient = triangle.neighbors[orient].orient;
+            triangle = triangle.neighbors[orient].triangle;
         }
 
-        public void Rnext(ref Otri o2)
+        public void Rnext(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle.neighbors[this.orient].triangle;
-            o2.orient = this.triangle.neighbors[this.orient].orient;
-            o2.orient = Otri.plus1Mod3[o2.orient];
+            o2.triangle = triangle.neighbors[this.orient].triangle;
+            o2.orient = triangle.neighbors[this.orient].orient;
+            o2.orient = plus1Mod3[o2.orient];
             int orient = o2.orient;
             o2.orient = o2.triangle.neighbors[orient].orient;
             o2.triangle = o2.triangle.neighbors[orient].triangle;
@@ -219,20 +221,20 @@ namespace Ludo.ComputationalGeometry
 
         public void RnextSelf()
         {
-            int orient1 = this.orient;
-            this.orient = this.triangle.neighbors[orient1].orient;
-            this.triangle = this.triangle.neighbors[orient1].triangle;
-            this.orient = Otri.plus1Mod3[this.orient];
-            int orient2 = this.orient;
-            this.orient = this.triangle.neighbors[orient2].orient;
-            this.triangle = this.triangle.neighbors[orient2].triangle;
+            int orient1 = orient;
+            orient = triangle.neighbors[orient1].orient;
+            triangle = triangle.neighbors[orient1].triangle;
+            orient = plus1Mod3[orient];
+            int orient2 = orient;
+            orient = triangle.neighbors[orient2].orient;
+            triangle = triangle.neighbors[orient2].triangle;
         }
 
-        public void Rprev(ref Otri o2)
+        public void Rprev(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle.neighbors[this.orient].triangle;
-            o2.orient = this.triangle.neighbors[this.orient].orient;
-            o2.orient = Otri.minus1Mod3[o2.orient];
+            o2.triangle = triangle.neighbors[this.orient].triangle;
+            o2.orient = triangle.neighbors[this.orient].orient;
+            o2.orient = minus1Mod3[o2.orient];
             int orient = o2.orient;
             o2.orient = o2.triangle.neighbors[orient].orient;
             o2.triangle = o2.triangle.neighbors[orient].triangle;
@@ -240,13 +242,13 @@ namespace Ludo.ComputationalGeometry
 
         public void RprevSelf()
         {
-            int orient1 = this.orient;
-            this.orient = this.triangle.neighbors[orient1].orient;
-            this.triangle = this.triangle.neighbors[orient1].triangle;
-            this.orient = Otri.minus1Mod3[this.orient];
-            int orient2 = this.orient;
-            this.orient = this.triangle.neighbors[orient2].orient;
-            this.triangle = this.triangle.neighbors[orient2].triangle;
+            int orient1 = orient;
+            orient = triangle.neighbors[orient1].orient;
+            triangle = triangle.neighbors[orient1].triangle;
+            orient = minus1Mod3[orient];
+            int orient2 = orient;
+            orient = triangle.neighbors[orient2].orient;
+            triangle = triangle.neighbors[orient2].triangle;
         }
 
         /// <summary>
@@ -256,7 +258,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The origin vertex is the starting point of the current edge when traversing counterclockwise.
         /// </remarks>
-        public Vertex Org() => this.triangle.vertices[Otri.plus1Mod3[this.orient]];
+        public Vertex Org() => triangle.vertices[plus1Mod3[orient]];
 
         /// <summary>
         /// Gets the destination vertex of the oriented edge.
@@ -265,7 +267,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The destination vertex is the ending point of the current edge when traversing counterclockwise.
         /// </remarks>
-        public Vertex Dest() => this.triangle.vertices[Otri.minus1Mod3[this.orient]];
+        public Vertex Dest() => triangle.vertices[minus1Mod3[orient]];
 
         /// <summary>
         /// Gets the apex vertex of the oriented triangle.
@@ -274,25 +276,25 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The apex vertex is the vertex that is opposite to the current edge.
         /// </remarks>
-        public Vertex Apex() => this.triangle.vertices[this.orient];
+        public Vertex Apex() => triangle.vertices[orient];
 
         /// <summary>
         /// Sets the origin vertex of the oriented edge.
         /// </summary>
         /// <param name="ptr">The vertex to set as the origin.</param>
-        public void SetOrg(Vertex ptr) => this.triangle.vertices[Otri.plus1Mod3[this.orient]] = ptr;
+        public void SetOrg(Vertex ptr) => triangle.vertices[plus1Mod3[orient]] = ptr;
 
         /// <summary>
         /// Sets the destination vertex of the oriented edge.
         /// </summary>
         /// <param name="ptr">The vertex to set as the destination.</param>
-        public void SetDest(Vertex ptr) => this.triangle.vertices[Otri.minus1Mod3[this.orient]] = ptr;
+        public void SetDest(Vertex ptr) => triangle.vertices[minus1Mod3[orient]] = ptr;
 
         /// <summary>
         /// Sets the apex vertex of the oriented triangle.
         /// </summary>
         /// <param name="ptr">The vertex to set as the apex.</param>
-        public void SetApex(Vertex ptr) => this.triangle.vertices[this.orient] = ptr;
+        public void SetApex(Vertex ptr) => triangle.vertices[orient] = ptr;
 
         /// <summary>
         /// Creates a bond between this triangle and another triangle.
@@ -302,12 +304,12 @@ namespace Ludo.ComputationalGeometry
         /// This operation creates a two-way connection between the current edge of this triangle
         /// and the current edge of the other triangle, establishing them as neighbors.
         /// </remarks>
-        public void Bond(ref Otri o2)
+        public void Bond(ref OrientedTriangle o2)
         {
-            this.triangle.neighbors[this.orient].triangle = o2.triangle;
-            this.triangle.neighbors[this.orient].orient = o2.orient;
-            o2.triangle.neighbors[o2.orient].triangle = this.triangle;
-            o2.triangle.neighbors[o2.orient].orient = this.orient;
+            triangle.neighbors[orient].triangle = o2.triangle;
+            triangle.neighbors[orient].orient = o2.orient;
+            o2.triangle.neighbors[o2.orient].triangle = triangle;
+            o2.triangle.neighbors[o2.orient].orient = orient;
         }
 
         /// <summary>
@@ -319,8 +321,8 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Dissolve()
         {
-            this.triangle.neighbors[this.orient].triangle = TriangularMesh.dummytri;
-            this.triangle.neighbors[this.orient].orient = 0;
+            triangle.neighbors[orient].triangle = TriangularMesh.dummytri;
+            triangle.neighbors[orient].orient = 0;
         }
 
         /// <summary>
@@ -331,10 +333,10 @@ namespace Ludo.ComputationalGeometry
         /// This operation makes o2 a copy of the current oriented triangle,
         /// with the same triangle and orientation.
         /// </remarks>
-        public void Copy(ref Otri o2)
+        public void Copy(ref OrientedTriangle o2)
         {
-            o2.triangle = this.triangle;
-            o2.orient = this.orient;
+            o2.triangle = triangle;
+            o2.orient = orient;
         }
 
         /// <summary>
@@ -342,7 +344,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="o2">The oriented triangle to compare with.</param>
         /// <returns>True if both oriented triangles refer to the same triangle with the same orientation; otherwise, false.</returns>
-        public bool Equal(Otri o2) => this.triangle == o2.triangle && this.orient == o2.orient;
+        public bool Equal(OrientedTriangle o2) => triangle == o2.triangle && orient == o2.orient;
 
         /// <summary>
         /// Marks this triangle as infected.
@@ -350,7 +352,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// Infection is used in various algorithms to mark triangles for processing.
         /// </remarks>
-        public void Infect() => this.triangle.infected = true;
+        public void Infect() => triangle.infected = true;
 
         /// <summary>
         /// Marks this triangle as uninfected.
@@ -358,13 +360,13 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// Clears the infection status of the triangle.
         /// </remarks>
-        public void Uninfect() => this.triangle.infected = false;
+        public void Uninfect() => triangle.infected = false;
 
         /// <summary>
         /// Determines whether this triangle is infected.
         /// </summary>
         /// <returns>True if the triangle is infected; otherwise, false.</returns>
-        public bool IsInfected() => this.triangle.infected;
+        public bool IsInfected() => triangle.infected;
 
         /// <summary>
         /// Determines whether a triangle is dead (deallocated).
@@ -385,8 +387,8 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public static void Kill(Triangle tria)
         {
-            tria.neighbors[0].triangle = (Triangle) null;
-            tria.neighbors[2].triangle = (Triangle) null;
+            tria.neighbors[0].triangle = null;
+            tria.neighbors[2].triangle = null;
         }
 
         /// <summary>
@@ -396,7 +398,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This operation retrieves the subsegment (if any) that lies on the current edge of the triangle.
         /// </remarks>
-        public void SegPivot(ref Osub os) => os = this.triangle.subsegs[this.orient];
+        public void SegPivot(ref OrientedSubSegment os) => os = triangle.subsegs[orient];
 
         /// <summary>
         /// Creates a bond between this triangle and a subsegment.
@@ -406,9 +408,9 @@ namespace Ludo.ComputationalGeometry
         /// This operation creates a two-way connection between the current edge of this triangle
         /// and the specified subsegment, establishing them as associated with each other.
         /// </remarks>
-        public void SegBond(ref Osub os)
+        public void SegBond(ref OrientedSubSegment os)
         {
-            this.triangle.subsegs[this.orient] = os;
+            triangle.subsegs[orient] = os;
             os.seg.triangles[os.orient] = this;
         }
 
@@ -419,6 +421,6 @@ namespace Ludo.ComputationalGeometry
         /// This operation breaks the connection between the current edge of this triangle
         /// and any associated subsegment, setting the subsegment to a dummy subsegment.
         /// </remarks>
-        public void SegDissolve() => this.triangle.subsegs[this.orient].seg = TriangularMesh.dummysub;
+        public void SegDissolve() => triangle.subsegs[orient].seg = TriangularMesh.dummysub;
     }
 }

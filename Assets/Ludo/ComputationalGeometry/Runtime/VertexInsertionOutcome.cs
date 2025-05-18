@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace Ludo.ComputationalGeometry
     /// handle different insertion scenarios, such as when a vertex encroaches on a segment
     /// or violates quality constraints.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public enum VertexInsertionOutcome
     {
         /// <summary>

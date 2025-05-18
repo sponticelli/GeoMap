@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -9,7 +11,7 @@ namespace Ludo.ComputationalGeometry
     /// scenarios when inserting vertices, checking constraints, or performing other operations
     /// that depend on a point's location.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public enum PointLocationResult
     {
         /// <summary>

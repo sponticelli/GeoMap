@@ -5,7 +5,7 @@ namespace Ludo.ComputationalGeometry
     /// <summary>
     /// Represents a 2D point with x and y coordinates.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class Point : IComparable<Point>, IEquatable<Point>
     {
         internal int id;
@@ -48,27 +48,27 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the unique identifier of the point.
         /// </summary>
-        public int ID => this.id;
+        public int ID => id;
 
         /// <summary>
         /// Gets the x-coordinate of the point.
         /// </summary>
-        public double X => this.x;
+        public double X => x;
 
         /// <summary>
         /// Gets the y-coordinate of the point.
         /// </summary>
-        public double Y => this.y;
+        public double Y => y;
 
         /// <summary>
         /// Gets the boundary mark of the point.
         /// </summary>
-        public int Boundary => this.mark;
+        public int Boundary => mark;
 
         /// <summary>
         /// Gets the additional attributes associated with the point.
         /// </summary>
-        public double[] Attributes => this.attributes;
+        public double[] Attributes => attributes;
 
         /// <summary>
         /// Determines whether two points are equal.
@@ -78,7 +78,7 @@ namespace Ludo.ComputationalGeometry
         /// <returns>True if the points are equal; otherwise, false.</returns>
         public static bool operator ==(Point a, Point b)
         {
-            if ((object) a == (object) b)
+            if (a == (object) b)
                 return true;
             return (object) a != null && (object) b != null && a.Equals(b);
         }
@@ -101,7 +101,7 @@ namespace Ludo.ComputationalGeometry
             if (obj == null)
                 return false;
             Point point = obj as Point;
-            return (object) point != null && this.x == point.x && this.y == point.y;
+            return (object) point != null && x == point.x && y == point.y;
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="p">The point to compare with the current point.</param>
         /// <returns>True if the specified point is equal to the current point; otherwise, false.</returns>
-        public bool Equals(Point p) => (object) p != null && this.x == p.x && this.y == p.y;
+        public bool Equals(Point p) => (object) p != null && x == p.x && y == p.y;
 
         /// <summary>
         /// Compares the current point with another point.
@@ -123,21 +123,21 @@ namespace Ludo.ComputationalGeometry
         /// </returns>
         public int CompareTo(Point other)
         {
-            if (this.x == other.x && this.y == other.y)
+            if (x == other.x && y == other.y)
                 return 0;
-            return this.x >= other.x && (this.x != other.x || this.y >= other.y) ? 1 : -1;
+            return x >= other.x && (x != other.x || y >= other.y) ? 1 : -1;
         }
 
         /// <summary>
         /// Returns a hash code for the current point.
         /// </summary>
         /// <returns>A hash code for the current point.</returns>
-        public override int GetHashCode() => this.x.GetHashCode() ^ this.y.GetHashCode();
+        public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode();
 
         /// <summary>
         /// Returns a string representation of the current point.
         /// </summary>
         /// <returns>A string representation of the current point in the format [x,y].</returns>
-        public override string ToString() => $"[{this.x},{this.y}]";
+        public override string ToString() => $"[{x},{y}]";
     }
 }

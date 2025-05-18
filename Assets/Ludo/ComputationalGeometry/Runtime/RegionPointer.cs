@@ -1,9 +1,11 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
     /// Represents a pointer to a region in a geometric mesh, defined by a point and an identifier.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class RegionPointer
     {
         internal Point point;
@@ -17,7 +19,7 @@ namespace Ludo.ComputationalGeometry
         /// <param name="id">The identifier of the region.</param>
         public RegionPointer(double x, double y, int id)
         {
-            this.point = new Point(x, y);
+            point = new Point(x, y);
             this.id = id;
         }
     }

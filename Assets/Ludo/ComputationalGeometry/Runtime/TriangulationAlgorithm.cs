@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Ludo.ComputationalGeometry
     /// The choice of algorithm can significantly impact the speed and memory usage
     /// of the triangulation process, especially for large point sets.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public enum TriangulationAlgorithm
     {
         /// <summary>

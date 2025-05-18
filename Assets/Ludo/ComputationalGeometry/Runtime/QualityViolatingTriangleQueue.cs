@@ -1,10 +1,12 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
     /// Represents a priority queue for triangles that violate quality constraints.
     /// Used during mesh quality improvement to efficiently process triangles based on their quality measure.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class QualityViolatingTriangleQueue
     {
         /// <summary>
@@ -40,18 +42,18 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the number of triangles in the queue.
         /// </summary>
-        public int Count => this.count;
+        public int Count => count;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QualityViolatingTriangleQueue"/> class.
         /// </summary>
         public QualityViolatingTriangleQueue()
         {
-            this.queuefront = new QualityViolatingTriangle[4096 /*0x1000*/];
-            this.queuetail = new QualityViolatingTriangle[4096 /*0x1000*/];
-            this.nextnonemptyq = new int[4096 /*0x1000*/];
-            this.firstnonemptyq = -1;
-            this.count = 0;
+            queuefront = new QualityViolatingTriangle[4096 /*0x1000*/];
+            queuetail = new QualityViolatingTriangle[4096 /*0x1000*/];
+            nextnonemptyq = new int[4096 /*0x1000*/];
+            firstnonemptyq = -1;
+            count = 0;
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Enqueue(QualityViolatingTriangle badtri)
         {
-            ++this.count;
+            ++count;
             double num1;
             int num2;
             if (badtri.key >= 1.0)
@@ -87,29 +89,29 @@ namespace Ludo.ComputationalGeometry
                     num5 *= 2;
                 num3 += num5;
             }
-            int num6 = 2 * num3 + (num1 > QualityViolatingTriangleQueue.SQRT2 ? 1 : 0);
+            int num6 = 2 * num3 + (num1 > SQRT2 ? 1 : 0);
             int index1 = num2 <= 0 ? 2048 /*0x0800*/ + num6 : 2047 /*0x07FF*/ - num6;
-            if (this.queuefront[index1] == null)
+            if (queuefront[index1] == null)
             {
-                if (index1 > this.firstnonemptyq)
+                if (index1 > firstnonemptyq)
                 {
-                    this.nextnonemptyq[index1] = this.firstnonemptyq;
-                    this.firstnonemptyq = index1;
+                    nextnonemptyq[index1] = firstnonemptyq;
+                    firstnonemptyq = index1;
                 }
                 else
                 {
                     int index2 = index1 + 1;
-                    while (this.queuefront[index2] == null)
+                    while (queuefront[index2] == null)
                         ++index2;
-                    this.nextnonemptyq[index1] = this.nextnonemptyq[index2];
-                    this.nextnonemptyq[index2] = index1;
+                    nextnonemptyq[index1] = nextnonemptyq[index2];
+                    nextnonemptyq[index2] = index1;
                 }
-                this.queuefront[index1] = badtri;
+                queuefront[index1] = badtri;
             }
             else
-                this.queuetail[index1].nexttriang = badtri;
-            this.queuetail[index1] = badtri;
-            badtri.nexttriang = (QualityViolatingTriangle) null;
+                queuetail[index1].nexttriang = badtri;
+            queuetail[index1] = badtri;
+            badtri.nexttriang = null;
         }
 
         /// <summary>
@@ -121,13 +123,13 @@ namespace Ludo.ComputationalGeometry
         /// <param name="enqorg">The origin vertex of the triangle.</param>
         /// <param name="enqdest">The destination vertex of the triangle.</param>
         public void Enqueue(
-            ref Otri enqtri,
+            ref OrientedTriangle enqtri,
             double minedge,
             Vertex enqapex,
             Vertex enqorg,
             Vertex enqdest)
         {
-            this.Enqueue(new QualityViolatingTriangle()
+            Enqueue(new QualityViolatingTriangle
             {
                 poortri = enqtri,
                 key = minedge,
@@ -146,13 +148,13 @@ namespace Ludo.ComputationalGeometry
         /// </returns>
         public QualityViolatingTriangle Dequeue()
         {
-            if (this.firstnonemptyq < 0)
-                return (QualityViolatingTriangle) null;
-            --this.count;
-            QualityViolatingTriangle qualityViolatingTriangle = this.queuefront[this.firstnonemptyq];
-            this.queuefront[this.firstnonemptyq] = qualityViolatingTriangle.nexttriang;
-            if (qualityViolatingTriangle == this.queuetail[this.firstnonemptyq])
-                this.firstnonemptyq = this.nextnonemptyq[this.firstnonemptyq];
+            if (firstnonemptyq < 0)
+                return null;
+            --count;
+            QualityViolatingTriangle qualityViolatingTriangle = queuefront[firstnonemptyq];
+            queuefront[firstnonemptyq] = qualityViolatingTriangle.nexttriang;
+            if (qualityViolatingTriangle == queuetail[firstnonemptyq])
+                firstnonemptyq = nextnonemptyq[firstnonemptyq];
             return qualityViolatingTriangle;
         }
     }

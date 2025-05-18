@@ -7,15 +7,15 @@ namespace Ludo.ComputationalGeometry
     /// Implements a bounded Voronoi diagram generator based on a triangular mesh.
     /// This class creates a Voronoi diagram where regions are bounded by the convex hull of the input points.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class DelaunayDualVoronoiDiagram : IVoronoiDiagram
     {
         private TriangularMesh _triangularMesh;
-        private Point[] points;
-        private List<VoronoiRegion> regions;
-        private int segIndex;
-        private Dictionary<int, Segment> subsegMap;
-        private bool includeBoundary = true;
+        private Point[] _points;
+        private List<VoronoiRegion> _regions;
+        private int _segIndex;
+        private Dictionary<int, Segment> _subsegMap;
+        private bool _includeBoundary = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DelaunayDualVoronoiDiagram"/> class with the specified mesh.
@@ -34,40 +34,44 @@ namespace Ludo.ComputationalGeometry
         /// <param name="includeBoundary">If true, includes boundary vertices in the Voronoi diagram; otherwise, excludes them.</param>
         public DelaunayDualVoronoiDiagram(TriangularMesh triangularMesh, bool includeBoundary)
         {
-            this._triangularMesh = triangularMesh;
-            this.includeBoundary = includeBoundary;
-            this.Generate();
+            _triangularMesh = triangularMesh;
+            _includeBoundary = includeBoundary;
+            Generate();
         }
 
         /// <summary>
         /// Gets the array of points in the Voronoi diagram.
         /// These typically represent the circumcenters of triangles in the dual Delaunay triangulation.
         /// </summary>
-        public Point[] Points => this.points;
+        public Point[] Points => _points;
 
         /// <summary>
         /// Gets the list of Voronoi regions in the diagram.
         /// Each region corresponds to a generator point and contains the vertices that form the region's boundary.
         /// </summary>
-        public List<VoronoiRegion> Regions => this.regions;
+        public List<VoronoiRegion> Regions => _regions;
 
         /// <summary>
         /// Generates the Voronoi diagram from the mesh.
         /// </summary>
         private void Generate()
         {
-            this._triangularMesh.Renumber();
-            this._triangularMesh.MakeVertexMap();
-            this.points = new Point[this._triangularMesh.triangles.Count + this._triangularMesh.subsegs.Count * 5];
-            this.regions = new List<VoronoiRegion>(this._triangularMesh.vertices.Count);
-            this.ComputeCircumCenters();
-            this.TagBlindTriangles();
-            foreach (Vertex vertex in this._triangularMesh.vertices.Values)
+            _triangularMesh.Renumber();
+            _triangularMesh.MakeVertexMap();
+            _points = new Point[_triangularMesh.triangles.Count + _triangularMesh.subsegs.Count * 5];
+            _regions = new List<VoronoiRegion>(_triangularMesh.vertices.Count);
+            ComputeCircumCenters();
+            TagBlindTriangles();
+            foreach (Vertex vertex in _triangularMesh.vertices.Values)
             {
                 if (vertex.type == VertexType.FreeVertex || vertex.Boundary == 0)
-                    this.ConstructBvdCell(vertex);
-                else if (this.includeBoundary)
-                    this.ConstructBoundaryBvdCell(vertex);
+                {
+                    ConstructBvdCell(vertex);
+                }
+                else if (_includeBoundary)
+                {
+                    ConstructBoundaryBvdCell(vertex);
+                }
             }
         }
 
@@ -77,15 +81,15 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         private void ComputeCircumCenters()
         {
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             double xi = 0.0;
             double eta = 0.0;
-            foreach (Triangle triangle in this._triangularMesh.triangles.Values)
+            foreach (Triangle triangle in _triangularMesh.triangles.Values)
             {
-                otri.triangle = triangle;
-                Point circumcenter = Primitives.FindCircumcenter((Point) otri.Org(), (Point) otri.Dest(), (Point) otri.Apex(), ref xi, ref eta);
+                orientedTriangle.triangle = triangle;
+                Point circumcenter = Primitives.FindCircumcenter(orientedTriangle.Org(), orientedTriangle.Dest(), orientedTriangle.Apex(), ref xi, ref eta);
                 circumcenter.id = triangle.id;
-                this.points[triangle.id] = circumcenter;
+                _points[triangle.id] = circumcenter;
             }
         }
 
@@ -96,40 +100,45 @@ namespace Ludo.ComputationalGeometry
         private void TagBlindTriangles()
         {
             int num = 0;
-            this.subsegMap = new Dictionary<int, Segment>();
-            Otri otri = new Otri();
-            Otri o2 = new Otri();
-            Osub seg = new Osub();
-            Osub os = new Osub();
-            foreach (Triangle triangle in this._triangularMesh.triangles.Values)
+            _subsegMap = new Dictionary<int, Segment>();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
+            OrientedTriangle o2 = new OrientedTriangle();
+            OrientedSubSegment seg = new OrientedSubSegment();
+            OrientedSubSegment os = new OrientedSubSegment();
+            foreach (Triangle triangle in _triangularMesh.triangles.Values)
                 triangle.infected = false;
-            foreach (Segment segment in this._triangularMesh.subsegs.Values)
+            foreach (Segment segment in _triangularMesh.subsegs.Values)
             {
                 Stack<Triangle> triangleStack = new Stack<Triangle>();
                 seg.seg = segment;
                 seg.orient = 0;
-                seg.TriPivot(ref otri);
-                if (otri.triangle != TriangularMesh.dummytri && !otri.triangle.infected)
-                    triangleStack.Push(otri.triangle);
+                seg.TriPivot(ref orientedTriangle);
+                if (orientedTriangle.triangle != TriangularMesh.dummytri && !orientedTriangle.triangle.infected)
+                    triangleStack.Push(orientedTriangle.triangle);
                 seg.SymSelf();
-                seg.TriPivot(ref otri);
-                if (otri.triangle != TriangularMesh.dummytri && !otri.triangle.infected)
-                    triangleStack.Push(otri.triangle);
+                seg.TriPivot(ref orientedTriangle);
+                if (orientedTriangle.triangle != TriangularMesh.dummytri && !orientedTriangle.triangle.infected)
+                {
+                    triangleStack.Push(orientedTriangle.triangle);
+                }
                 while (triangleStack.Count > 0)
                 {
-                    otri.triangle = triangleStack.Pop();
-                    otri.orient = 0;
-                    if (this.TriangleIsBlinded(ref otri, ref seg))
+                    orientedTriangle.triangle = triangleStack.Pop();
+                    orientedTriangle.orient = 0;
+                    if (TriangleIsBlinded(ref orientedTriangle, ref seg))
                     {
-                        otri.triangle.infected = true;
+                        orientedTriangle.triangle.infected = true;
                         ++num;
-                        this.subsegMap.Add(otri.triangle.hash, seg.seg);
-                        for (otri.orient = 0; otri.orient < 3; ++otri.orient)
+                        _subsegMap.Add(orientedTriangle.triangle.hash, seg.seg);
+                        for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
                         {
-                            otri.Sym(ref o2);
+                            orientedTriangle.Sym(ref o2);
                             o2.SegPivot(ref os);
-                            if (o2.triangle != TriangularMesh.dummytri && !o2.triangle.infected && os.seg == TriangularMesh.dummysub)
+                            if (o2.triangle != TriangularMesh.dummytri && !o2.triangle.infected &&
+                                os.seg == TriangularMesh.dummysub)
+                            {
                                 triangleStack.Push(o2.triangle);
+                            }
                         }
                     }
                 }
@@ -143,233 +152,237 @@ namespace Ludo.ComputationalGeometry
         /// <param name="tri">The oriented triangle to check.</param>
         /// <param name="seg">The oriented segment to check against.</param>
         /// <returns>True if the triangle is blinded by the segment; otherwise, false.</returns>
-        private bool TriangleIsBlinded(ref Otri tri, ref Osub seg)
+        private bool TriangleIsBlinded(ref OrientedTriangle tri, ref OrientedSubSegment seg)
         {
-            Vertex p4_1 = tri.Org();
-            Vertex p4_2 = tri.Dest();
-            Vertex p4_3 = tri.Apex();
-            Vertex p1 = seg.Org();
-            Vertex p2 = seg.Dest();
-            Point point = this.points[tri.triangle.id];
+            Vertex p41 = tri.Org();
+            Vertex p42 = tri.Dest();
+            Vertex p43 = tri.Apex();
+            Vertex p1 = seg.Origin();
+            Vertex p2 = seg.Destination();
+            Point point = _points[tri.triangle.id];
             Point p;
-            return this.SegmentsIntersect((Point) p1, (Point) p2, point, (Point) p4_1, out p, true) || this.SegmentsIntersect((Point) p1, (Point) p2, point, (Point) p4_2, out p, true) || this.SegmentsIntersect((Point) p1, (Point) p2, point, (Point) p4_3, out p, true);
+            return SegmentsIntersect(p1, p2, point, p41, out p, true) || SegmentsIntersect(p1, p2, point, p42, out p, true) || SegmentsIntersect(p1, p2, point, p43, out p, true);
         }
 
         private void ConstructBvdCell(Vertex vertex)
         {
             VoronoiRegion voronoiRegion = new VoronoiRegion(vertex);
-            this.regions.Add(voronoiRegion);
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Otri o2_3 = new Otri();
-            Osub osub = new Osub();
-            Osub o2_4 = new Osub();
-            int count = this._triangularMesh.triangles.Count;
+            _regions.Add(voronoiRegion);
+            OrientedTriangle o21 = new OrientedTriangle();
+            OrientedTriangle o22 = new OrientedTriangle();
+            OrientedTriangle o23 = new OrientedTriangle();
+            OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
+            OrientedSubSegment o24 = new OrientedSubSegment();
+            int count = _triangularMesh.triangles.Count;
             List<Point> points = new List<Point>();
-            vertex.tri.Copy(ref o2_2);
-            if ((Point) o2_2.Org() != (Point) vertex)
+            vertex.tri.Copy(ref o22);
+            if (o22.Org() != vertex)
+            {
                 throw new Exception("ConstructBvdCell: inconsistent topology.");
-            o2_2.Copy(ref o2_1);
-            o2_2.Onext(ref o2_3);
+            }
+            o22.Copy(ref o21);
+            o22.Onext(ref o23);
             do
             {
-                Point point1 = this.points[o2_1.triangle.id];
-                Point point2 = this.points[o2_3.triangle.id];
+                Point point1 = _points[o21.triangle.id];
+                Point point2 = _points[o23.triangle.id];
                 Point p;
-                if (!o2_1.triangle.infected)
+                if (!o21.triangle.infected)
                 {
                     points.Add(point1);
-                    if (o2_3.triangle.infected)
+                    if (o23.triangle.infected)
                     {
-                        o2_4.seg = this.subsegMap[o2_3.triangle.hash];
-                        if (this.SegmentsIntersect((Point) o2_4.SegOrg(), (Point) o2_4.SegDest(), point1, point2, out p, true))
+                        o24.seg = _subsegMap[o23.triangle.hash];
+                        if (SegmentsIntersect(o24.GetSegmentOrigin(), o24.GetSegmentDestination(), point1, point2, out p, true))
                         {
-                            p.id = count + this.segIndex;
-                            this.points[count + this.segIndex] = p;
-                            ++this.segIndex;
+                            p.id = count + _segIndex;
+                            _points[count + _segIndex] = p;
+                            ++_segIndex;
                             points.Add(p);
                         }
                     }
                 }
                 else
                 {
-                    osub.seg = this.subsegMap[o2_1.triangle.hash];
-                    if (!o2_3.triangle.infected)
+                    orientedSubSegment.seg = _subsegMap[o21.triangle.hash];
+                    if (!o23.triangle.infected)
                     {
-                        if (this.SegmentsIntersect((Point) osub.SegOrg(), (Point) osub.SegDest(), point1, point2, out p, true))
+                        if (SegmentsIntersect(orientedSubSegment.GetSegmentOrigin(), orientedSubSegment.GetSegmentDestination(), point1, point2, out p, true))
                         {
-                            p.id = count + this.segIndex;
-                            this.points[count + this.segIndex] = p;
-                            ++this.segIndex;
+                            p.id = count + _segIndex;
+                            _points[count + _segIndex] = p;
+                            ++_segIndex;
                             points.Add(p);
                         }
                     }
                     else
                     {
-                        o2_4.seg = this.subsegMap[o2_3.triangle.hash];
-                        if (!osub.Equal(o2_4))
+                        o24.seg = _subsegMap[o23.triangle.hash];
+                        if (!orientedSubSegment.Equal(o24))
                         {
-                            if (this.SegmentsIntersect((Point) osub.SegOrg(), (Point) osub.SegDest(), point1, point2, out p, true))
+                            if (SegmentsIntersect(orientedSubSegment.GetSegmentOrigin(), orientedSubSegment.GetSegmentDestination(), point1, point2, out p, true))
                             {
-                                p.id = count + this.segIndex;
-                                this.points[count + this.segIndex] = p;
-                                ++this.segIndex;
+                                p.id = count + _segIndex;
+                                _points[count + _segIndex] = p;
+                                ++_segIndex;
                                 points.Add(p);
                             }
-                            if (this.SegmentsIntersect((Point) o2_4.SegOrg(), (Point) o2_4.SegDest(), point1, point2, out p, true))
+                            if (SegmentsIntersect(o24.GetSegmentOrigin(), o24.GetSegmentDestination(), point1, point2, out p, true))
                             {
-                                p.id = count + this.segIndex;
-                                this.points[count + this.segIndex] = p;
-                                ++this.segIndex;
+                                p.id = count + _segIndex;
+                                _points[count + _segIndex] = p;
+                                ++_segIndex;
                                 points.Add(p);
                             }
                         }
                     }
                 }
-                o2_3.Copy(ref o2_1);
-                o2_3.OnextSelf();
+                o23.Copy(ref o21);
+                o23.OnextSelf();
             }
-            while (!o2_1.Equal(o2_2));
+            while (!o21.Equal(o22));
             voronoiRegion.Add(points);
         }
 
         private void ConstructBoundaryBvdCell(Vertex vertex)
         {
             VoronoiRegion voronoiRegion = new VoronoiRegion(vertex);
-            this.regions.Add(voronoiRegion);
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Otri o2_3 = new Otri();
-            Otri o2_4 = new Otri();
-            Osub osub = new Osub();
-            Osub o2_5 = new Osub();
-            int count = this._triangularMesh.triangles.Count;
+            _regions.Add(voronoiRegion);
+            OrientedTriangle o21 = new OrientedTriangle();
+            OrientedTriangle o22 = new OrientedTriangle();
+            OrientedTriangle o23 = new OrientedTriangle();
+            OrientedTriangle o24 = new OrientedTriangle();
+            OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
+            OrientedSubSegment o25 = new OrientedSubSegment();
+            int count = _triangularMesh.triangles.Count;
             List<Point> points = new List<Point>();
-            vertex.tri.Copy(ref o2_2);
-            if ((Point) o2_2.Org() != (Point) vertex)
+            vertex.tri.Copy(ref o22);
+            if (o22.Org() != vertex)
                 throw new Exception("ConstructBoundaryBvdCell: inconsistent topology.");
-            o2_2.Copy(ref o2_1);
-            o2_2.Onext(ref o2_3);
-            o2_2.Oprev(ref o2_4);
-            if (o2_4.triangle != TriangularMesh.dummytri)
+            o22.Copy(ref o21);
+            o22.Onext(ref o23);
+            o22.Oprev(ref o24);
+            if (o24.triangle != TriangularMesh.dummytri)
             {
-                while (o2_4.triangle != TriangularMesh.dummytri && !o2_4.Equal(o2_2))
+                while (o24.triangle != TriangularMesh.dummytri && !o24.Equal(o22))
                 {
-                    o2_4.Copy(ref o2_1);
-                    o2_4.OprevSelf();
+                    o24.Copy(ref o21);
+                    o24.OprevSelf();
                 }
-                o2_1.Copy(ref o2_2);
-                o2_1.Onext(ref o2_3);
+                o21.Copy(ref o22);
+                o21.Onext(ref o23);
             }
-            if (o2_4.triangle == TriangularMesh.dummytri)
+            if (o24.triangle == TriangularMesh.dummytri)
             {
                 Point point = new Point(vertex.x, vertex.y);
-                point.id = count + this.segIndex;
-                this.points[count + this.segIndex] = point;
-                ++this.segIndex;
+                point.id = count + _segIndex;
+                _points[count + _segIndex] = point;
+                ++_segIndex;
                 points.Add(point);
             }
-            Vertex vertex1 = o2_1.Org();
-            Vertex vertex2 = o2_1.Dest();
+            Vertex vertex1 = o21.Org();
+            Vertex vertex2 = o21.Dest();
             Point p = new Point((vertex1.X + vertex2.X) / 2.0, (vertex1.Y + vertex2.Y) / 2.0);
-            p.id = count + this.segIndex;
-            this.points[count + this.segIndex] = p;
-            ++this.segIndex;
+            p.id = count + _segIndex;
+            _points[count + _segIndex] = p;
+            ++_segIndex;
             points.Add(p);
             do
             {
-                Point point1 = this.points[o2_1.triangle.id];
-                if (o2_3.triangle == TriangularMesh.dummytri)
+                Point point1 = _points[o21.triangle.id];
+                if (o23.triangle == TriangularMesh.dummytri)
                 {
-                    if (!o2_1.triangle.infected)
+                    if (!o21.triangle.infected)
+                    {
                         points.Add(point1);
-                    Vertex vertex3 = o2_1.Org();
-                    Vertex vertex4 = o2_1.Apex();
+                    }
+                    Vertex vertex3 = o21.Org();
+                    Vertex vertex4 = o21.Apex();
                     Point point2 = new Point((vertex3.X + vertex4.X) / 2.0, (vertex3.Y + vertex4.Y) / 2.0);
-                    point2.id = count + this.segIndex;
-                    this.points[count + this.segIndex] = point2;
-                    ++this.segIndex;
+                    point2.id = count + _segIndex;
+                    _points[count + _segIndex] = point2;
+                    ++_segIndex;
                     points.Add(point2);
                     break;
                 }
-                Point point3 = this.points[o2_3.triangle.id];
-                if (!o2_1.triangle.infected)
+                Point point3 = _points[o23.triangle.id];
+                if (!o21.triangle.infected)
                 {
                     points.Add(point1);
-                    if (o2_3.triangle.infected)
+                    if (o23.triangle.infected)
                     {
-                        o2_5.seg = this.subsegMap[o2_3.triangle.hash];
-                        if (this.SegmentsIntersect((Point) o2_5.SegOrg(), (Point) o2_5.SegDest(), point1, point3, out p, true))
+                        o25.seg = _subsegMap[o23.triangle.hash];
+                        if (SegmentsIntersect(o25.GetSegmentOrigin(), o25.GetSegmentDestination(), point1, point3, out p, true))
                         {
-                            p.id = count + this.segIndex;
-                            this.points[count + this.segIndex] = p;
-                            ++this.segIndex;
+                            p.id = count + _segIndex;
+                            _points[count + _segIndex] = p;
+                            ++_segIndex;
                             points.Add(p);
                         }
                     }
                 }
                 else
                 {
-                    osub.seg = this.subsegMap[o2_1.triangle.hash];
-                    Vertex p1 = osub.SegOrg();
-                    Vertex p2 = osub.SegDest();
-                    if (!o2_3.triangle.infected)
+                    orientedSubSegment.seg = _subsegMap[o21.triangle.hash];
+                    Vertex p1 = orientedSubSegment.GetSegmentOrigin();
+                    Vertex p2 = orientedSubSegment.GetSegmentDestination();
+                    if (!o23.triangle.infected)
                     {
-                        vertex2 = o2_1.Dest();
-                        Vertex vertex5 = o2_1.Apex();
+                        vertex2 = o21.Dest();
+                        Vertex vertex5 = o21.Apex();
                         Point p3 = new Point((vertex2.X + vertex5.X) / 2.0, (vertex2.Y + vertex5.Y) / 2.0);
-                        if (this.SegmentsIntersect((Point) p1, (Point) p2, p3, point1, out p, false))
+                        if (SegmentsIntersect(p1, p2, p3, point1, out p, false))
                         {
-                            p.id = count + this.segIndex;
-                            this.points[count + this.segIndex] = p;
-                            ++this.segIndex;
+                            p.id = count + _segIndex;
+                            _points[count + _segIndex] = p;
+                            ++_segIndex;
                             points.Add(p);
                         }
-                        if (this.SegmentsIntersect((Point) p1, (Point) p2, point1, point3, out p, true))
+                        if (SegmentsIntersect(p1, p2, point1, point3, out p, true))
                         {
-                            p.id = count + this.segIndex;
-                            this.points[count + this.segIndex] = p;
-                            ++this.segIndex;
+                            p.id = count + _segIndex;
+                            _points[count + _segIndex] = p;
+                            ++_segIndex;
                             points.Add(p);
                         }
                     }
                     else
                     {
-                        o2_5.seg = this.subsegMap[o2_3.triangle.hash];
-                        if (!osub.Equal(o2_5))
+                        o25.seg = _subsegMap[o23.triangle.hash];
+                        if (!orientedSubSegment.Equal(o25))
                         {
-                            if (this.SegmentsIntersect((Point) p1, (Point) p2, point1, point3, out p, true))
+                            if (SegmentsIntersect(p1, p2, point1, point3, out p, true))
                             {
-                                p.id = count + this.segIndex;
-                                this.points[count + this.segIndex] = p;
-                                ++this.segIndex;
+                                p.id = count + _segIndex;
+                                _points[count + _segIndex] = p;
+                                ++_segIndex;
                                 points.Add(p);
                             }
-                            if (this.SegmentsIntersect((Point) o2_5.SegOrg(), (Point) o2_5.SegDest(), point1, point3, out p, true))
+                            if (SegmentsIntersect(o25.GetSegmentOrigin(), o25.GetSegmentDestination(), point1, point3, out p, true))
                             {
-                                p.id = count + this.segIndex;
-                                this.points[count + this.segIndex] = p;
-                                ++this.segIndex;
+                                p.id = count + _segIndex;
+                                _points[count + _segIndex] = p;
+                                ++_segIndex;
                                 points.Add(p);
                             }
                         }
                         else
                         {
                             Point p3 = new Point((vertex1.X + vertex2.X) / 2.0, (vertex1.Y + vertex2.Y) / 2.0);
-                            if (this.SegmentsIntersect((Point) p1, (Point) p2, p3, point3, out p, false))
+                            if (SegmentsIntersect(p1, p2, p3, point3, out p, false))
                             {
-                                p.id = count + this.segIndex;
-                                this.points[count + this.segIndex] = p;
-                                ++this.segIndex;
+                                p.id = count + _segIndex;
+                                _points[count + _segIndex] = p;
+                                ++_segIndex;
                                 points.Add(p);
                             }
                         }
                     }
                 }
-                o2_3.Copy(ref o2_1);
-                o2_3.OnextSelf();
+                o23.Copy(ref o21);
+                o23.OnextSelf();
             }
-            while (!o2_1.Equal(o2_2));
+            while (!o21.Equal(o22));
             voronoiRegion.Add(points);
         }
 
@@ -391,7 +404,7 @@ namespace Ludo.ComputationalGeometry
             out Point p,
             bool strictIntersect)
         {
-            p = (Point) null;
+            p = null;
             double x1 = p1.X;
             double y1 = p1.Y;
             double x2 = p2.X;

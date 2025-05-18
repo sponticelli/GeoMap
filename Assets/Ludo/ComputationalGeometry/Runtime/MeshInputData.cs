@@ -1,21 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
     /// Represents the input geometry for mesh generation, containing points, segments, holes, and regions.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class MeshInputData
     {
-        internal List<Vertex> points;
-        internal List<MeshEdge> segments;
-        internal List<Point> holes;
-        internal List<RegionPointer> regions;
-        private AxisAlignedBoundingBox2D bounds;
-        private int pointAttributes = -1;
+        public List<Vertex> points;
+        public List<MeshEdge> segments;
+        public List<Point> holes;
+        public List<RegionPointer> regions;
+        private AxisAlignedBoundingBox2D _bounds;
+        private int _pointAttributes = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MeshInputData"/> class with default capacity.
@@ -31,59 +30,59 @@ namespace Ludo.ComputationalGeometry
         /// <param name="capacity">The initial capacity for the points collection.</param>
         public MeshInputData(int capacity)
         {
-            this.points = new List<Vertex>(capacity);
-            this.segments = new List<MeshEdge>();
-            this.holes = new List<Point>();
-            this.regions = new List<RegionPointer>();
-            this.bounds = new AxisAlignedBoundingBox2D();
-            this.pointAttributes = -1;
+            points = new List<Vertex>(capacity);
+            segments = new List<MeshEdge>();
+            holes = new List<Point>();
+            regions = new List<RegionPointer>();
+            _bounds = new AxisAlignedBoundingBox2D();
+            _pointAttributes = -1;
         }
 
         /// <summary>
         /// Gets the bounding box of the input geometry.
         /// </summary>
-        public AxisAlignedBoundingBox2D Bounds => this.bounds;
+        public AxisAlignedBoundingBox2D Bounds => _bounds;
 
         /// <summary>
         /// Gets a value indicating whether the input geometry has any segments.
         /// </summary>
-        public bool HasSegments => this.segments.Count > 0;
+        public bool HasSegments => segments.Count > 0;
 
         /// <summary>
         /// Gets the number of points in the input geometry.
         /// </summary>
-        public int Count => this.points.Count;
+        public int Count => points.Count;
 
         /// <summary>
         /// Gets the collection of points in the input geometry.
         /// </summary>
-        public IEnumerable<Point> Points => this.points.Cast<Point>();
+        public IEnumerable<Point> Points => points;
 
         /// <summary>
         /// Gets the collection of segments in the input geometry.
         /// </summary>
-        public ICollection<MeshEdge> Segments => (ICollection<MeshEdge>)this.segments;
+        public ICollection<MeshEdge> Segments => segments;
 
         /// <summary>
         /// Gets the collection of holes in the input geometry.
         /// </summary>
-        public ICollection<Point> Holes => (ICollection<Point>)this.holes;
+        public ICollection<Point> Holes => holes;
 
         /// <summary>
         /// Gets the collection of region pointers in the input geometry.
         /// </summary>
-        public ICollection<RegionPointer> Regions => (ICollection<RegionPointer>)this.regions;
+        public ICollection<RegionPointer> Regions => regions;
 
         /// <summary>
         /// Clears all points, segments, holes, and regions from the input geometry.
         /// </summary>
         public void Clear()
         {
-            this.points.Clear();
-            this.segments.Clear();
-            this.holes.Clear();
-            this.regions.Clear();
-            this.pointAttributes = -1;
+            points.Clear();
+            segments.Clear();
+            holes.Clear();
+            regions.Clear();
+            _pointAttributes = -1;
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="x">The x-coordinate of the point.</param>
         /// <param name="y">The y-coordinate of the point.</param>
-        public void AddPoint(double x, double y) => this.AddPoint(x, y, 0);
+        public void AddPoint(double x, double y) => AddPoint(x, y, 0);
 
         /// <summary>
         /// Adds a point with the specified coordinates and boundary mark.
@@ -101,8 +100,8 @@ namespace Ludo.ComputationalGeometry
         /// <param name="boundary">The boundary mark of the point.</param>
         public void AddPoint(double x, double y, int boundary)
         {
-            this.points.Add(new Vertex(x, y, boundary));
-            this.bounds.Update(x, y);
+            points.Add(new Vertex(x, y, boundary));
+            _bounds.Update(x, y);
         }
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace Ludo.ComputationalGeometry
         /// <param name="attribute">The attribute value to associate with the point.</param>
         public void AddPoint(double x, double y, int boundary, double attribute)
         {
-            this.AddPoint(x, y, 0, new double[1] { attribute });
+            AddPoint(x, y, 0, new double[1] { attribute });
         }
 
         /// <summary>
@@ -127,15 +126,15 @@ namespace Ludo.ComputationalGeometry
         /// <exception cref="ArgumentException">Thrown when the attributes are inconsistent with previously added points.</exception>
         public void AddPoint(double x, double y, int boundary, double[] attribs)
         {
-            if (this.pointAttributes < 0)
+            if (_pointAttributes < 0)
             {
-                this.pointAttributes = attribs == null ? 0 : attribs.Length;
+                _pointAttributes = attribs == null ? 0 : attribs.Length;
             }
             else
             {
-                if (attribs == null && this.pointAttributes > 0)
+                if (attribs == null && _pointAttributes > 0)
                     throw new ArgumentException("Inconsitent use of point attributes.");
-                if (attribs != null && this.pointAttributes != attribs.Length)
+                if (attribs != null && _pointAttributes != attribs.Length)
                     throw new ArgumentException("Inconsitent use of point attributes.");
             }
 
@@ -143,7 +142,7 @@ namespace Ludo.ComputationalGeometry
             Vertex vertex = new Vertex(x, y, boundary);
             vertex.attributes = attribs;
             points.Add(vertex);
-            this.bounds.Update(x, y);
+            _bounds.Update(x, y);
         }
 
         /// <summary>
@@ -151,7 +150,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="x">The x-coordinate of the hole.</param>
         /// <param name="y">The y-coordinate of the hole.</param>
-        public void AddHole(double x, double y) => this.holes.Add(new Point(x, y));
+        public void AddHole(double x, double y) => holes.Add(new Point(x, y));
 
         /// <summary>
         /// Adds a region pointer at the specified coordinates with the given identifier.
@@ -161,7 +160,7 @@ namespace Ludo.ComputationalGeometry
         /// <param name="id">The identifier of the region.</param>
         public void AddRegion(double x, double y, int id)
         {
-            this.regions.Add(new RegionPointer(x, y, id));
+            regions.Add(new RegionPointer(x, y, id));
         }
 
         /// <summary>
@@ -169,7 +168,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="p0">The index of the first endpoint.</param>
         /// <param name="p1">The index of the second endpoint.</param>
-        public void AddSegment(int p0, int p1) => this.AddSegment(p0, p1, 0);
+        public void AddSegment(int p0, int p1) => AddSegment(p0, p1, 0);
 
         /// <summary>
         /// Adds a segment connecting the points with the specified indices and boundary mark.
@@ -182,7 +181,7 @@ namespace Ludo.ComputationalGeometry
         {
             if (p0 == p1 || p0 < 0 || p1 < 0)
                 throw new NotSupportedException("Invalid endpoints.");
-            this.segments.Add(new MeshEdge(p0, p1, boundary));
+            segments.Add(new MeshEdge(p0, p1, boundary));
         }
     }
 }

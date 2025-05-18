@@ -5,13 +5,13 @@ namespace Ludo.ComputationalGeometry
     /// <summary>
     /// Represents an axis-aligned bounding box in 2D space.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class AxisAlignedBoundingBox2D
     {
-        private double xmin;
-        private double ymin;
-        private double xmax;
-        private double ymax;
+        private double _xmin;
+        private double _ymin;
+        private double _xmax;
+        private double _ymax;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AxisAlignedBoundingBox2D"/> class with default values.
@@ -19,10 +19,10 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         public AxisAlignedBoundingBox2D()
         {
-            this.xmin = double.MaxValue;
-            this.ymin = double.MaxValue;
-            this.xmax = double.MinValue;
-            this.ymax = double.MinValue;
+            _xmin = double.MaxValue;
+            _ymin = double.MaxValue;
+            _xmax = double.MinValue;
+            _ymax = double.MinValue;
         }
 
         /// <summary>
@@ -34,41 +34,41 @@ namespace Ludo.ComputationalGeometry
         /// <param name="ymax">The maximum y-coordinate.</param>
         public AxisAlignedBoundingBox2D(double xmin, double ymin, double xmax, double ymax)
         {
-            this.xmin = xmin;
-            this.ymin = ymin;
-            this.xmax = xmax;
-            this.ymax = ymax;
+            _xmin = xmin;
+            _ymin = ymin;
+            _xmax = xmax;
+            _ymax = ymax;
         }
 
         /// <summary>
         /// Gets the minimum x-coordinate of the bounding box.
         /// </summary>
-        public double Xmin => this.xmin;
+        public double Xmin => _xmin;
 
         /// <summary>
         /// Gets the minimum y-coordinate of the bounding box.
         /// </summary>
-        public double Ymin => this.ymin;
+        public double Ymin => _ymin;
 
         /// <summary>
         /// Gets the maximum x-coordinate of the bounding box.
         /// </summary>
-        public double Xmax => this.xmax;
+        public double Xmax => _xmax;
 
         /// <summary>
         /// Gets the maximum y-coordinate of the bounding box.
         /// </summary>
-        public double Ymax => this.ymax;
+        public double Ymax => _ymax;
 
         /// <summary>
         /// Gets the width of the bounding box.
         /// </summary>
-        public double Width => this.xmax - this.xmin;
+        public double Width => _xmax - _xmin;
 
         /// <summary>
         /// Gets the height of the bounding box.
         /// </summary>
-        public double Height => this.ymax - this.ymin;
+        public double Height => _ymax - _ymin;
 
         /// <summary>
         /// Updates the bounding box to include the specified point.
@@ -77,10 +77,10 @@ namespace Ludo.ComputationalGeometry
         /// <param name="y">The y-coordinate of the point.</param>
         public void Update(double x, double y)
         {
-            this.xmin = Math.Min(this.xmin, x);
-            this.ymin = Math.Min(this.ymin, y);
-            this.xmax = Math.Max(this.xmax, x);
-            this.ymax = Math.Max(this.ymax, y);
+            _xmin = Math.Min(_xmin, x);
+            _ymin = Math.Min(_ymin, y);
+            _xmax = Math.Max(_xmax, x);
+            _ymax = Math.Max(_ymax, y);
         }
 
         /// <summary>
@@ -90,10 +90,10 @@ namespace Ludo.ComputationalGeometry
         /// <param name="dy">The amount to scale in the y direction.</param>
         public void Scale(double dx, double dy)
         {
-            this.xmin -= dx;
-            this.xmax += dx;
-            this.ymin -= dy;
-            this.ymax += dy;
+            _xmin -= dx;
+            _xmax += dx;
+            _ymin -= dy;
+            _ymax += dy;
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Ludo.ComputationalGeometry
         /// <returns>True if the bounding box contains the point; otherwise, false.</returns>
         public bool Contains(Point pt)
         {
-            return pt.x >= this.xmin && pt.x <= this.xmax && pt.y >= this.ymin && pt.y <= this.ymax;
+            return pt.x >= _xmin && pt.x <= _xmax && pt.y >= _ymin && pt.y <= _ymax;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ludo.ComputationalGeometry
@@ -5,7 +6,7 @@ namespace Ludo.ComputationalGeometry
     /// <summary>
     /// Represents a region in a Voronoi diagram, defined by a generator point and a collection of boundary vertices.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class VoronoiRegion
     {
         private int id;
@@ -16,18 +17,18 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the unique identifier of the region.
         /// </summary>
-        public int ID => this.id;
+        public int ID => id;
 
         /// <summary>
         /// Gets the generator point of the region.
         /// This is the point for which all locations in the region are closer to it than to any other generator.
         /// </summary>
-        public Point Generator => this.generator;
+        public Point Generator => generator;
 
         /// <summary>
         /// Gets the collection of vertices that form the boundary of the region.
         /// </summary>
-        public ICollection<Point> Vertices => (ICollection<Point>) this.vertices;
+        public ICollection<Point> Vertices => vertices;
 
         /// <summary>
         /// Gets or sets a value indicating whether the region is bounded.
@@ -35,8 +36,8 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         public bool Bounded
         {
-            get => this.bounded;
-            set => this.bounded = value;
+            get => bounded;
+            set => bounded = value;
         }
 
         /// <summary>
@@ -45,28 +46,28 @@ namespace Ludo.ComputationalGeometry
         /// <param name="generator">The generator vertex of the region.</param>
         public VoronoiRegion(Vertex generator)
         {
-            this.id = generator.id;
-            this.generator = (Point) generator;
-            this.vertices = new List<Point>();
-            this.bounded = true;
+            id = generator.id;
+            this.generator = generator;
+            vertices = new List<Point>();
+            bounded = true;
         }
 
         /// <summary>
         /// Adds a vertex to the boundary of the region.
         /// </summary>
         /// <param name="point">The point to add as a vertex.</param>
-        public void Add(Point point) => this.vertices.Add(point);
+        public void Add(Point point) => vertices.Add(point);
 
         /// <summary>
         /// Adds multiple vertices to the boundary of the region.
         /// </summary>
         /// <param name="points">The list of points to add as vertices.</param>
-        public void Add(List<Point> points) => this.vertices.AddRange((IEnumerable<Point>) points);
+        public void Add(List<Point> points) => vertices.AddRange(points);
 
         /// <summary>
         /// Returns a string representation of the current region.
         /// </summary>
         /// <returns>A string representation of the current region in the format "R-ID {id}".</returns>
-        public override string ToString() => $"R-ID {this.id}";
+        public override string ToString() => $"R-ID {id}";
     }
 }

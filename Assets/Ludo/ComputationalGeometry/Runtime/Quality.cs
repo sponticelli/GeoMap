@@ -16,7 +16,7 @@ namespace Ludo.ComputationalGeometry
     /// and conforming Delaunay properties. The class works closely with the Mesh and Behavior
     /// classes to enforce these constraints according to the specified behavior settings.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class Quality
     {
         /// <summary>
@@ -42,7 +42,7 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Helper class for finding optimal locations for new vertices.
         /// </summary>
-        private NewLocation newLocation;
+        private VertexPositionOptimizer _vertexPositionOptimizer;
 
         /// <summary>
         /// Optional user-defined test function for custom quality constraints.
@@ -64,11 +64,11 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public Quality(TriangularMesh triangularMesh)
         {
-            this.badsubsegs = new Queue<NonconformingSubsegment>();
-            this.queue = new QualityViolatingTriangleQueue();
-            this._triangularMesh = triangularMesh;
-            this.behavior = triangularMesh.behavior;
-            this.newLocation = new NewLocation(triangularMesh);
+            badsubsegs = new Queue<NonconformingSubsegment>();
+            queue = new QualityViolatingTriangleQueue();
+            _triangularMesh = triangularMesh;
+            behavior = triangularMesh.behavior;
+            _vertexPositionOptimizer = new VertexPositionOptimizer(triangularMesh);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This method is used to mark a subsegment for refinement during the mesh improvement process.
         /// </remarks>
-        public void AddBadSubseg(NonconformingSubsegment badseg) => this.badsubsegs.Enqueue(badseg);
+        public void AddBadSubseg(NonconformingSubsegment badseg) => badsubsegs.Enqueue(badseg);
 
         /// <summary>
         /// Checks the mesh for topological consistency and correctness.
@@ -96,35 +96,35 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public bool CheckMesh()
         {
-            Otri otri = new Otri();
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
+            OrientedTriangle o2_1 = new OrientedTriangle();
+            OrientedTriangle o2_2 = new OrientedTriangle();
             bool noExact = TriangulationSettings.NoExact;
             TriangulationSettings.NoExact = false;
             int num = 0;
-            foreach (Triangle triangle in this._triangularMesh.triangles.Values)
+            foreach (Triangle triangle in _triangularMesh.triangles.Values)
             {
-                otri.triangle = triangle;
-                for (otri.orient = 0; otri.orient < 3; ++otri.orient)
+                orientedTriangle.triangle = triangle;
+                for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
                 {
-                    Vertex pa = otri.Org();
-                    Vertex pb = otri.Dest();
-                    if (otri.orient == 0)
+                    Vertex pa = orientedTriangle.Org();
+                    Vertex pb = orientedTriangle.Dest();
+                    if (orientedTriangle.orient == 0)
                     {
-                        Vertex pc = otri.Apex();
-                        if (Primitives.CounterClockwise((Point)pa, (Point)pb, (Point)pc) <= 0.0)
+                        Vertex pc = orientedTriangle.Apex();
+                        if (Primitives.CounterClockwise(pa, pb, pc) <= 0.0)
                         {
                             ++num;
                         }
                     }
 
-                    otri.Sym(ref o2_1);
+                    orientedTriangle.Sym(ref o2_1);
                     if (o2_1.triangle != TriangularMesh.dummytri)
                     {
                         o2_1.Sym(ref o2_2);
-                        if (otri.triangle != o2_2.triangle || otri.orient != o2_2.orient)
+                        if (orientedTriangle.triangle != o2_2.triangle || orientedTriangle.orient != o2_2.orient)
                         {
-                            if (otri.triangle == o2_2.triangle)
+                            if (orientedTriangle.triangle == o2_2.triangle)
                                 Debug.LogWarning(
                                     "Asymmetric triangle-triangle bond: (Right triangle, wrong orientation)");
                             ++num;
@@ -132,7 +132,7 @@ namespace Ludo.ComputationalGeometry
 
                         Vertex vertex1 = o2_1.Org();
                         Vertex vertex2 = o2_1.Dest();
-                        if ((Point)pa != (Point)vertex2 || (Point)pb != (Point)vertex1)
+                        if (pa != vertex2 || pb != vertex1)
                         {
                             Debug.LogWarning("Mismatched edge coordinates between two triangles.");
                             ++num;
@@ -141,8 +141,8 @@ namespace Ludo.ComputationalGeometry
                 }
             }
 
-            this._triangularMesh.MakeVertexMap();
-            foreach (Vertex vertex in this._triangularMesh.vertices.Values)
+            _triangularMesh.MakeVertexMap();
+            foreach (Vertex vertex in _triangularMesh.vertices.Values)
             {
                 if (vertex.tri.triangle == null)
                     Debug.LogWarning(
@@ -167,41 +167,41 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public bool CheckDelaunay()
         {
-            Otri otri = new Otri();
-            Otri o2 = new Otri();
-            Osub os = new Osub();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
+            OrientedTriangle o2 = new OrientedTriangle();
+            OrientedSubSegment os = new OrientedSubSegment();
             bool noExact = TriangulationSettings.NoExact;
             TriangulationSettings.NoExact = false;
             int num = 0;
-            foreach (Triangle triangle in this._triangularMesh.triangles.Values)
+            foreach (Triangle triangle in _triangularMesh.triangles.Values)
             {
-                otri.triangle = triangle;
-                for (otri.orient = 0; otri.orient < 3; ++otri.orient)
+                orientedTriangle.triangle = triangle;
+                for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
                 {
-                    Vertex pa = otri.Org();
-                    Vertex pb = otri.Dest();
-                    Vertex pc = otri.Apex();
-                    otri.Sym(ref o2);
+                    Vertex pa = orientedTriangle.Org();
+                    Vertex pb = orientedTriangle.Dest();
+                    Vertex pc = orientedTriangle.Apex();
+                    orientedTriangle.Sym(ref o2);
                     Vertex pd = o2.Apex();
-                    bool flag = o2.triangle != TriangularMesh.dummytri && !Otri.IsDead(o2.triangle) &&
-                                otri.triangle.id < o2.triangle.id && (Point)pa != (Point)this._triangularMesh.infvertex1 &&
-                                (Point)pa != (Point)this._triangularMesh.infvertex2 && (Point)pa != (Point)this._triangularMesh.infvertex3 &&
-                                (Point)pb != (Point)this._triangularMesh.infvertex1 && (Point)pb != (Point)this._triangularMesh.infvertex2 &&
-                                (Point)pb != (Point)this._triangularMesh.infvertex3 && (Point)pc != (Point)this._triangularMesh.infvertex1 &&
-                                (Point)pc != (Point)this._triangularMesh.infvertex2 && (Point)pc != (Point)this._triangularMesh.infvertex3 &&
-                                (Point)pd != (Point)this._triangularMesh.infvertex1 && (Point)pd != (Point)this._triangularMesh.infvertex2 &&
-                                (Point)pd != (Point)this._triangularMesh.infvertex3;
-                    if (this._triangularMesh.checksegments & flag)
+                    bool flag = o2.triangle != TriangularMesh.dummytri && !OrientedTriangle.IsDead(o2.triangle) &&
+                                orientedTriangle.triangle.id < o2.triangle.id && pa != _triangularMesh.infvertex1 &&
+                                pa != _triangularMesh.infvertex2 && pa != _triangularMesh.infvertex3 &&
+                                pb != _triangularMesh.infvertex1 && pb != _triangularMesh.infvertex2 &&
+                                pb != _triangularMesh.infvertex3 && pc != _triangularMesh.infvertex1 &&
+                                pc != _triangularMesh.infvertex2 && pc != _triangularMesh.infvertex3 &&
+                                pd != _triangularMesh.infvertex1 && pd != _triangularMesh.infvertex2 &&
+                                pd != _triangularMesh.infvertex3;
+                    if (_triangularMesh.checksegments & flag)
                     {
-                        otri.SegPivot(ref os);
+                        orientedTriangle.SegPivot(ref os);
                         if (os.seg != TriangularMesh.dummysub)
                             flag = false;
                     }
 
-                    if (flag && Primitives.NonRegular((Point)pa, (Point)pb, (Point)pc, (Point)pd) > 0.0)
+                    if (flag && Primitives.NonRegular(pa, pb, pc, pd) > 0.0)
                     {
                         Debug.LogWarning(
-                            $"Non-regular pair of triangles found (IDs {otri.triangle.id}/{o2.triangle.id}).");
+                            $"Non-regular pair of triangles found (IDs {orientedTriangle.triangle.id}/{o2.triangle.id}).");
                         ++num;
                     }
                 }
@@ -227,14 +227,14 @@ namespace Ludo.ComputationalGeometry
         /// If an encroachment is found, the subsegment is added to the queue of bad subsegments
         /// for later refinement.
         /// </remarks>
-        public int CheckSeg4Encroach(ref Osub testsubseg)
+        public int CheckSeg4Encroach(ref OrientedSubSegment testsubseg)
         {
-            Otri ot = new Otri();
-            Osub o2 = new Osub();
+            OrientedTriangle ot = new OrientedTriangle();
+            OrientedSubSegment o2 = new OrientedSubSegment();
             int num1 = 0;
             int num2 = 0;
-            Vertex vertex1 = testsubseg.Org();
-            Vertex vertex2 = testsubseg.Dest();
+            Vertex vertex1 = testsubseg.Origin();
+            Vertex vertex2 = testsubseg.Destination();
             testsubseg.TriPivot(ref ot);
             if (ot.triangle != TriangularMesh.dummytri)
             {
@@ -242,8 +242,8 @@ namespace Ludo.ComputationalGeometry
                 Vertex vertex3 = ot.Apex();
                 double num3 = (vertex1.x - vertex3.x) * (vertex2.x - vertex3.x) +
                               (vertex1.y - vertex3.y) * (vertex2.y - vertex3.y);
-                if (num3 < 0.0 && (this.behavior.ConformingDelaunay || num3 * num3 >=
-                        (2.0 * this.behavior.goodAngle - 1.0) * (2.0 * this.behavior.goodAngle - 1.0) *
+                if (num3 < 0.0 && (behavior.ConformingDelaunay || num3 * num3 >=
+                        (2.0 * behavior.goodAngle - 1.0) * (2.0 * behavior.goodAngle - 1.0) *
                         ((vertex1.x - vertex3.x) * (vertex1.x - vertex3.x) +
                          (vertex1.y - vertex3.y) * (vertex1.y - vertex3.y)) *
                         ((vertex2.x - vertex3.x) * (vertex2.x - vertex3.x) +
@@ -259,8 +259,8 @@ namespace Ludo.ComputationalGeometry
                 Vertex vertex4 = ot.Apex();
                 double num4 = (vertex1.x - vertex4.x) * (vertex2.x - vertex4.x) +
                               (vertex1.y - vertex4.y) * (vertex2.y - vertex4.y);
-                if (num4 < 0.0 && (this.behavior.ConformingDelaunay || num4 * num4 >=
-                        (2.0 * this.behavior.goodAngle - 1.0) * (2.0 * this.behavior.goodAngle - 1.0) *
+                if (num4 < 0.0 && (behavior.ConformingDelaunay || num4 * num4 >=
+                        (2.0 * behavior.goodAngle - 1.0) * (2.0 * behavior.goodAngle - 1.0) *
                         ((vertex1.x - vertex4.x) * (vertex1.x - vertex4.x) +
                          (vertex1.y - vertex4.y) * (vertex1.y - vertex4.y)) *
                         ((vertex2.x - vertex4.x) * (vertex2.x - vertex4.x) +
@@ -268,23 +268,23 @@ namespace Ludo.ComputationalGeometry
                     num1 += 2;
             }
 
-            if (num1 > 0 && (this.behavior.NoBisect == 0 || this.behavior.NoBisect == 1 && num2 == 2))
+            if (num1 > 0 && (behavior.NoBisect == 0 || behavior.NoBisect == 1 && num2 == 2))
             {
                 NonconformingSubsegment nonconformingSubsegment = new NonconformingSubsegment();
                 if (num1 == 1)
                 {
-                    nonconformingSubsegment.encsubseg = testsubseg;
-                    nonconformingSubsegment.subsegorg = vertex1;
-                    nonconformingSubsegment.subsegdest = vertex2;
+                    nonconformingSubsegment.Encsubseg = testsubseg;
+                    nonconformingSubsegment.subSegmentOrigin = vertex1;
+                    nonconformingSubsegment.subSegmentDestination = vertex2;
                 }
                 else
                 {
-                    nonconformingSubsegment.encsubseg = o2;
-                    nonconformingSubsegment.subsegorg = vertex2;
-                    nonconformingSubsegment.subsegdest = vertex1;
+                    nonconformingSubsegment.Encsubseg = o2;
+                    nonconformingSubsegment.subSegmentOrigin = vertex2;
+                    nonconformingSubsegment.subSegmentDestination = vertex1;
                 }
 
-                this.badsubsegs.Enqueue(nonconformingSubsegment);
+                badsubsegs.Enqueue(nonconformingSubsegment);
             }
 
             return num1;
@@ -304,11 +304,11 @@ namespace Ludo.ComputationalGeometry
         /// If the triangle fails any of these tests, it is added to the priority queue
         /// for refinement during the mesh improvement process.
         /// </remarks>
-        public void TestTriangle(ref Otri testtri)
+        public void TestTriangle(ref OrientedTriangle testtri)
         {
-            Otri o2_1 = new Otri();
-            Otri o2_2 = new Otri();
-            Osub os = new Osub();
+            OrientedTriangle o2_1 = new OrientedTriangle();
+            OrientedTriangle o2_2 = new OrientedTriangle();
+            OrientedSubSegment os = new OrientedSubSegment();
             Vertex enqorg = testtri.Org();
             Vertex enqdest = testtri.Dest();
             Vertex enqapex = testtri.Apex();
@@ -360,25 +360,25 @@ namespace Ludo.ComputationalGeometry
                 testtri.Lprev(ref o2_1);
             }
 
-            if (this.behavior.VarArea || this.behavior.fixedArea || this.behavior.Usertest)
+            if (behavior.VarArea || behavior.fixedArea || behavior.Usertest)
             {
                 double num21 = 0.5 * (num1 * num4 - num2 * num3);
-                if (this.behavior.fixedArea && num21 > this.behavior.MaxArea)
+                if (behavior.fixedArea && num21 > behavior.MaxArea)
                 {
-                    this.queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
+                    queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
                     return;
                 }
 
-                if (this.behavior.VarArea && num21 > testtri.triangle.area && testtri.triangle.area > 0.0)
+                if (behavior.VarArea && num21 > testtri.triangle.area && testtri.triangle.area > 0.0)
                 {
-                    this.queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
+                    queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
                     return;
                 }
 
-                if (this.behavior.Usertest && this.userTest != null &&
-                    this.userTest((Point)enqorg, (Point)enqdest, (Point)enqapex, num21))
+                if (behavior.Usertest && userTest != null &&
+                    userTest(enqorg, enqdest, enqapex, num21))
                 {
-                    this.queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
+                    queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
                     return;
                 }
             }
@@ -388,8 +388,8 @@ namespace Ludo.ComputationalGeometry
                     ? (num13 + num14 - num16) / (2.0 * Math.Sqrt(num13 * num14))
                     : (num13 + num16 - num14) / (2.0 * Math.Sqrt(num13 * num16)))
                 : (num14 + num16 - num13) / (2.0 * Math.Sqrt(num14 * num16));
-            if (num17 <= this.behavior.goodAngle &&
-                (num22 >= this.behavior.maxGoodAngle || this.behavior.MaxAngle == 0.0))
+            if (num17 <= behavior.goodAngle &&
+                (num22 >= behavior.maxGoodAngle || behavior.MaxAngle == 0.0))
                 return;
             if (vertex1.type == VertexType.SegmentVertex && vertex2.type == VertexType.SegmentVertex)
             {
@@ -403,22 +403,22 @@ namespace Ludo.ComputationalGeometry
                         o2_1.SegPivot(ref os);
                     } while (os.seg == TriangularMesh.dummysub);
 
-                    Vertex vertex3 = os.SegOrg();
-                    Vertex vertex4 = os.SegDest();
+                    Vertex vertex3 = os.GetSegmentOrigin();
+                    Vertex vertex4 = os.GetSegmentDestination();
                     do
                     {
                         o2_2.DnextSelf();
                         o2_2.SegPivot(ref os);
                     } while (os.seg == TriangularMesh.dummysub);
 
-                    Vertex vertex5 = os.SegOrg();
-                    Vertex vertex6 = os.SegDest();
-                    Vertex vertex7 = (Vertex)null;
+                    Vertex vertex5 = os.GetSegmentOrigin();
+                    Vertex vertex6 = os.GetSegmentDestination();
+                    Vertex vertex7 = null;
                     if (vertex4.x == vertex5.x && vertex4.y == vertex5.y)
                         vertex7 = vertex4;
                     else if (vertex3.x == vertex6.x && vertex3.y == vertex6.y)
                         vertex7 = vertex3;
-                    if ((Point)vertex7 != (Point)null)
+                    if (vertex7 != null)
                     {
                         double num23 = (vertex1.x - vertex7.x) * (vertex1.x - vertex7.x) +
                                        (vertex1.y - vertex7.y) * (vertex1.y - vertex7.y);
@@ -430,7 +430,7 @@ namespace Ludo.ComputationalGeometry
                 }
             }
 
-            this.queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
+            queue.Enqueue(ref testtri, minedge, enqapex, enqorg, enqdest);
         }
 
         /// <summary>
@@ -442,12 +442,12 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void TallyEncs()
         {
-            Osub testsubseg = new Osub();
+            OrientedSubSegment testsubseg = new OrientedSubSegment();
             testsubseg.orient = 0;
-            foreach (Segment segment in this._triangularMesh.subsegs.Values)
+            foreach (Segment segment in _triangularMesh.subsegs.Values)
             {
                 testsubseg.seg = segment;
-                this.CheckSeg4Encroach(ref testsubseg);
+                CheckSeg4Encroach(ref testsubseg);
             }
         }
 
@@ -468,18 +468,18 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void SplitEncSegs(bool triflaws)
         {
-            Otri otri1 = new Otri();
-            Otri otri2 = new Otri();
-            Osub os = new Osub();
-            Osub osub = new Osub();
-            while (this.badsubsegs.Count > 0 && this._triangularMesh.steinerleft != 0)
+            OrientedTriangle otri1 = new OrientedTriangle();
+            OrientedTriangle otri2 = new OrientedTriangle();
+            OrientedSubSegment os = new OrientedSubSegment();
+            OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
+            while (badsubsegs.Count > 0 && _triangularMesh.steinerleft != 0)
             {
-                NonconformingSubsegment nonconformingSubsegment = this.badsubsegs.Dequeue();
-                Osub encsubseg = nonconformingSubsegment.encsubseg;
-                Vertex pa = encsubseg.Org();
-                Vertex pb = encsubseg.Dest();
-                if (!Osub.IsDead(encsubseg.seg) && (Point)pa == (Point)nonconformingSubsegment.subsegorg &&
-                    (Point)pb == (Point)nonconformingSubsegment.subsegdest)
+                NonconformingSubsegment nonconformingSubsegment = badsubsegs.Dequeue();
+                OrientedSubSegment encsubseg = nonconformingSubsegment.Encsubseg;
+                Vertex pa = encsubseg.Origin();
+                Vertex pb = encsubseg.Destination();
+                if (!OrientedSubSegment.IsDead(encsubseg.seg) && pa == nonconformingSubsegment.subSegmentOrigin &&
+                    pb == nonconformingSubsegment.subSegmentDestination)
                 {
                     encsubseg.TriPivot(ref otri1);
                     otri1.Lnext(ref otri2);
@@ -488,13 +488,13 @@ namespace Ludo.ComputationalGeometry
                     otri2.LnextSelf();
                     otri2.SegPivot(ref os);
                     bool flag2 = os.seg != TriangularMesh.dummysub;
-                    if (!this.behavior.ConformingDelaunay && !flag1 && !flag2)
+                    if (!behavior.ConformingDelaunay && !flag1 && !flag2)
                     {
                         Vertex vertex = otri1.Apex();
                         while (vertex.type == VertexType.FreeVertex &&
                                (pa.x - vertex.x) * (pb.x - vertex.x) + (pa.y - vertex.y) * (pb.y - vertex.y) < 0.0)
                         {
-                            this._triangularMesh.DeleteVertex(ref otri2);
+                            _triangularMesh.DeleteVertex(ref otri2);
                             encsubseg.TriPivot(ref otri1);
                             vertex = otri1.Apex();
                             otri1.Lprev(ref otri2);
@@ -512,13 +512,13 @@ namespace Ludo.ComputationalGeometry
                         otri2.SegPivot(ref os);
                         bool flag4 = os.seg != TriangularMesh.dummysub;
                         flag1 |= flag4;
-                        if (!this.behavior.ConformingDelaunay && !flag4 && !flag3)
+                        if (!behavior.ConformingDelaunay && !flag4 && !flag3)
                         {
                             Vertex vertex = otri2.Org();
                             while (vertex.type == VertexType.FreeVertex && (pa.x - vertex.x) * (pb.x - vertex.x) +
                                    (pa.y - vertex.y) * (pb.y - vertex.y) < 0.0)
                             {
-                                this._triangularMesh.DeleteVertex(ref otri2);
+                                _triangularMesh.DeleteVertex(ref otri2);
                                 otri1.Sym(ref otri2);
                                 vertex = otri2.Apex();
                                 otri2.LprevSelf();
@@ -543,17 +543,17 @@ namespace Ludo.ComputationalGeometry
                         num1 = 0.5;
 
                     Vertex vertex1 = new Vertex(pa.x + num1 * (pb.x - pa.x), pa.y + num1 * (pb.y - pa.y),
-                        encsubseg.Mark(), this._triangularMesh.nextras);
+                        encsubseg.Mark(), _triangularMesh.nextras);
                     vertex1.type = VertexType.SegmentVertex;
-                    vertex1.hash = this._triangularMesh.hash_vtx++;
+                    vertex1.hash = _triangularMesh.hash_vtx++;
                     vertex1.id = vertex1.hash;
-                    this._triangularMesh.vertices.Add(vertex1.hash, vertex1);
-                    for (int index = 0; index < this._triangularMesh.nextras; ++index)
+                    _triangularMesh.vertices.Add(vertex1.hash, vertex1);
+                    for (int index = 0; index < _triangularMesh.nextras; ++index)
                         vertex1.attributes[index] =
                             pa.attributes[index] + num1 * (pb.attributes[index] - pa.attributes[index]);
                     if (!TriangulationSettings.NoExact)
                     {
-                        double num4 = Primitives.CounterClockwise((Point)pa, (Point)pb, (Point)vertex1);
+                        double num4 = Primitives.CounterClockwise(pa, pb, vertex1);
                         double num5 = (pa.x - pb.x) * (pa.x - pb.x) + (pa.y - pb.y) * (pa.y - pb.y);
                         if (num4 != 0.0 && num5 != 0.0)
                         {
@@ -571,22 +571,22 @@ namespace Ludo.ComputationalGeometry
                         throw new Exception("Ran out of precision");
                     }
 
-                    switch (this._triangularMesh.InsertVertex(vertex1, ref otri1, ref encsubseg, true, triflaws))
+                    switch (_triangularMesh.InsertVertex(vertex1, ref otri1, ref encsubseg, true, triflaws))
                     {
                         case VertexInsertionOutcome.Successful:
                         case VertexInsertionOutcome.Encroaching:
-                            if (this._triangularMesh.steinerleft > 0)
-                                --this._triangularMesh.steinerleft;
-                            this.CheckSeg4Encroach(ref encsubseg);
+                            if (_triangularMesh.steinerleft > 0)
+                                --_triangularMesh.steinerleft;
+                            CheckSeg4Encroach(ref encsubseg);
                             encsubseg.NextSelf();
-                            this.CheckSeg4Encroach(ref encsubseg);
+                            CheckSeg4Encroach(ref encsubseg);
                             break;
                         default:
                             throw new Exception("Failure to split a segment.");
                     }
                 }
 
-                nonconformingSubsegment.subsegorg = (Vertex)null;
+                nonconformingSubsegment.subSegmentOrigin = null;
             }
         }
 
@@ -599,12 +599,12 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void TallyFaces()
         {
-            Otri testtri = new Otri();
+            OrientedTriangle testtri = new OrientedTriangle();
             testtri.orient = 0;
-            foreach (Triangle triangle in this._triangularMesh.triangles.Values)
+            foreach (Triangle triangle in _triangularMesh.triangles.Values)
             {
                 testtri.triangle = triangle;
-                this.TestTriangle(ref testtri);
+                TestTriangle(ref testtri);
             }
         }
 
@@ -625,52 +625,49 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void SplitTriangle(QualityViolatingTriangle badtri)
         {
-            Otri otri = new Otri();
+            OrientedTriangle orientedTriangle = new OrientedTriangle();
             double xi = 0.0;
             double eta = 0.0;
-            Otri poortri = badtri.poortri;
+            OrientedTriangle poortri = badtri.poortri;
             Vertex torg = poortri.Org();
             Vertex tdest = poortri.Dest();
             Vertex tapex = poortri.Apex();
-            if (Otri.IsDead(poortri.triangle) || !((Point)torg == (Point)badtri.triangorg) ||
-                !((Point)tdest == (Point)badtri.triangdest) || !((Point)tapex == (Point)badtri.triangapex))
+            if (OrientedTriangle.IsDead(poortri.triangle) || !(torg == badtri.triangorg) ||
+                !(tdest == badtri.triangdest) || !(tapex == badtri.triangapex))
                 return;
-            Point point = this.behavior.fixedArea || this.behavior.VarArea
-                ? Primitives.FindCircumcenter((Point)torg, (Point)tdest, (Point)tapex, ref xi, ref eta,
-                    this.behavior.offconstant)
-                : this.newLocation.FindLocation(torg, tdest, tapex, ref xi, ref eta, true, poortri);
+            Point point = behavior.fixedArea || behavior.VarArea
+                ? Primitives.FindCircumcenter(torg, tdest, tapex, ref xi, ref eta,
+                    behavior.offconstant)
+                : _vertexPositionOptimizer.FindPosition(torg, tdest, tapex, ref xi, ref eta, true, poortri);
             if ((point.x == torg.x && point.y == torg.y) ||
                 (point.x == tdest.x && point.y == tdest.y) ||
                 (point.x == tapex.x && point.y == tapex.y)) return;
 
-            Vertex newvertex = new Vertex(point.x, point.y, 0, this._triangularMesh.nextras);
+            Vertex newvertex = new Vertex(point.x, point.y, 0, _triangularMesh.nextras);
             newvertex.type = VertexType.FreeVertex;
-            for (int index = 0; index < this._triangularMesh.nextras; ++index)
+            for (int index = 0; index < _triangularMesh.nextras; ++index)
                 newvertex.attributes[index] = torg.attributes[index] +
                                               xi * (tdest.attributes[index] - torg.attributes[index]) +
                                               eta * (tapex.attributes[index] - torg.attributes[index]);
             if (eta < xi)
                 poortri.LprevSelf();
-            Osub splitseg = new Osub();
-            switch (this._triangularMesh.InsertVertex(newvertex, ref poortri, ref splitseg, true, true))
+            OrientedSubSegment splitseg = new OrientedSubSegment();
+            switch (_triangularMesh.InsertVertex(newvertex, ref poortri, ref splitseg, true, true))
             {
                 case VertexInsertionOutcome.Successful:
-                    newvertex.hash = this._triangularMesh.hash_vtx++;
+                    newvertex.hash = _triangularMesh.hash_vtx++;
                     newvertex.id = newvertex.hash;
-                    this._triangularMesh.vertices.Add(newvertex.hash, newvertex);
-                    if (this._triangularMesh.steinerleft > 0)
+                    _triangularMesh.vertices.Add(newvertex.hash, newvertex);
+                    if (_triangularMesh.steinerleft > 0)
                     {
-                        --this._triangularMesh.steinerleft;
-                        break;
+                        --_triangularMesh.steinerleft;
                     }
 
                     break;
                 case VertexInsertionOutcome.Encroaching:
-                    this._triangularMesh.UndoVertex();
+                    _triangularMesh.UndoVertex();
                     break;
                 case VertexInsertionOutcome.Violating:
-                    break;
-                default:
                     break;
             }
         }
@@ -693,27 +690,27 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void EnforceQuality()
         {
-            this.TallyEncs();
-            this.SplitEncSegs(false);
-            if (this.behavior.MinAngle > 0.0 || this.behavior.VarArea || this.behavior.fixedArea ||
-                this.behavior.Usertest)
+            TallyEncs();
+            SplitEncSegs(false);
+            if (behavior.MinAngle > 0.0 || behavior.VarArea || behavior.fixedArea ||
+                behavior.Usertest)
             {
-                this.TallyFaces();
-                this._triangularMesh.checkquality = true;
-                while (this.queue.Count > 0 && this._triangularMesh.steinerleft != 0)
+                TallyFaces();
+                _triangularMesh.checkquality = true;
+                while (queue.Count > 0 && _triangularMesh.steinerleft != 0)
                 {
-                    QualityViolatingTriangle badtri = this.queue.Dequeue();
-                    this.SplitTriangle(badtri);
-                    if (this.badsubsegs.Count > 0)
+                    QualityViolatingTriangle badtri = queue.Dequeue();
+                    SplitTriangle(badtri);
+                    if (badsubsegs.Count > 0)
                     {
-                        this.queue.Enqueue(badtri);
-                        this.SplitEncSegs(true);
+                        queue.Enqueue(badtri);
+                        SplitEncSegs(true);
                     }
                 }
             }
 
-            if ( !this.behavior.ConformingDelaunay || this.badsubsegs.Count <= 0 ||
-                this._triangularMesh.steinerleft != 0)
+            if ( !behavior.ConformingDelaunay || badsubsegs.Count <= 0 ||
+                _triangularMesh.steinerleft != 0)
                 return;
             Debug.LogWarning(
                 "I ran out of Steiner points, but the mesh has encroached subsegments, and therefore might not be truly Delaunay. If the Delaunay property is important to you, try increasing the number of Steiner points.");

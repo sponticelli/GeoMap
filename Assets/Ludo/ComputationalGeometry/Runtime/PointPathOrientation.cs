@@ -1,3 +1,5 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
@@ -8,7 +10,7 @@ namespace Ludo.ComputationalGeometry
     /// of a point relative to a path in the triangulation. It helps determine how to navigate
     /// through the triangulation when inserting segments or locating points.
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public enum PointPathOrientation
     {
         /// <summary>

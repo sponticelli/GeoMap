@@ -1,10 +1,12 @@
+using System;
+
 namespace Ludo.ComputationalGeometry
 {
     /// <summary>
     /// Represents a triangle that violates quality constraints and needs to be refined.
     /// Used during mesh quality improvement to track triangles that need to be split.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class QualityViolatingTriangle
     {
         /// <summary>
@@ -20,7 +22,7 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// The oriented triangle that violates quality constraints.
         /// </summary>
-        public Otri poortri;
+        public OrientedTriangle poortri;
 
         /// <summary>
         /// The quality measure of the triangle, used for prioritizing refinement.
@@ -53,12 +55,12 @@ namespace Ludo.ComputationalGeometry
         /// Initializes a new instance of the <see cref="QualityViolatingTriangle"/> class.
         /// Assigns a unique ID to the instance.
         /// </summary>
-        public QualityViolatingTriangle() => this.ID = QualityViolatingTriangle.OTID++;
+        public QualityViolatingTriangle() => ID = OTID++;
 
         /// <summary>
         /// Returns a string representation of the current bad triangle.
         /// </summary>
         /// <returns>A string representation of the current bad triangle in the format "B-TID {hash}".</returns>
-        public override string ToString() => $"B-TID {this.poortri.triangle.hash}";
+        public override string ToString() => $"B-TID {poortri.triangle.hash}";
     }
 }

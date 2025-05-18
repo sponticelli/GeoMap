@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 
 namespace Ludo.ComputationalGeometry
 {
@@ -20,7 +20,7 @@ namespace Ludo.ComputationalGeometry
     /// the mesh quality. The smoothing preserves the boundary of the mesh and any internal
     /// constraints (segments).
     /// </remarks>
-    [System.Serializable]
+    [Serializable]
     public class SimpleMeshSmoother : IMeshSmoother
     {
         /// <summary>
@@ -35,7 +35,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The constructor initializes the smoother with a reference to the mesh that will be smoothed.
         /// </remarks>
-        public SimpleMeshSmoother(TriangularMesh triangularMesh) => this._triangularMesh = triangularMesh;
+        public SimpleMeshSmoother(TriangularMesh triangularMesh) => _triangularMesh = triangularMesh;
 
         /// <summary>
         /// Smooths the mesh by adjusting vertex positions to improve triangle quality.
@@ -52,11 +52,11 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Smooth()
         {
-            this._triangularMesh.behavior.Quality = false;
+            _triangularMesh.behavior.Quality = false;
             for (int index = 0; index < 5; ++index)
             {
-                this.Step();
-                this._triangularMesh.Triangulate(this.Rebuild());
+                Step();
+                _triangularMesh.Triangulate(Rebuild());
             }
         }
 
@@ -76,19 +76,19 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void Step()
         {
-            foreach (VoronoiRegion region in new DelaunayDualVoronoiDiagram(this._triangularMesh, false).Regions)
+            foreach (VoronoiRegion region in new DelaunayDualVoronoiDiagram(_triangularMesh, false).Regions)
             {
                 int num1 = 0;
                 double num2;
                 double num3 = num2 = 0.0;
-                foreach (Point vertex in (IEnumerable<Point>) region.Vertices)
+                foreach (Point vertex in region.Vertices)
                 {
                     ++num1;
                     num3 += vertex.x;
                     num2 += vertex.y;
                 }
-                region.Generator.x = num3 / (double) num1;
-                region.Generator.y = num2 / (double) num1;
+                region.Generator.x = num3 / num1;
+                region.Generator.y = num2 / num1;
             }
         }
 
@@ -109,14 +109,14 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private MeshInputData Rebuild()
         {
-            MeshInputData meshInputData = new MeshInputData(this._triangularMesh.vertices.Count);
-            foreach (Vertex vertex in this._triangularMesh.vertices.Values)
+            MeshInputData meshInputData = new MeshInputData(_triangularMesh.vertices.Count);
+            foreach (Vertex vertex in _triangularMesh.vertices.Values)
                 meshInputData.AddPoint(vertex.x, vertex.y, vertex.mark);
-            foreach (Segment segment in this._triangularMesh.subsegs.Values)
+            foreach (Segment segment in _triangularMesh.subsegs.Values)
                 meshInputData.AddSegment(segment.P0, segment.P1, segment.Boundary);
-            foreach (Point hole in this._triangularMesh.holes)
+            foreach (Point hole in _triangularMesh.holes)
                 meshInputData.AddHole(hole.x, hole.y);
-            foreach (RegionPointer region in this._triangularMesh.regions)
+            foreach (RegionPointer region in _triangularMesh.regions)
                 meshInputData.AddRegion(region.point.x, region.point.y, region.id);
             return meshInputData;
         }

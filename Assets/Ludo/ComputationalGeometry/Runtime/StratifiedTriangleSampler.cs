@@ -8,40 +8,40 @@ namespace Ludo.ComputationalGeometry
     /// Provides efficient sampling of triangles from a mesh for point location algorithms.
     /// </summary>
     /// <remarks>
-    /// The Sampler class implements a stratified sampling strategy to select representative
+    /// The StratifiedTriangleSampler class implements a stratified sampling strategy to select representative
     /// triangles from a mesh. This is primarily used by the TriangleLocator to improve the
     /// efficiency of point location operations by providing good starting triangles.
     ///
     /// The number of samples is automatically adjusted based on the size of the mesh to
     /// maintain a balance between sampling coverage and computational efficiency.
     /// </remarks>
-    [System.Serializable]
-    internal class Sampler
+    [Serializable]
+    internal class StratifiedTriangleSampler
     {
         /// <summary>
         /// Random number generator for selecting sample triangles.
         /// </summary>
-        private static Random rand = new Random(DateTime.Now.Millisecond);
+        private static Random _rand = new(DateTime.Now.Millisecond);
 
         /// <summary>
         /// The number of triangles to sample from the mesh.
         /// </summary>
-        private int samples = 1;
+        private int _samples = 1;
 
         /// <summary>
         /// The total number of triangles in the mesh when last updated.
         /// </summary>
-        private int triangleCount;
+        private int _triangleCount;
 
         /// <summary>
         /// Factor used to determine the appropriate number of samples based on mesh size.
         /// </summary>
-        private static int samplefactor = 11;
+        private static int _samplefactor = 11;
 
         /// <summary>
         /// Array of triangle keys (IDs) from the mesh.
         /// </summary>
-        private int[] keys;
+        private int[] _keys;
 
         /// <summary>
         /// Resets the sampler to its initial state.
@@ -52,8 +52,8 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Reset()
         {
-            this.samples = 1;
-            this.triangleCount = 0;
+            _samples = 1;
+            _triangleCount = 0;
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// This is a convenience method that calls Update with forceUpdate set to false.
         /// </remarks>
-        public void Update(TriangularMesh triangularMesh) => this.Update(triangularMesh, false);
+        public void Update(TriangularMesh triangularMesh) => Update(triangularMesh, false);
 
         /// <summary>
         /// Updates the sampler with the current state of the mesh.
@@ -81,12 +81,13 @@ namespace Ludo.ComputationalGeometry
         public void Update(TriangularMesh triangularMesh, bool forceUpdate)
         {
             int count = triangularMesh.triangles.Count;
-            if (!(this.triangleCount != count | forceUpdate))
-                return;
-            this.triangleCount = count;
-            while (Sampler.samplefactor * this.samples * this.samples * this.samples < count)
-                ++this.samples;
-            this.keys = triangularMesh.triangles.Keys.ToArray<int>();
+            if (!(_triangleCount != count | forceUpdate)) return;
+            _triangleCount = count;
+            while (_samplefactor * _samples * _samples * _samples < count)
+            {
+                ++_samples;
+            }
+            _keys = triangularMesh.triangles.Keys.ToArray();
         }
 
         /// <summary>
@@ -107,18 +108,20 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int[] GetSamples(TriangularMesh triangularMesh)
         {
-            List<int> intList = new List<int>(this.samples);
-            int num = this.triangleCount / this.samples;
-            for (int index1 = 0; index1 < this.samples; ++index1)
+            List<int> intList = new List<int>(_samples);
+            int num = _triangleCount / _samples;
+            for (int index1 = 0; index1 < _samples; ++index1)
             {
-                int index2 = Sampler.rand.Next(index1 * num, (index1 + 1) * num - 1);
-                if (!triangularMesh.triangles.Keys.Contains<int>(this.keys[index2]))
+                int index2 = _rand.Next(index1 * num, (index1 + 1) * num - 1);
+                if (!triangularMesh.triangles.Keys.Contains(_keys[index2]))
                 {
-                    this.Update(triangularMesh, true);
+                    Update(triangularMesh, true);
                     --index1;
                 }
                 else
-                    intList.Add(this.keys[index2]);
+                {
+                    intList.Add(_keys[index2]);
+                }
             }
             return intList.ToArray();
         }
