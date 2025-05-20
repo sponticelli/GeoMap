@@ -11,9 +11,10 @@ namespace GeoMap
 
         [Header("References")]
         [SerializeField] private CountryMeshBuilder countryMeshBuilder;
+        [SerializeField] private Transform countriesParent;
         [SerializeField] private Transform countryOutlineParent;
-        [SerializeField] private Transform countrySurfacdParent;
-        
+        [SerializeField] private Transform countrySurfaceParent;
+
 
         private void Start()
         {
@@ -31,10 +32,32 @@ namespace GeoMap
                 return;
             }
 
+            // Create parent objects if they don't exist
+            if (countriesParent == null)
+            {
+                GameObject countriesObj = new GameObject("Countries");
+                countriesParent = countriesObj.transform;
+                countriesParent.SetParent(transform, false);
+            }
+
+            if (countryOutlineParent == null)
+            {
+                GameObject outlinesObj = new GameObject("Outlines");
+                countryOutlineParent = outlinesObj.transform;
+                countryOutlineParent.SetParent(countriesParent, false);
+            }
+
+            if (countrySurfaceParent == null && createSurface)
+            {
+                GameObject surfacesObj = new GameObject("Surfaces");
+                countrySurfaceParent = surfacesObj.transform;
+                countrySurfaceParent.SetParent(countriesParent, false);
+            }
+
             int featureCount = featuresNode.Count;
             foreach (JsonNode featureNode in featuresNode.list)
             {
-                countryMeshBuilder.Create(featureNode, transform.position, countryOutlineParent, countrySurfacdParent,createSurface);
+                countryMeshBuilder.Create(featureNode, transform.position, countryOutlineParent, countrySurfaceParent, createSurface);
             }
         }
     }

@@ -151,8 +151,9 @@ MonoBehaviour:
   geoGeometryJson: {fileID: 4900000, guid: 8ae597ccf103c476dacd972ecb067c23, type: 3}
   createSurface: 1
   countryMeshBuilder: {fileID: 1489843248}
+  countriesParent: {fileID: 0}
   countryOutlineParent: {fileID: 164937829}
-  countrySurfacdParent: {fileID: 1335901826}
+  countrySurfaceParent: {fileID: 0}
 --- !u!4 &28313567
 Transform:
   m_ObjectHideFlags: 0
@@ -413,7 +414,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb7bd591e5f49c5b1c451f7469688c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  borderWidth: 1
+  borderWidth: 0.2
   borderMaterial: {fileID: 2100000, guid: 5d898ef5196544b9db1a6e08cb5e3553, type: 2}
   surfaceMaterial: {fileID: 2100000, guid: 28da3ba7d431a4c12b420f8808a34bd2, type: 2}
 --- !u!1660057539 &9223372036854775807

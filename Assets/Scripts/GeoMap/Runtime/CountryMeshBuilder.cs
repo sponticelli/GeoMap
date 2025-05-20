@@ -25,6 +25,21 @@ namespace GeoMap
             // Get the country name
             string countryName = GetCountryName(country);
 
+            // Create main GameObject for the country
+            GameObject countryMainObject = new GameObject(countryName);
+            countryMainObject.transform.SetParent(outlineParent.parent, false);
+
+            // Create child GameObjects for outlines and surfaces
+            GameObject countryOutlinesObject = new GameObject("Outlines");
+            countryOutlinesObject.transform.SetParent(countryMainObject.transform, false);
+
+            GameObject countrySurfacesObject = null;
+            if (createSurface)
+            {
+                countrySurfacesObject = new GameObject("Surfaces");
+                countrySurfacesObject.transform.SetParent(countryMainObject.transform, false);
+            }
+
             // Create parent GameObjects for MultiPolygon types
             GameObject borderParent = null;
             GameObject surfaceLayerParent = null;
@@ -33,13 +48,13 @@ namespace GeoMap
             {
                 // Create parent for border meshes
                 borderParent = new GameObject(countryName);
-                borderParent.transform.SetParent(outlineParent, false);
+                borderParent.transform.SetParent(countryOutlinesObject.transform, false);
 
                 // Create parent for surface meshes if needed
                 if (createSurface)
                 {
-                    surfaceLayerParent = new GameObject(countryName + " layer");
-                    surfaceLayerParent.transform.SetParent(surfaceParent, false);
+                    surfaceLayerParent = new GameObject(countryName + " Surface");
+                    surfaceLayerParent.transform.SetParent(countrySurfacesObject.transform, false);
                 }
             }
 
@@ -65,14 +80,20 @@ namespace GeoMap
                 }
 
                 // Build border mesh with appropriate parent
-                Transform borderParentTransform = (geometryType == "MultiPolygon") ? borderParent.transform : outlineParent;
+                Transform borderParentTransform = (geometryType == "MultiPolygon") ?
+                    borderParent.transform :
+                    countryOutlinesObject.transform;
+
                 string borderName = (geometryType == "MultiPolygon") ? $"Part_{polygonIndex}" : countryName;
                 var borderMeshContainer = BuildBorderMesh(borderName, borderParentTransform, boundaryVertices);
 
                 // Build surface mesh with appropriate parent if needed
                 if (createSurface)
                 {
-                    Transform surfaceParentTransform = (geometryType == "MultiPolygon") ? surfaceLayerParent.transform : surfaceParent;
+                    Transform surfaceParentTransform = (geometryType == "MultiPolygon") ?
+                        surfaceLayerParent.transform :
+                        countrySurfacesObject.transform;
+
                     string surfaceName = (geometryType == "MultiPolygon") ? $"Part_{polygonIndex}" : countryName;
                     BuildSurfaceMesh(surfaceName, surfaceParentTransform, boundaryVertices, geometryType == "Polygon");
                 }
@@ -108,36 +129,8 @@ namespace GeoMap
             if (name.Contains("Lesotho"))
                 surfaceMeshObject.transform.localPosition -= new Vector3(0, 0, 1);
 
-            // Set parent directly if we're not creating a layer (for MultiPolygon parts)
-            if (!createLayer)
-            {
-                surfaceMeshObject.transform.SetParent(parentTransform, false);
-            }
-            else
-            {
-                // For single polygons, maintain the original layer structure
-                bool containsLayer = false;
-                GameObject parentLayer = null;
-                for (int child = 0; child < parentTransform.childCount; child++)
-                {
-                    if (parentTransform.GetChild(child).name.Contains(name + " layer"))
-                    {
-                        containsLayer = true;
-                        parentLayer = parentTransform.GetChild(child).gameObject;
-                    }
-                }
-
-                if (containsLayer)
-                {
-                    surfaceMeshObject.transform.parent = parentLayer.transform;
-                }
-                else
-                {
-                    parentLayer = new GameObject(name + " Surface");
-                    parentLayer.transform.parent = parentTransform;
-                    surfaceMeshObject.transform.parent = parentLayer.transform;
-                }
-            }
+            // Set parent directly - our hierarchy is already properly structured
+            surfaceMeshObject.transform.SetParent(parentTransform, false);
 
             surfaceMeshObject.gameObject.AddComponent<MeshCollider>();
         }
