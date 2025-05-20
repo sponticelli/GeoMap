@@ -1,4 +1,5 @@
 using GeoMap.Utils;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GeoMap
@@ -15,6 +16,54 @@ namespace GeoMap
         [SerializeField] private Transform countryOutlineParent;
         [SerializeField] private Transform countrySurfaceParent;
 
+        // Dictionary to store country visuals components by country name
+        private Dictionary<string, CountryVisuals> countryVisualsMap = new Dictionary<string, CountryVisuals>();
+
+        /// <summary>
+        /// Gets the CountryVisuals component for a specific country by name.
+        /// </summary>
+        /// <param name="countryName">The name of the country.</param>
+        /// <returns>The CountryVisuals component, or null if not found.</returns>
+        public CountryVisuals GetCountryVisuals(string countryName)
+        {
+            if (countryVisualsMap.TryGetValue(countryName, out CountryVisuals visuals))
+            {
+                return visuals;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Highlights a country by name.
+        /// </summary>
+        /// <param name="countryName">The name of the country to highlight.</param>
+        /// <returns>True if the country was found and highlighted, false otherwise.</returns>
+        public bool HighlightCountry(string countryName)
+        {
+            var visuals = GetCountryVisuals(countryName);
+            if (visuals != null)
+            {
+                visuals.Highlight();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Normalizes a country's appearance by name.
+        /// </summary>
+        /// <param name="countryName">The name of the country to normalize.</param>
+        /// <returns>True if the country was found and normalized, false otherwise.</returns>
+        public bool NormalizeCountry(string countryName)
+        {
+            var visuals = GetCountryVisuals(countryName);
+            if (visuals != null)
+            {
+                visuals.Normalize();
+                return true;
+            }
+            return false;
+        }
 
         private void Start()
         {
@@ -54,11 +103,39 @@ namespace GeoMap
                 countrySurfaceParent.SetParent(countriesParent, false);
             }
 
+            // Clear any existing country visuals
+            countryVisualsMap.Clear();
+
             int featureCount = featuresNode.Count;
             foreach (JsonNode featureNode in featuresNode.list)
             {
-                countryMeshBuilder.Create(featureNode, transform.position, countryOutlineParent, countrySurfaceParent, createSurface);
+                // Create the country and get its visuals component
+                CountryVisuals countryVisuals = countryMeshBuilder.Create(
+                    featureNode,
+                    transform.position,
+                    countryOutlineParent,
+                    countrySurfaceParent,
+                    createSurface
+                );
+
+                // Store the visuals component if created successfully
+                if (countryVisuals != null)
+                {
+                    string countryName = GetCountryName(featureNode);
+                    countryVisualsMap[countryName] = countryVisuals;
+                }
             }
+
+            Debug.Log($"Built map with {countryVisualsMap.Count} countries");
+        }
+
+        private string GetCountryName(JsonNode country)
+        {
+            if (country["properties"]["id"] != null)
+                return country["properties"]["id"].ToString();
+            if (country["properties"]["name"] != null)
+                return country["properties"]["name"].ToString();
+            return "Unknown";
         }
     }
 }

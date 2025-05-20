@@ -15,12 +15,25 @@ namespace GeoMap
         [Header("Surface Settings")]
         [SerializeField] private Material surfaceMaterial;
 
-        public void Create(JsonNode country, Vector3 center, Transform outlineParent, Transform surfaceParent,
+        [Header("Highlight Materials")]
+        [SerializeField] private Material highlightBorderMaterial;
+        [SerializeField] private Material highlightSurfaceMaterial;
+
+        /// <summary>
+        /// Creates a country GameObject with the specified geometry.
+        /// </summary>
+        /// <param name="country">The GeoJSON node containing the country data.</param>
+        /// <param name="center">The center position for the map.</param>
+        /// <param name="outlineParent">The parent transform for country outlines.</param>
+        /// <param name="surfaceParent">The parent transform for country surfaces.</param>
+        /// <param name="createSurface">Whether to create surface meshes.</param>
+        /// <returns>The CountryVisuals component attached to the created country.</returns>
+        public CountryVisuals Create(JsonNode country, Vector3 center, Transform outlineParent, Transform surfaceParent,
             bool createSurface)
         {
             // Check if the geometry type is supported
             string geometryType = country["geometry"]["type"].str;
-            if (geometryType != "Polygon" && geometryType != "MultiPolygon") return;
+            if (geometryType != "Polygon" && geometryType != "MultiPolygon") return null;
 
             // Get the country name
             string countryName = GetCountryName(country);
@@ -29,15 +42,28 @@ namespace GeoMap
             GameObject countryMainObject = new GameObject(countryName);
             countryMainObject.transform.SetParent(outlineParent.parent, false);
 
-            // Create child GameObjects for outlines and surfaces
+            // Add CountryInfo component to store country data
+            CountryInfo countryInfo = countryMainObject.AddComponent<CountryInfo>();
+
+            // Add CountryHighlighter component for selection highlighting
+            CountryHighlighter countryHighlighter = countryMainObject.AddComponent<CountryHighlighter>();
+
+            // Create Visuals GameObject as a container for visual elements
+            GameObject countryVisualsObject = new GameObject("Visuals");
+            countryVisualsObject.transform.SetParent(countryMainObject.transform, false);
+
+            // Add CountryVisuals component to manage visual state
+            CountryVisuals countryVisuals = countryVisualsObject.AddComponent<CountryVisuals>();
+
+            // Create child GameObjects for outlines and surfaces under the Visuals GameObject
             GameObject countryOutlinesObject = new GameObject("Outlines");
-            countryOutlinesObject.transform.SetParent(countryMainObject.transform, false);
+            countryOutlinesObject.transform.SetParent(countryVisualsObject.transform, false);
 
             GameObject countrySurfacesObject = null;
             if (createSurface)
             {
                 countrySurfacesObject = new GameObject("Surfaces");
-                countrySurfacesObject.transform.SetParent(countryMainObject.transform, false);
+                countrySurfacesObject.transform.SetParent(countryVisualsObject.transform, false);
             }
 
             // Create parent GameObjects for MultiPolygon types
@@ -137,6 +163,38 @@ namespace GeoMap
 
                 polygonIndex++;
             }
+
+            // Configure the CountryVisuals component with highlight materials
+            if (countryVisuals != null)
+            {
+                // Set the highlight materials via reflection to avoid serialization issues
+                var highlightBorderField = countryVisuals.GetType().GetField("highlightBorderMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var highlightSurfaceField = countryVisuals.GetType().GetField("highlightSurfaceMaterial", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+                if (highlightBorderField != null)
+                    highlightBorderField.SetValue(countryVisuals, highlightBorderMaterial);
+
+                if (highlightSurfaceField != null)
+                    highlightSurfaceField.SetValue(countryVisuals, highlightSurfaceMaterial);
+
+                // Initialize the component to find and store all renderers
+                countryVisuals.Initialize();
+            }
+
+            // Initialize the CountryInfo component
+            if (countryInfo != null)
+            {
+                countryInfo.Initialize(countryName);
+            }
+
+            // Initialize the CountryHighlighter component
+            if (countryHighlighter != null)
+            {
+                // The CountryHighlighter will find its references in Start()
+            }
+
+            // Return the CountryVisuals component for external access
+            return countryVisuals;
         }
 
         private void BuildSurfaceMesh(string name, Transform parentTransform, List<Vector3> boundaryVertices, bool createLayer = true)
