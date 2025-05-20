@@ -58,7 +58,42 @@ namespace GeoMap
                 }
             }
 
-            // Process each polygon in the coordinates
+            // First pass: collect all vertices to calculate the center
+            List<Vector3> allVertices = new List<Vector3>();
+
+            // Process each polygon in the coordinates to collect all vertices
+            foreach (var coordinateSet in country["geometry"]["coordinates"].list)
+            {
+                var processedCoordinates = ExtractCoordinates(coordinateSet);
+                if (processedCoordinates.list == null) continue;
+
+                var vertexCount = processedCoordinates.list.Count;
+                if (vertexCount < 3) continue;
+
+                for (int i = 0; i < vertexCount; i++)
+                {
+                    var coordinate = processedCoordinates.list[i];
+                    var worldPosition = GeoConvert.LatLonToMetersForEarth(coordinate[1].f, coordinate[0].f);
+                    worldPosition += new Vector3d(center.x, center.y, center.z);
+                    allVertices.Add((Vector3)worldPosition);
+                }
+            }
+
+            // Calculate the center of all vertices
+            Vector3 countryCenter = Vector3.zero;
+            if (allVertices.Count > 0)
+            {
+                foreach (var vertex in allVertices)
+                {
+                    countryCenter += vertex;
+                }
+                countryCenter /= allVertices.Count;
+            }
+
+            // Set the country GameObject's position to the calculated center
+            countryMainObject.transform.position = countryCenter;
+
+            // Second pass: process each polygon with vertices relative to the center
             int polygonIndex = 0;
             foreach (var coordinateSet in country["geometry"]["coordinates"].list)
             {
@@ -76,7 +111,9 @@ namespace GeoMap
                     var coordinate = processedCoordinates.list[i];
                     var worldPosition = GeoConvert.LatLonToMetersForEarth(coordinate[1].f, coordinate[0].f);
                     worldPosition += new Vector3d(center.x, center.y, center.z);
-                    boundaryVertices.Add((Vector3)worldPosition);
+                    // Make the vertex position relative to the country center
+                    Vector3 relativePosition = (Vector3)worldPosition - countryCenter;
+                    boundaryVertices.Add(relativePosition);
                 }
 
                 // Build border mesh with appropriate parent
