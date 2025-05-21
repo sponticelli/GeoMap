@@ -28,6 +28,7 @@ namespace GeoMap
         [Header("Zoom Settings")]
         [SerializeField] private float minZoom = 10f;
         [SerializeField] private float maxZoom = 65f;
+        [SerializeField] private float startingZoom = 44f;
 
         [Header("Pan Settings")]
         [Tooltip("How fast the camera pans with mouse drag")]
@@ -120,6 +121,8 @@ namespace GeoMap
 
             // Reset view to show the entire map
             ResetView();
+            
+            SetZoom(startingZoom);
         }
 
         /// <summary>

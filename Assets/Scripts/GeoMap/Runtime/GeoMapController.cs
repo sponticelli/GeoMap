@@ -120,6 +120,7 @@ namespace GeoMap
 
                 // Initialize the camera controller
                 cameraController.Initialize();
+                
             }
         }
 
