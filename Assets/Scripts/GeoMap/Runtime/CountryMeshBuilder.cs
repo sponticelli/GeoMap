@@ -28,7 +28,7 @@ namespace GeoMap
         /// <param name="surfaceParent">The parent transform for country surfaces.</param>
         /// <param name="createSurface">Whether to create surface meshes.</param>
         /// <returns>The CountryVisuals component attached to the created country.</returns>
-        public CountryVisuals Create(JsonNode country, Vector3 center, Transform outlineParent, Transform surfaceParent,
+        public CountryVisuals Create(JsonNode country, Vector3 center, Transform parent,
             bool createSurface)
         {
             // Check if the geometry type is supported
@@ -40,7 +40,7 @@ namespace GeoMap
 
             // Create main GameObject for the country
             GameObject countryMainObject = new GameObject(countryName);
-            countryMainObject.transform.SetParent(outlineParent.parent, false);
+            countryMainObject.transform.SetParent(parent, false);
 
             // Add CountryInfo component to store country data
             CountryInfo countryInfo = countryMainObject.AddComponent<CountryInfo>();
@@ -254,11 +254,17 @@ namespace GeoMap
 
         private string GetCountryName(JsonNode country)
         {
+            string result = "Unknown";
             if (country["properties"]["id"] != null)
-                return country["properties"]["id"].ToString();
+                result = country["properties"]["id"].ToString();
             if (country["properties"]["name"] != null)
-                return country["properties"]["name"].ToString();
-            return "Unknown";
+                result = country["properties"]["name"].ToString();
+            // trim whitespace
+            result = result.Trim();
+            // remove double quotes
+            result = result.Replace("\"", "");
+
+            return result;
         }
 
         private static JsonNode ExtractCoordinates(JsonNode coordinateNode)

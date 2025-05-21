@@ -14,8 +14,6 @@ namespace GeoMap
         [Header("References")]
         [SerializeField] private CountryMeshBuilder countryMeshBuilder;
         [SerializeField] private Transform countriesParent;
-        [SerializeField] private Transform countryOutlineParent;
-        [SerializeField] private Transform countrySurfaceParent;
 
         [Header("Events")]
         [SerializeField] private UnityEvent onMapBuilt;
@@ -97,20 +95,7 @@ namespace GeoMap
                 countriesParent = countriesObj.transform;
                 countriesParent.SetParent(transform, false);
             }
-
-            if (countryOutlineParent == null)
-            {
-                GameObject outlinesObj = new GameObject("Outlines");
-                countryOutlineParent = outlinesObj.transform;
-                countryOutlineParent.SetParent(countriesParent, false);
-            }
-
-            if (countrySurfaceParent == null && createSurface)
-            {
-                GameObject surfacesObj = new GameObject("Surfaces");
-                countrySurfaceParent = surfacesObj.transform;
-                countrySurfaceParent.SetParent(countriesParent, false);
-            }
+            
 
             // Clear any existing country visuals
             countryVisualsMap.Clear();
@@ -122,8 +107,7 @@ namespace GeoMap
                 CountryVisuals countryVisuals = countryMeshBuilder.Create(
                     featureNode,
                     transform.position,
-                    countryOutlineParent,
-                    countrySurfaceParent,
+                    countriesParent,
                     createSurface
                 );
 
