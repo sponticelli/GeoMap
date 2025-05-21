@@ -1,6 +1,7 @@
 using GeoMap.Utils;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace GeoMap
 {
@@ -16,8 +17,16 @@ namespace GeoMap
         [SerializeField] private Transform countryOutlineParent;
         [SerializeField] private Transform countrySurfaceParent;
 
+        [Header("Events")]
+        [SerializeField] private UnityEvent onMapBuilt;
+
         // Dictionary to store country visuals components by country name
         private Dictionary<string, CountryVisuals> countryVisualsMap = new Dictionary<string, CountryVisuals>();
+
+        /// <summary>
+        /// Event triggered when the map is built.
+        /// </summary>
+        public UnityEvent OnMapBuilt => onMapBuilt;
 
         /// <summary>
         /// Gets the CountryVisuals component for a specific country by name.
@@ -127,6 +136,19 @@ namespace GeoMap
             }
 
             Debug.Log($"Built map with {countryVisualsMap.Count} countries");
+
+            // Trigger the map built event
+            onMapBuilt?.Invoke();
+        }
+
+        /// <summary>
+        /// Builds the map and returns when complete.
+        /// </summary>
+        /// <returns>True if the map was built successfully.</returns>
+        public bool BuildMapAndWait()
+        {
+            BuildMap();
+            return countryVisualsMap.Count > 0;
         }
 
         private string GetCountryName(JsonNode country)
