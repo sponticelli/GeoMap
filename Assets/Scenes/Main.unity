@@ -154,6 +154,9 @@ MonoBehaviour:
   countriesParent: {fileID: 0}
   countryOutlineParent: {fileID: 0}
   countrySurfaceParent: {fileID: 0}
+  onMapBuilt:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &28313567
 Transform:
   m_ObjectHideFlags: 0
@@ -203,6 +206,7 @@ MonoBehaviour:
   mapBuilder: {fileID: 28313566}
   selectionManager: {fileID: 279719535}
   inputManager: {fileID: 279719536}
+  cameraController: {fileID: 404859504}
   mainCamera: {fileID: 404859501}
   autoInitialize: 1
   countryLayerMask:
@@ -271,6 +275,7 @@ GameObject:
   - component: {fileID: 404859501}
   - component: {fileID: 404859500}
   - component: {fileID: 404859503}
+  - component: {fileID: 404859504}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -396,6 +401,31 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &404859504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404859499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73153b67d5815419ca13d514e83584e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCamera: {fileID: 404859501}
+  mapBuilder: {fileID: 28313566}
+  countriesParent: {fileID: 28313567}
+  mapBack: {fileID: 0}
+  autoCalculateBoundaries: 1
+  boundaryMargin: 0.1
+  minX: -100
+  maxX: 100
+  minY: -50
+  maxY: 50
+  minZoom: 10
+  maxZoom: 60
+  panSpeed: 1
 --- !u!1 &1489843246
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ffd361a8-93c2-4afc-8d36-c58a22c84b3d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MapBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MapBuilder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Main.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Main.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/GeoMapController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/GeoMapController.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -12,6 +12,7 @@ namespace GeoMap
         [SerializeField] private MapBuilder mapBuilder;
         [SerializeField] private CountrySelectionManager selectionManager;
         [SerializeField] private InputManager inputManager;
+        [SerializeField] private CameraController cameraController;
         [SerializeField] private Camera mainCamera;
 
         [Header("Settings")]
@@ -67,6 +68,16 @@ namespace GeoMap
                 mainCamera = Camera.main;
             }
 
+            // Initialize camera controller
+            if (cameraController == null)
+            {
+                cameraController = GetComponent<CameraController>();
+                if (cameraController == null)
+                {
+                    cameraController = gameObject.AddComponent<CameraController>();
+                }
+            }
+
             // Configure the input manager
             if (inputManager != null)
             {
@@ -83,6 +94,32 @@ namespace GeoMap
 
                 if (layerMaskField != null)
                     layerMaskField.SetValue(inputManager, countryLayerMask);
+            }
+
+            // Configure the camera controller
+            if (cameraController != null)
+            {
+                // Set references via reflection to avoid making fields public
+                var cameraField = cameraController.GetType().GetField("mainCamera", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var mapBuilderField = cameraController.GetType().GetField("mapBuilder", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var countriesParentField = cameraController.GetType().GetField("countriesParent", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+                if (cameraField != null)
+                    cameraField.SetValue(cameraController, mainCamera);
+
+                if (mapBuilderField != null)
+                    mapBuilderField.SetValue(cameraController, mapBuilder);
+
+                if (countriesParentField != null && mapBuilder != null)
+                {
+                    // Try to find the countries parent transform
+                    Transform countriesParent = mapBuilder.transform.Find("Countries");
+                    if (countriesParent != null)
+                        countriesParentField.SetValue(cameraController, countriesParent);
+                }
+
+                // Initialize the camera controller
+                cameraController.Initialize();
             }
         }
 
@@ -140,6 +177,41 @@ namespace GeoMap
         public CountryInfo GetSelectedCountry()
         {
             return selectionManager != null ? selectionManager.SelectedCountry : null;
+        }
+
+        /// <summary>
+        /// Focuses the camera on a specific country.
+        /// </summary>
+        /// <param name="countryName">The name of the country to focus on.</param>
+        /// <returns>True if the country was found and focused, false otherwise.</returns>
+        public bool FocusOnCountry(string countryName)
+        {
+            if (mapBuilder == null || cameraController == null)
+                return false;
+
+            // Get the country visuals from the map builder
+            CountryVisuals countryVisuals = mapBuilder.GetCountryVisuals(countryName);
+            if (countryVisuals == null)
+                return false;
+
+            // Focus the camera on the country's position
+            cameraController.FocusOnPosition(countryVisuals.transform.position);
+
+            // Set a closer zoom level for better viewing
+            cameraController.SetZoom(30f);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Resets the camera view to show the entire map.
+        /// </summary>
+        public void ResetCameraView()
+        {
+            if (cameraController != null)
+            {
+                cameraController.ResetView();
+            }
         }
     }
 }
