@@ -60,7 +60,7 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public MeshEdgeEnumerator(TriangularMesh triangularMesh)
         {
-            _triangles = triangularMesh.triangles.Values.GetEnumerator();
+            _triangles = triangularMesh.TriangleDictionary.Values.GetEnumerator();
             _triangles.MoveNext();
             _orientedTriangle.triangle = _triangles.Current;
             _orientedTriangle.orient = 0;
@@ -113,11 +113,11 @@ namespace Ludo.ComputationalGeometry
                     _orientedTriangle.triangle = _triangles.Current;
                     _orientedTriangle.orient = 0;
                 }
-                _orientedTriangle.Sym(ref _neighborTriangle);
+                _orientedTriangle.SetAsSymmetricTriangle(ref _neighborTriangle);
                 if (_orientedTriangle.triangle.id < _neighborTriangle.triangle.id || _neighborTriangle.triangle == TriangularMesh.dummytri)
                 {
-                    _p1 = _orientedTriangle.Org();
-                    _p2 = _orientedTriangle.Dest();
+                    _p1 = _orientedTriangle.Origin();
+                    _p2 = _orientedTriangle.Destination();
                     _orientedTriangle.SegPivot(ref _orientedSubSegment);
                     _current = new MeshEdge(_p1.id, _p2.id, _orientedSubSegment.seg.boundary);
                 }

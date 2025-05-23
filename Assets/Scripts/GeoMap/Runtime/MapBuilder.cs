@@ -1,5 +1,7 @@
-using GeoMap.Utils;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using GeoMap.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -17,6 +19,8 @@ namespace GeoMap
 
         [Header("Events")]
         [SerializeField] private UnityEvent onMapBuilt;
+        [SerializeField] private UnityEvent<float> onCountryProgression;
+        [SerializeField] private UnityEvent<string> onCountryCreated;
 
         // Dictionary to store country visuals components by country name
         private Dictionary<string, CountryVisuals> countryVisualsMap = new Dictionary<string, CountryVisuals>();
@@ -79,6 +83,7 @@ namespace GeoMap
 
         private void BuildMap()
         {
+            onCountryCreated?.Invoke("LOADING DATA");
             JsonNode rootNode = new JsonNode(geoGeometryJson.text);
 
             JsonNode featuresNode = rootNode["features"];
@@ -95,28 +100,49 @@ namespace GeoMap
                 countriesParent = countriesObj.transform;
                 countriesParent.SetParent(transform, false);
             }
-            
+
 
             // Clear any existing country visuals
             countryVisualsMap.Clear();
+            
+            onCountryCreated?.Invoke("");
 
+            StartCoroutine(CreateCountries(featuresNode));
+
+
+        }
+
+        private IEnumerator CreateCountries(JsonNode featuresNode)
+        {
+            onCountryProgression?.Invoke(0f);
             int featureCount = featuresNode.Count;
+            int current = 0;
             foreach (JsonNode featureNode in featuresNode.list)
             {
-                // Create the country and get its visuals component
-                CountryVisuals countryVisuals = countryMeshBuilder.Create(
+                current++;
+                onCountryProgression?.Invoke((float)current/featureCount);
+
+                // Create the country asynchronously and get its visuals component
+                CountryVisuals countryVisuals = null;
+
+                // Use a callback to store the country visuals when creation is complete
+                yield return StartCoroutine(countryMeshBuilder.CreateAsync(
                     featureNode,
                     transform.position,
                     countriesParent,
-                    createSurface
-                );
+                    createSurface,
+                    (visuals) => {
+                        countryVisuals = visuals;
 
-                // Store the visuals component if created successfully
-                if (countryVisuals != null)
-                {
-                    string countryName = GetCountryName(featureNode);
-                    countryVisualsMap[countryName] = countryVisuals;
-                }
+                        // Store the visuals component if created successfully
+                        if (countryVisuals != null)
+                        {
+                            string countryName = GetCountryName(featureNode);
+                            countryVisualsMap[countryName] = countryVisuals;
+                            onCountryCreated?.Invoke(countryName);
+                        }
+                    }
+                ));
             }
 
             Debug.Log($"Built map with {countryVisualsMap.Count} countries");
@@ -137,11 +163,17 @@ namespace GeoMap
 
         private string GetCountryName(JsonNode country)
         {
-            if (country["properties"]["id"] != null)
-                return country["properties"]["id"].ToString();
+            var name = "Unknown";
+            
             if (country["properties"]["name"] != null)
-                return country["properties"]["name"].ToString();
-            return "Unknown";
+                name = country["properties"]["name"].ToString();
+            if (country["properties"]["id"] != null)
+                name = country["properties"]["id"].ToString();
+            
+            // remove double quotes
+            name = name.Replace("\"", "");
+            
+            return name;
         }
     }
 }

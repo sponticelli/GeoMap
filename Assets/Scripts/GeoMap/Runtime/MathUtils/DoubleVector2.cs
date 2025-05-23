@@ -1,12 +1,9 @@
-
 using System;
-using System.Runtime.CompilerServices;
 
 namespace GeoMap.MathUtils
 {
-    public struct Vector2d
+    public struct DoubleVector2
     {
-        public const double KEpsilon = 1E-05d;
         public double X;
         public double Y;
 
@@ -14,15 +11,12 @@ namespace GeoMap.MathUtils
         {
             get
             {
-                switch (index)
+                return index switch
                 {
-                    case 0:
-                        return X;
-                    case 1:
-                        return Y;
-                    default:
-                        throw new IndexOutOfRangeException("Invalid Vector2d index!");
-                }
+                    0 => X,
+                    1 => Y,
+                    _ => throw new IndexOutOfRangeException("Invalid DoubleVector2 index!")
+                };
             }
             set
             {
@@ -35,7 +29,7 @@ namespace GeoMap.MathUtils
                         Y = value;
                         break;
                     default:
-                        throw new IndexOutOfRangeException("Invalid Vector2d index!");
+                        throw new IndexOutOfRangeException("Invalid DoubleVector2 index!");
                 }
             }
         }
@@ -45,63 +39,63 @@ namespace GeoMap.MathUtils
 
 
 
-        public static Vector2d Zero => new(0.0d, 0.0d);
+        public static DoubleVector2 Zero => new(0.0d, 0.0d);
 
 
-        public Vector2d(double x, double y)
+        public DoubleVector2(double x, double y)
         {
             X = x;
             Y = y;
         }
 
-        public static implicit operator Vector2d(Vector3d v)
+        public static implicit operator DoubleVector2(DoubleVector3 v)
         {
-            return new Vector2d(v.x, v.y);
+            return new DoubleVector2(v.X, v.Y);
         }
 
-        public static implicit operator Vector3d(Vector2d v)
+        public static implicit operator DoubleVector3(DoubleVector2 v)
         {
-            return new Vector3d(v.X, v.Y, 0.0d);
+            return new DoubleVector3(v.X, v.Y, 0.0d);
         }
 
-        public static Vector2d operator +(Vector2d a, Vector2d b)
+        public static DoubleVector2 operator +(DoubleVector2 a, DoubleVector2 b)
         {
-            return new Vector2d(a.X + b.X, a.Y + b.Y);
+            return new DoubleVector2(a.X + b.X, a.Y + b.Y);
         }
 
-        public static Vector2d operator -(Vector2d a, Vector2d b)
+        public static DoubleVector2 operator -(DoubleVector2 a, DoubleVector2 b)
         {
-            return new Vector2d(a.X - b.X, a.Y - b.Y);
+            return new DoubleVector2(a.X - b.X, a.Y - b.Y);
         }
 
-        public static Vector2d operator -(Vector2d a)
+        public static DoubleVector2 operator -(DoubleVector2 a)
         {
-            return new Vector2d(-a.X, -a.Y);
+            return new DoubleVector2(-a.X, -a.Y);
         }
 
-        public static Vector2d operator *(Vector2d a, double d)
+        public static DoubleVector2 operator *(DoubleVector2 a, double d)
         {
-            return new Vector2d(a.X * d, a.Y * d);
+            return new DoubleVector2(a.X * d, a.Y * d);
         }
 
-        public static Vector2d operator *(float d, Vector2d a)
+        public static DoubleVector2 operator *(float d, DoubleVector2 a)
         {
-            return new Vector2d(a.X * d, a.Y * d);
+            return new DoubleVector2(a.X * d, a.Y * d);
         }
 
-        public static Vector2d operator /(Vector2d a, double d)
+        public static DoubleVector2 operator /(DoubleVector2 a, double d)
         {
-            return new Vector2d(a.X / d, a.Y / d);
+            return new DoubleVector2(a.X / d, a.Y / d);
         }
 
-        public static bool operator ==(Vector2d lhs, Vector2d rhs)
+        public static bool operator ==(DoubleVector2 lhs, DoubleVector2 rhs)
         {
             
             
             return (lhs - rhs).SqrMagnitude < 0.0 / 1.0;
         }
 
-        public static bool operator !=(Vector2d lhs, Vector2d rhs)
+        public static bool operator !=(DoubleVector2 lhs, DoubleVector2 rhs)
         {
             return (lhs - rhs).SqrMagnitude >= 0.0 / 1.0;
         }
@@ -133,10 +127,10 @@ namespace GeoMap.MathUtils
 
         public override bool Equals(object other)
         {
-            if (!(other is Vector2d))
+            if (!(other is DoubleVector2))
                 return false;
-            Vector2d vector2d = (Vector2d)other;
-            return X.Equals(vector2d.X) && Y.Equals(vector2d.Y);
+            DoubleVector2 doubleVector2 = (DoubleVector2)other;
+            return X.Equals(doubleVector2.X) && Y.Equals(doubleVector2.Y);
         }
 
         

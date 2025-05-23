@@ -109,10 +109,10 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private MeshInputData Rebuild()
         {
-            MeshInputData meshInputData = new MeshInputData(_triangularMesh.vertices.Count);
-            foreach (Vertex vertex in _triangularMesh.vertices.Values)
+            MeshInputData meshInputData = new MeshInputData(_triangularMesh.VertexDictionary.Count);
+            foreach (Vertex vertex in _triangularMesh.VertexDictionary.Values)
                 meshInputData.AddPoint(vertex.x, vertex.y, vertex.mark);
-            foreach (Segment segment in _triangularMesh.subsegs.Values)
+            foreach (Segment segment in _triangularMesh.SubSegmentDictionary.Values)
                 meshInputData.AddSegment(segment.P0, segment.P1, segment.Boundary);
             foreach (Point hole in _triangularMesh.holes)
                 meshInputData.AddHole(hole.x, hole.y);

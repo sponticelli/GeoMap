@@ -39,14 +39,7 @@ namespace GeoMap
         private Vector3 mousePosForMove = Vector3.zero;
         private Vector3 moveVector = Vector3.zero;
         private bool initialized = false;
-
-        /// <summary>
-        /// Initializes the component.
-        /// </summary>
-        private void Start()
-        {
-            Initialize();
-        }
+        
 
         /// <summary>
         /// Initializes the camera controller with references and settings.

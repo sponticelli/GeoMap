@@ -8,20 +8,20 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class Segment : ISegment
     {
-        internal int hash;
-        internal OrientedSubSegment[] subsegs;
-        internal Vertex[] vertices;
-        internal OrientedTriangle[] triangles;
-        internal int boundary;
+        public int hash;
+        public OrientedSubSegment[] OrientedSubSegments;
+        public Vertex[] vertices;
+        public OrientedTriangle[] triangles;
+        public int boundary;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Segment"/> class.
         /// </summary>
         public Segment()
         {
-            subsegs = new OrientedSubSegment[2];
-            subsegs[0].seg = TriangularMesh.dummysub;
-            subsegs[1].seg = TriangularMesh.dummysub;
+            OrientedSubSegments = new OrientedSubSegment[2];
+            OrientedSubSegments[0].seg = TriangularMesh.dummysub;
+            OrientedSubSegments[1].seg = TriangularMesh.dummysub;
             vertices = new Vertex[4];
             triangles = new OrientedTriangle[2];
             triangles[0].triangle = TriangularMesh.dummytri;

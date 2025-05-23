@@ -70,14 +70,14 @@ namespace Ludo.ComputationalGeometry
             ++count;
             double num1;
             int num2;
-            if (badtri.key >= 1.0)
+            if (badtri.qualityMetric >= 1.0)
             {
-                num1 = badtri.key;
+                num1 = badtri.qualityMetric;
                 num2 = 1;
             }
             else
             {
-                num1 = 1.0 / badtri.key;
+                num1 = 1.0 / badtri.qualityMetric;
                 num2 = 0;
             }
             int num3 = 0;
@@ -109,9 +109,9 @@ namespace Ludo.ComputationalGeometry
                 queuefront[index1] = badtri;
             }
             else
-                queuetail[index1].nexttriang = badtri;
+                queuetail[index1].nextNonComformingTriangle = badtri;
             queuetail[index1] = badtri;
-            badtri.nexttriang = null;
+            badtri.nextNonComformingTriangle = null;
         }
 
         /// <summary>
@@ -131,11 +131,11 @@ namespace Ludo.ComputationalGeometry
         {
             Enqueue(new QualityViolatingTriangle
             {
-                poortri = enqtri,
-                key = minedge,
-                triangapex = enqapex,
-                triangorg = enqorg,
-                triangdest = enqdest
+                nonConformingTriangle = enqtri,
+                qualityMetric = minedge,
+                vertexApex = enqapex,
+                vertexOrigin = enqorg,
+                vertexDestination = enqdest
             });
         }
 
@@ -152,7 +152,7 @@ namespace Ludo.ComputationalGeometry
                 return null;
             --count;
             QualityViolatingTriangle qualityViolatingTriangle = queuefront[firstnonemptyq];
-            queuefront[firstnonemptyq] = qualityViolatingTriangle.nexttriang;
+            queuefront[firstnonemptyq] = qualityViolatingTriangle.nextNonComformingTriangle;
             if (qualityViolatingTriangle == queuetail[firstnonemptyq])
                 firstnonemptyq = nextnonemptyq[firstnonemptyq];
             return qualityViolatingTriangle;

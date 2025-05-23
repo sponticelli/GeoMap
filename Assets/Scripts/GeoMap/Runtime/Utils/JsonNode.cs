@@ -48,13 +48,13 @@ namespace GeoMap.Utils
 
         public delegate void AddJSONConents(JsonNode self);
 
-        public static JsonNode nullJO => new(JsonNode.Type.NULL); //an empty, null object
+        public static JsonNode nullJO => new(Type.NULL); //an empty, null object
 
-        public static JsonNode obj => new(JsonNode.Type.OBJECT); //an empty object
+        public static JsonNode obj => new(Type.OBJECT); //an empty object
 
-        public static JsonNode arr => new(JsonNode.Type.ARRAY); //an empty array
+        public static JsonNode arr => new(Type.ARRAY); //an empty array
 
-        public JsonNode(JsonNode.Type t)
+        public JsonNode(Type t)
         {
             type = t;
             switch (t)
@@ -78,7 +78,7 @@ namespace GeoMap.Utils
         public JsonNode(float f)
         {
             type = Type.NUMBER;
-            this.n = f;
+            n = f;
         }
 
         public JsonNode(Dictionary<string, string> dic)
@@ -120,7 +120,7 @@ namespace GeoMap.Utils
         /// This is not part of the constructor so that malformed JSON data doesn't just turn into a string object
         public static JsonNode StringObject(string val)
         {
-            return new JsonNode { type = JsonNode.Type.STRING, str = val };
+            return new JsonNode { type = Type.STRING, str = val };
         }
 
         public void Absorb(JsonNode obj)
@@ -218,7 +218,7 @@ namespace GeoMap.Utils
                                     list = new List<JsonNode>();
                                     break;
                                 case '[':
-                                    type = JsonNode.Type.ARRAY;
+                                    type = Type.ARRAY;
                                     list = new List<JsonNode>();
                                     break;
                                 default:
@@ -338,9 +338,9 @@ namespace GeoMap.Utils
             if (obj)
             {
                 //Don't do anything if the object is null
-                if (type != JsonNode.Type.ARRAY)
+                if (type != Type.ARRAY)
                 {
-                    type = JsonNode.Type.ARRAY; //Congratulations, son, you're an ARRAY now
+                    type = Type.ARRAY; //Congratulations, son, you're an ARRAY now
                     if (list == null)
                         list = new List<JsonNode>();
                 }
@@ -379,7 +379,7 @@ namespace GeoMap.Utils
             if (obj)
             {
                 //Don't do anything if the object is null
-                if (type != JsonNode.Type.OBJECT)
+                if (type != Type.OBJECT)
                 {
                     keys = new List<string>();
                     if (type == Type.ARRAY)
@@ -390,7 +390,7 @@ namespace GeoMap.Utils
                     else if (list == null)
                         list = new List<JsonNode>();
 
-                    type = JsonNode.Type.OBJECT; //Congratulations, son, you're an OBJECT now
+                    type = Type.OBJECT; //Congratulations, son, you're an OBJECT now
                 }
 
                 keys.Add(name);
@@ -504,7 +504,7 @@ namespace GeoMap.Utils
 
         public bool GetField(ref int field, string name, FieldNotFound fail = null)
         {
-            if (type == JsonNode.Type.OBJECT)
+            if (type == Type.OBJECT)
             {
                 int index = keys.IndexOf(name);
                 if (index >= 0)
@@ -531,7 +531,7 @@ namespace GeoMap.Utils
 
         public bool GetField(ref uint field, string name, FieldNotFound fail = null)
         {
-            if (type == JsonNode.Type.OBJECT)
+            if (type == Type.OBJECT)
             {
                 int index = keys.IndexOf(name);
                 if (index >= 0)
@@ -558,7 +558,7 @@ namespace GeoMap.Utils
 
         public bool GetField(ref string field, string name, FieldNotFound fail = null)
         {
-            if (type == JsonNode.Type.OBJECT)
+            if (type == Type.OBJECT)
             {
                 int index = keys.IndexOf(name);
                 if (index >= 0)
@@ -589,7 +589,7 @@ namespace GeoMap.Utils
 
         public JsonNode GetField(string name)
         {
-            if (type == JsonNode.Type.OBJECT)
+            if (type == Type.OBJECT)
                 for (int i = 0; i < keys.Count; i++)
                     if ((string)keys[i] == name)
                         return (JsonNode)list[i];
@@ -606,7 +606,7 @@ namespace GeoMap.Utils
 
         public bool HasField(string name)
         {
-            if (type == JsonNode.Type.OBJECT)
+            if (type == Type.OBJECT)
                 for (int i = 0; i < keys.Count; i++)
                     if ((string)keys[i] == name)
                         return true;
@@ -615,7 +615,7 @@ namespace GeoMap.Utils
 
         public void Clear()
         {
-            type = JsonNode.Type.NULL;
+            type = Type.NULL;
             if (list != null)
                 list.Clear();
             if (keys != null)
@@ -645,7 +645,7 @@ namespace GeoMap.Utils
         /// <param name="right">The right (new) object</param>
         static void MergeRecur(JsonNode left, JsonNode right)
         {
-            if (left.type == JsonNode.Type.NULL)
+            if (left.type == Type.NULL)
                 left.Absorb(right);
             else if (left.type == Type.OBJECT && right.type == Type.OBJECT)
             {
@@ -727,7 +727,7 @@ namespace GeoMap.Utils
                         str += n;
                     break;
 
-                case JsonNode.Type.OBJECT:
+                case Type.OBJECT:
                     str = "{";
                     if (list.Count > 0)
                     {
@@ -745,7 +745,7 @@ namespace GeoMap.Utils
                     }
                     str += "}";
                     break;
-                case JsonNode.Type.ARRAY:
+                case Type.ARRAY:
                     str = "[";
                     if (list.Count > 0)
                     {
@@ -799,7 +799,7 @@ namespace GeoMap.Utils
             get
             {
                 if (list.Count > index) return (JsonNode)list[index];
-                else return null;
+                return null;
             }
             set
             {
@@ -840,7 +840,8 @@ namespace GeoMap.Utils
 
                 return result;
             }
-            else Debug.LogWarning("Tried to turn non-Object JsonNode into a dictionary");
+
+            Debug.LogWarning("Tried to turn non-Object JsonNode into a dictionary");
 
             return null;
         }

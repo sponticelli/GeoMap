@@ -19,22 +19,22 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// A value used in the adaptive exact arithmetic algorithm to split floating-point numbers.
         /// </summary>
-        private static double splitter;
+        private static double _splitter;
 
         /// <summary>
         /// The machine epsilon value, representing the smallest value such that 1.0 + epsilon != 1.0.
         /// </summary>
-        private static double epsilon;
+        private static double _epsilon;
 
         /// <summary>
         /// Error bound for the CounterClockwise predicate.
         /// </summary>
-        private static double ccwerrboundA;
+        private static double _ccwErrBoundA;
 
         /// <summary>
         /// Error bound for the InCircle predicate.
         /// </summary>
-        private static double iccerrboundA;
+        private static double _iccErrBoundA;
 
         /// <summary>
         /// Initializes the exact arithmetic system by computing machine-dependent constants.
@@ -52,23 +52,23 @@ namespace Ludo.ComputationalGeometry
         {
             bool flag = true;
             double num1 = 0.5;
-            epsilon = 1.0;
-            splitter = 1.0;
+            _epsilon = 1.0;
+            _splitter = 1.0;
             double num2 = 1.0;
             double num3;
             do
             {
                 num3 = num2;
-                epsilon *= num1;
+                _epsilon *= num1;
                 if (flag)
-                    splitter *= 2.0;
+                    _splitter *= 2.0;
                 flag = !flag;
-                num2 = 1.0 + epsilon;
+                num2 = 1.0 + _epsilon;
             } while (num2 != 1.0 && num2 != num3);
 
-            ++splitter;
-            ccwerrboundA = (3.0 + 16.0 * epsilon) * epsilon;
-            iccerrboundA = (10.0 + 96.0 * epsilon) * epsilon;
+            ++_splitter;
+            _ccwErrBoundA = (3.0 + 16.0 * _epsilon) * _epsilon;
+            _iccErrBoundA = (10.0 + 96.0 * _epsilon) * _epsilon;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Ludo.ComputationalGeometry
                 num4 = -num1 - num2;
             }
 
-            double num5 = ccwerrboundA * num4;
+            double num5 = _ccwErrBoundA * num4;
             return num3 >= num5 || -num3 >= num5 ? num3 : (double)CounterClockwiseDecimal(pa, pb, pc);
         }
 
@@ -197,7 +197,7 @@ namespace Ludo.ComputationalGeometry
                 return num16;
             double num17 = (Math.Abs(num7) + Math.Abs(num8)) * num9 + (Math.Abs(num10) + Math.Abs(num11)) * num12 +
                            (Math.Abs(num13) + Math.Abs(num14)) * num15;
-            double num18 = iccerrboundA * num17;
+            double num18 = _iccErrBoundA * num17;
             return num16 > num18 || -num16 > num18 ? num16 : (double)InCircleDecimal(pa, pb, pc, pd);
         }
 

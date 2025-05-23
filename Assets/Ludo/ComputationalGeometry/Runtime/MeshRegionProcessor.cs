@@ -38,7 +38,7 @@ namespace Ludo.ComputationalGeometry
             // Start at a dummy triangle and move to a real hull edge
             oreintedTriangle1.triangle = TriangularMesh.dummytri;
             oreintedTriangle1.orient = 0;
-            oreintedTriangle1.SymSelf();
+            oreintedTriangle1.SetSelfAsSymmetricTriangle();
             oreintedTriangle1.Copy(ref orientedTriangle3);
 
             // Walk around the entire convex hull
@@ -60,8 +60,8 @@ namespace Ludo.ComputationalGeometry
                     {
                         // Mark the segment as a boundary
                         orientedSubSegment.seg.boundary = 1;
-                        Vertex vertex1 = oreintedTriangle1.Org();
-                        Vertex vertex2 = oreintedTriangle1.Dest();
+                        Vertex vertex1 = oreintedTriangle1.Origin();
+                        Vertex vertex2 = oreintedTriangle1.Destination();
 
                         // Mark the vertices as boundary vertices
                         if (vertex1.mark == 0)
@@ -101,7 +101,7 @@ namespace Ludo.ComputationalGeometry
                 // Process each edge of the triangle
                 for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    orientedTriangle1.Sym(ref orientedTriangle2);  // Get the adjacent triangle
+                    orientedTriangle1.SetAsSymmetricTriangle(ref orientedTriangle2);  // Get the adjacent triangle
                     orientedTriangle1.SegPivot(ref orientedSubSegment);  // Get the subsegment on this edge
 
                     if (orientedTriangle2.triangle == TriangularMesh.dummytri || orientedTriangle2.IsInfected())
@@ -113,7 +113,7 @@ namespace Ludo.ComputationalGeometry
                         if (orientedTriangle2.triangle != TriangularMesh.dummytri)
                         {
                             orientedTriangle2.Uninfect();
-                            orientedTriangle2.SegDissolve();
+                            orientedTriangle2.DissolveBindToSegment();
                             orientedTriangle2.Infect();
                         }
                     }
@@ -133,8 +133,8 @@ namespace Ludo.ComputationalGeometry
                         }
 
                         // Mark the vertices as boundary vertices
-                        Vertex vertex1 = orientedTriangle2.Org();
-                        Vertex vertex2 = orientedTriangle2.Dest();
+                        Vertex vertex1 = orientedTriangle2.Origin();
+                        Vertex vertex2 = orientedTriangle2.Destination();
                         if (vertex1.mark == 0)
                         {
                             vertex1.mark = 1;
@@ -158,11 +158,11 @@ namespace Ludo.ComputationalGeometry
                 // Process each vertex of the triangle
                 for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    Vertex vertex = orientedTriangle1.Org();
+                    Vertex vertex = orientedTriangle1.Origin();
                     if (vertex != null)
                     {
                         bool flag = true;
-                        orientedTriangle1.SetOrg(null);
+                        orientedTriangle1.SetOrigin(null);
 
                         // Check if the vertex is used by any non-infected triangles
                         orientedTriangle1.Onext(ref orientedTriangle2);
@@ -170,7 +170,7 @@ namespace Ludo.ComputationalGeometry
                         {
                             if (orientedTriangle2.IsInfected())
                             {
-                                orientedTriangle2.SetOrg(null);
+                                orientedTriangle2.SetOrigin(null);
                             }
                             else
                             {
@@ -185,7 +185,7 @@ namespace Ludo.ComputationalGeometry
                             while (orientedTriangle2.triangle != TriangularMesh.dummytri)
                             {
                                 if (orientedTriangle2.IsInfected())
-                                    orientedTriangle2.SetOrg(null);
+                                    orientedTriangle2.SetOrigin(null);
                                 else
                                     flag = false;
                                 orientedTriangle2.OprevSelf();
@@ -202,7 +202,7 @@ namespace Ludo.ComputationalGeometry
                 // Update the hull size and dissolve connections to adjacent triangles
                 for (orientedTriangle1.orient = 0; orientedTriangle1.orient < 3; ++orientedTriangle1.orient)
                 {
-                    orientedTriangle1.Sym(ref orientedTriangle2);
+                    orientedTriangle1.SetAsSymmetricTriangle(ref orientedTriangle2);
                     if (orientedTriangle2.triangle == TriangularMesh.dummytri)
                     {
                         --_triangularMesh.hullsize;
@@ -236,8 +236,8 @@ namespace Ludo.ComputationalGeometry
                     if (!_triangularMesh.bounds.Contains(hole)) continue;
                     searchtri.triangle = TriangularMesh.dummytri;
                     searchtri.orient = 0;
-                    searchtri.SymSelf();
-                    if (Primitives.CounterClockwise(searchtri.Org(), searchtri.Dest(), hole) > 0.0 &&
+                    searchtri.SetSelfAsSymmetricTriangle();
+                    if (Primitives.CounterClockwise(searchtri.Origin(), searchtri.Destination(), hole) > 0.0 &&
                         _triangularMesh.locator.Locate(hole, ref searchtri) != PointLocationResult.Outside &&
                         !searchtri.IsInfected())
                     {
@@ -258,8 +258,8 @@ namespace Ludo.ComputationalGeometry
                     {
                         searchtri.triangle = TriangularMesh.dummytri;
                         searchtri.orient = 0;
-                        searchtri.SymSelf();
-                        if (Primitives.CounterClockwise(searchtri.Org(), searchtri.Dest(), region.point) >
+                        searchtri.SetSelfAsSymmetricTriangle();
+                        if (Primitives.CounterClockwise(searchtri.Origin(), searchtri.Destination(), region.point) >
                             0.0 && _triangularMesh.locator.Locate(region.point, ref searchtri) != PointLocationResult.Outside &&
                             !searchtri.IsInfected())
                         {

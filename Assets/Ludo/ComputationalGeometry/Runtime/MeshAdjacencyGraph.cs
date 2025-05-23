@@ -33,7 +33,7 @@ namespace Ludo.ComputationalGeometry
         /// <param name="triangularMesh">The mesh to build the adjacency matrix from.</param>
         public MeshAdjacencyGraph(TriangularMesh triangularMesh)
         {
-            _nodeNum = triangularMesh.vertices.Count;
+            _nodeNum = triangularMesh.VertexDictionary.Count;
             _adjRow = AdjacencyCount(triangularMesh);
             _adjNum = _adjRow[_nodeNum] - 1;
             _adj = AdjacencySet(triangularMesh, _adjRow);
@@ -49,18 +49,18 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int Bandwidth()
         {
-            int val11 = 0;
-            int val12 = 0;
+            int lowerBandwidth = 0;
+            int upperBandwidth = 0;
             for (int index1 = 0; index1 < _nodeNum; ++index1)
             {
                 for (int index2 = _adjRow[index1]; index2 <= _adjRow[index1 + 1] - 1; ++index2)
                 {
-                    int num = _adj[index2 - 1];
-                    val11 = Math.Max(val11, index1 - num);
-                    val12 = Math.Max(val12, num - index1);
+                    int currentNeighborId = _adj[index2 - 1];
+                    lowerBandwidth = Math.Max(lowerBandwidth, index1 - currentNeighborId);
+                    upperBandwidth = Math.Max(upperBandwidth, currentNeighborId - index1);
                 }
             }
-            return val11 + 1 + val12;
+            return lowerBandwidth + 1 + upperBandwidth;
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Ludo.ComputationalGeometry
             {
                 numArray[index] = 1;
             }
-            foreach (Triangle triangle in triangularMesh.triangles.Values)
+            foreach (Triangle triangle in triangularMesh.TriangleDictionary.Values)
             {
                 int id1 = triangle.id;
                 int id2 = triangle.vertices[0].id;
@@ -134,7 +134,7 @@ namespace Ludo.ComputationalGeometry
                 a[destinationArray[index] - 1] = index;
                 ++destinationArray[index];
             }
-            foreach (Triangle triangle in triangularMesh.triangles.Values)
+            foreach (Triangle triangle in triangularMesh.TriangleDictionary.Values)
             {
                 int id1 = triangle.id;
                 int id2 = triangle.vertices[0].id;

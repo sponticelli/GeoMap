@@ -9,26 +9,25 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class VoronoiRegion
     {
-        private int id;
-        private Point generator;
-        private List<Point> vertices;
-        private bool bounded;
+        private Point _generator;
+        private List<Point> _vertices;
+        private bool _bounded;
 
         /// <summary>
         /// Gets the unique identifier of the region.
         /// </summary>
-        public int ID => id;
+        public int ID { get; }
 
         /// <summary>
         /// Gets the generator point of the region.
         /// This is the point for which all locations in the region are closer to it than to any other generator.
         /// </summary>
-        public Point Generator => generator;
+        public Point Generator => _generator;
 
         /// <summary>
         /// Gets the collection of vertices that form the boundary of the region.
         /// </summary>
-        public ICollection<Point> Vertices => vertices;
+        public ICollection<Point> Vertices => _vertices;
 
         /// <summary>
         /// Gets or sets a value indicating whether the region is bounded.
@@ -36,8 +35,8 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         public bool Bounded
         {
-            get => bounded;
-            set => bounded = value;
+            get => _bounded;
+            set => _bounded = value;
         }
 
         /// <summary>
@@ -46,28 +45,28 @@ namespace Ludo.ComputationalGeometry
         /// <param name="generator">The generator vertex of the region.</param>
         public VoronoiRegion(Vertex generator)
         {
-            id = generator.id;
-            this.generator = generator;
-            vertices = new List<Point>();
-            bounded = true;
+            ID = generator.id;
+            _generator = generator;
+            _vertices = new List<Point>();
+            _bounded = true;
         }
 
         /// <summary>
         /// Adds a vertex to the boundary of the region.
         /// </summary>
         /// <param name="point">The point to add as a vertex.</param>
-        public void Add(Point point) => vertices.Add(point);
+        public void Add(Point point) => _vertices.Add(point);
 
         /// <summary>
         /// Adds multiple vertices to the boundary of the region.
         /// </summary>
         /// <param name="points">The list of points to add as vertices.</param>
-        public void Add(List<Point> points) => vertices.AddRange(points);
+        public void Add(List<Point> points) => _vertices.AddRange(points);
 
         /// <summary>
         /// Returns a string representation of the current region.
         /// </summary>
-        /// <returns>A string representation of the current region in the format "R-ID {id}".</returns>
-        public override string ToString() => $"R-ID {id}";
+        /// <returns>A string representation of the current region in the format "Region {id}".</returns>
+        public override string ToString() => $"Region {ID}";
     }
 }

@@ -80,14 +80,14 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public void Update(TriangularMesh triangularMesh, bool forceUpdate)
         {
-            int count = triangularMesh.triangles.Count;
+            int count = triangularMesh.TriangleDictionary.Count;
             if (!(_triangleCount != count | forceUpdate)) return;
             _triangleCount = count;
             while (_samplefactor * _samples * _samples * _samples < count)
             {
                 ++_samples;
             }
-            _keys = triangularMesh.triangles.Keys.ToArray();
+            _keys = triangularMesh.TriangleDictionary.Keys.ToArray();
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Ludo.ComputationalGeometry
             for (int index1 = 0; index1 < _samples; ++index1)
             {
                 int index2 = _rand.Next(index1 * num, (index1 + 1) * num - 1);
-                if (!triangularMesh.triangles.Keys.Contains(_keys[index2]))
+                if (!triangularMesh.TriangleDictionary.Keys.Contains(_keys[index2]))
                 {
                     Update(triangularMesh, true);
                     --index1;

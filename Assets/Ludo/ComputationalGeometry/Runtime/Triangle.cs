@@ -8,14 +8,14 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class Triangle : ITriangle
     {
-        internal int hash;
-        internal int id;
-        internal OrientedTriangle[] neighbors;
-        internal Vertex[] vertices;
-        internal OrientedSubSegment[] subsegs;
-        internal int region;
-        internal double area;
-        internal bool infected;
+        public int hash;
+        public int id;
+        public OrientedTriangle[] neighbors;
+        public Vertex[] vertices;
+        public OrientedSubSegment[] subsegs;
+        public int region;
+        public double area;
+        public bool infected;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Triangle"/> class.

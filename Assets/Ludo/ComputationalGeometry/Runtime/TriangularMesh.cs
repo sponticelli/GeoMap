@@ -9,36 +9,36 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class TriangularMesh
     {
-        private Quality quality;
-        private Stack<OrientedTriangle> flipstack;
-        internal Dictionary<int, Triangle> triangles;
-        internal Dictionary<int, Segment> subsegs;
-        internal Dictionary<int, Vertex> vertices;
-        internal int hash_vtx;
-        internal int hash_seg;
-        internal int hash_tri;
-        internal List<Point> holes;
-        internal List<RegionPointer> regions;
-        internal AxisAlignedBoundingBox2D bounds;
-        internal int invertices;
-        internal int inelements;
-        internal int insegments;
-        internal int undeads;
-        internal int edges;
-        internal int mesh_dim;
-        internal int nextras;
-        internal int hullsize;
-        internal int steinerleft;
-        internal bool checksegments;
-        internal bool checkquality;
-        internal Vertex infvertex1;
-        internal Vertex infvertex2;
-        internal Vertex infvertex3;
-        internal static Triangle dummytri;
-        internal static Segment dummysub;
-        internal TriangleLocator locator;
-        internal TriangulationSettings behavior;
-        internal VertexNumbering numbering;
+        private Quality _quality;
+        private Stack<OrientedTriangle> _flipStack;
+        public Dictionary<int, Triangle> TriangleDictionary;
+        public Dictionary<int, Segment> SubSegmentDictionary;
+        public Dictionary<int, Vertex> VertexDictionary;
+        public int hashVertex;
+        public int hashSegment;
+        public int hashTriangle;
+        public List<Point> holes;
+        public List<RegionPointer> regions;
+        public AxisAlignedBoundingBox2D bounds;
+        public int invertices;
+        public int inelements;
+        public int insegments;
+        public int undeads;
+        public int edges;
+        public int meshDim;
+        public int nextras;
+        public int hullsize;
+        public int steinerleft;
+        public bool checksegments;
+        public bool checkquality;
+        public Vertex infvertex1;
+        public Vertex infvertex2;
+        public Vertex infvertex3;
+        public static Triangle dummytri;
+        public static Segment dummysub;
+        public TriangleLocator locator;
+        public TriangulationSettings behavior;
+        public VertexNumbering numbering;
 
         /// <summary>
         /// Gets the behavior settings for the mesh.
@@ -53,7 +53,7 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the collection of vertices in the mesh.
         /// </summary>
-        public ICollection<Vertex> Vertices => vertices.Values;
+        public ICollection<Vertex> Vertices => VertexDictionary.Values;
 
         /// <summary>
         /// Gets the list of holes in the mesh.
@@ -63,12 +63,12 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the collection of triangles in the mesh.
         /// </summary>
-        public ICollection<Triangle> Triangles => triangles.Values;
+        public ICollection<Triangle> Triangles => TriangleDictionary.Values;
 
         /// <summary>
         /// Gets the collection of segments in the mesh.
         /// </summary>
-        public ICollection<Segment> Segments => subsegs.Values;
+        public ICollection<Segment> Segments => SubSegmentDictionary.Values;
 
         /// <summary>
         /// Gets the collection of edges in the mesh.
@@ -119,13 +119,13 @@ namespace Ludo.ComputationalGeometry
         {
             this.behavior = behavior;
             behavior = new TriangulationSettings();
-            vertices = new Dictionary<int, Vertex>();
-            triangles = new Dictionary<int, Triangle>();
-            subsegs = new Dictionary<int, Segment>();
-            flipstack = new Stack<OrientedTriangle>();
+            VertexDictionary = new Dictionary<int, Vertex>();
+            TriangleDictionary = new Dictionary<int, Triangle>();
+            SubSegmentDictionary = new Dictionary<int, Segment>();
+            _flipStack = new Stack<OrientedTriangle>();
             holes = new List<Point>();
             regions = new List<RegionPointer>();
-            quality = new Quality(this);
+            _quality = new Quality(this);
             locator = new TriangleLocator(this);
             Primitives.ExactInit();
             if (dummytri != null)
@@ -158,7 +158,7 @@ namespace Ludo.ComputationalGeometry
                 checksegments = true;
                 FormSkeleton(meshInput);
             }
-            if (behavior.Poly && triangles.Count > 0)
+            if (behavior.Poly && TriangleDictionary.Count > 0)
             {
                 foreach (Point hole in meshInput.holes)
                     holes.Add(hole);
@@ -171,9 +171,9 @@ namespace Ludo.ComputationalGeometry
                 holes.Clear();
                 regions.Clear();
             }
-            if (behavior.Quality && triangles.Count > 0)
-                quality.EnforceQuality();
-            edges = (3 * triangles.Count + hullsize) / 2;
+            if (behavior.Quality && TriangleDictionary.Count > 0)
+                _quality.EnforceQuality();
+            edges = (3 * TriangleDictionary.Count + hullsize) / 2;
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Ludo.ComputationalGeometry
             if (halfArea)
             {
                 double num1 = 0.0;
-                foreach (Triangle triangle in triangles.Values)
+                foreach (Triangle triangle in TriangleDictionary.Values)
                 {
                     double num2 = Math.Abs((triangle.vertices[2].x - triangle.vertices[0].x) * (triangle.vertices[1].y - triangle.vertices[0].y) - (triangle.vertices[1].x - triangle.vertices[0].x) * (triangle.vertices[2].y - triangle.vertices[0].y)) / 2.0;
                     if (num2 > num1)
@@ -215,10 +215,10 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         public void Refine()
         {
-            inelements = triangles.Count;
-            invertices = vertices.Count;
+            inelements = TriangleDictionary.Count;
+            invertices = VertexDictionary.Count;
             if (behavior.Poly)
-                insegments = !behavior.useSegments ? hullsize : subsegs.Count;
+                insegments = !behavior.useSegments ? hullsize : SubSegmentDictionary.Count;
             Reset();
             steinerleft = behavior.SteinerPoints;
             infvertex1 = null;
@@ -226,9 +226,9 @@ namespace Ludo.ComputationalGeometry
             infvertex3 = null;
             if (behavior.useSegments)
                 checksegments = true;
-            if (triangles.Count > 0)
-                quality.EnforceQuality();
-            edges = (3 * triangles.Count + hullsize) / 2;
+            if (TriangleDictionary.Count > 0)
+                _quality.EnforceQuality();
+            edges = (3 * TriangleDictionary.Count + hullsize) / 2;
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Ludo.ComputationalGeometry
             {
                 case VertexNumbering.Linear:
                     int num1 = 0;
-                    using (Dictionary<int, Vertex>.ValueCollection.Enumerator enumerator = vertices.Values.GetEnumerator())
+                    using (Dictionary<int, Vertex>.ValueCollection.Enumerator enumerator = VertexDictionary.Values.GetEnumerator())
                     {
                         while (enumerator.MoveNext())
                             enumerator.Current.id = num1++;
@@ -265,7 +265,7 @@ namespace Ludo.ComputationalGeometry
                     }
                 case VertexNumbering.CuthillMcKee:
                     int[] numArray = new MeshBandwidthOptimizer().Renumber(this);
-                    using (Dictionary<int, Vertex>.ValueCollection.Enumerator enumerator = vertices.Values.GetEnumerator())
+                    using (Dictionary<int, Vertex>.ValueCollection.Enumerator enumerator = VertexDictionary.Values.GetEnumerator())
                     {
                         while (enumerator.MoveNext())
                         {
@@ -277,7 +277,7 @@ namespace Ludo.ComputationalGeometry
             }
             numbering = num;
             int num2 = 0;
-            foreach (Triangle triangle in triangles.Values)
+            foreach (Triangle triangle in TriangleDictionary.Values)
                 triangle.id = num2++;
         }
 
@@ -288,8 +288,8 @@ namespace Ludo.ComputationalGeometry
         /// <param name="isDelaunay">When this method returns, contains a value indicating whether the mesh satisfies the Delaunay property.</param>
         public void Check(out bool isConsistent, out bool isDelaunay)
         {
-            isConsistent = quality.CheckMesh();
-            isDelaunay = quality.CheckDelaunay();
+            isConsistent = _quality.CheckMesh();
+            isDelaunay = _quality.CheckDelaunay();
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace Ludo.ComputationalGeometry
                 (behavior.Algorithm != TriangulationAlgorithm.SweepLine ?
                     new IncrementalDelaunayTriangulator().Triangulate(this) :
                     new SweepLine().Triangulate(this)) : new DwyerTriangulator().Triangulate(this);
-            return triangles.Count != 0 ? num : 0;
+            return TriangleDictionary.Count != 0 ? num : 0;
         }
 
         /// <summary>
@@ -310,15 +310,15 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         private void ResetData()
         {
-            vertices.Clear();
-            triangles.Clear();
-            subsegs.Clear();
+            VertexDictionary.Clear();
+            TriangleDictionary.Clear();
+            SubSegmentDictionary.Clear();
             holes.Clear();
             regions.Clear();
-            hash_vtx = 0;
-            hash_seg = 0;
-            hash_tri = 0;
-            flipstack.Clear();
+            hashVertex = 0;
+            hashSegment = 0;
+            hashTriangle = 0;
+            _flipStack.Clear();
             hullsize = 0;
             edges = 0;
             Reset();
@@ -359,8 +359,8 @@ namespace Ludo.ComputationalGeometry
                 return;
             dummysub = new Segment();
             dummysub.hash = -1;
-            dummysub.subsegs[0].seg = dummysub;
-            dummysub.subsegs[1].seg = dummysub;
+            dummysub.OrientedSubSegments[0].seg = dummysub;
+            dummysub.OrientedSubSegments[1].seg = dummysub;
             dummytri.subsegs[0].seg = dummysub;
             dummytri.subsegs[1].seg = dummysub;
             dummytri.subsegs[2].seg = dummysub;
@@ -375,7 +375,7 @@ namespace Ludo.ComputationalGeometry
         {
             List<Vertex> points = data.points;
             invertices = points.Count;
-            mesh_dim = 2;
+            meshDim = 2;
             if (invertices < 3)
             {
                 throw new Exception("Input must have at least three input vertices.");
@@ -383,9 +383,9 @@ namespace Ludo.ComputationalGeometry
             nextras = points[0].attributes == null ? 0 : points[0].attributes.Length;
             foreach (Vertex vertex in points)
             {
-                vertex.hash = hash_vtx++;
+                vertex.hash = hashVertex++;
                 vertex.id = vertex.hash;
-                vertices.Add(vertex.hash, vertex);
+                VertexDictionary.Add(vertex.hash, vertex);
             }
             bounds = data.Bounds;
         }
@@ -396,11 +396,11 @@ namespace Ludo.ComputationalGeometry
         internal void MakeVertexMap()
         {
             OrientedTriangle orientedTriangle = new OrientedTriangle();
-            foreach (Triangle triangle in triangles.Values)
+            foreach (Triangle triangle in TriangleDictionary.Values)
             {
                 orientedTriangle.triangle = triangle;
                 for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
-                    orientedTriangle.Org().tri = orientedTriangle;
+                    orientedTriangle.Origin().triangle = orientedTriangle;
             }
         }
 
@@ -412,12 +412,12 @@ namespace Ludo.ComputationalGeometry
         {
             Triangle triangle = new Triangle
             {
-                hash = hash_tri++
+                hash = hashTriangle++
             };
             triangle.id = triangle.hash;
             newotri.triangle = triangle;
             newotri.orient = 0;
-            triangles.Add(triangle.hash, triangle);
+            TriangleDictionary.Add(triangle.hash, triangle);
         }
 
         /// <summary>
@@ -427,10 +427,10 @@ namespace Ludo.ComputationalGeometry
         internal void MakeSegment(ref OrientedSubSegment newsubseg)
         {
             Segment segment = new Segment();
-            segment.hash = hash_seg++;
+            segment.hash = hashSegment++;
             newsubseg.seg = segment;
             newsubseg.orient = 0;
-            subsegs.Add(segment.hash, segment);
+            SubSegmentDictionary.Add(segment.hash, segment);
         }
 
         internal VertexInsertionOutcome InsertVertex(
@@ -469,7 +469,7 @@ namespace Ludo.ComputationalGeometry
                 {
                     otri1.triangle = dummytri;
                     otri1.orient = 0;
-                    otri1.SymSelf();
+                    otri1.SetSelfAsSymmetricTriangle();
                     pointLocationResult = locator.Locate(newvertex, ref otri1);
                 }
                 else
@@ -497,11 +497,11 @@ namespace Ludo.ComputationalGeometry
                                 bool flag = behavior.NoBisect != 2;
                                 if (flag && behavior.NoBisect == 1)
                                 {
-                                    otri1.Sym(ref o2_10);
+                                    otri1.SetAsSymmetricTriangle(ref o2_10);
                                     flag = o2_10.triangle != dummytri;
                                 }
                                 if (flag)
-                                    quality.AddBadSubseg(new NonconformingSubsegment
+                                    _quality.AddBadSubseg(new NonconformingSubsegment
                                     {
                                         Encsubseg = os5,
                                         subSegmentOrigin = os5.Origin(),
@@ -514,35 +514,35 @@ namespace Ludo.ComputationalGeometry
                         }
                     }
                     otri1.Lprev(ref o2_3);
-                    o2_3.Sym(ref o2_7);
-                    otri1.Sym(ref o2_5);
+                    o2_3.SetAsSymmetricTriangle(ref o2_7);
+                    otri1.SetAsSymmetricTriangle(ref o2_5);
                     bool flag1 = o2_5.triangle != dummytri;
                     if (flag1)
                     {
                         o2_5.LnextSelf();
-                        o2_5.Sym(ref o2_9);
+                        o2_5.SetAsSymmetricTriangle(ref o2_9);
                         MakeTriangle(ref newotri);
                     }
                     else
                         ++hullsize;
                     MakeTriangle(ref otri3);
-                    Vertex ptr1 = otri1.Org();
-                    otri1.Dest();
+                    Vertex ptr1 = otri1.Origin();
+                    otri1.Destination();
                     Vertex ptr2 = otri1.Apex();
-                    otri3.SetOrg(ptr2);
-                    otri3.SetDest(ptr1);
+                    otri3.SetOrigin(ptr2);
+                    otri3.SetDestination(ptr1);
                     otri3.SetApex(newvertex);
-                    otri1.SetOrg(newvertex);
+                    otri1.SetOrigin(newvertex);
                     otri3.triangle.region = o2_3.triangle.region;
                     if (behavior.VarArea)
                         otri3.triangle.area = o2_3.triangle.area;
                     if (flag1)
                     {
-                        Vertex ptr3 = o2_5.Dest();
-                        newotri.SetOrg(ptr1);
-                        newotri.SetDest(ptr3);
+                        Vertex ptr3 = o2_5.Destination();
+                        newotri.SetOrigin(ptr1);
+                        newotri.SetDestination(ptr3);
                         newotri.SetApex(newvertex);
-                        o2_5.SetOrg(newvertex);
+                        o2_5.SetOrigin(newvertex);
                         newotri.triangle.region = o2_5.triangle.region;
                         if (behavior.VarArea)
                             newotri.triangle.area = o2_5.triangle.area;
@@ -552,16 +552,16 @@ namespace Ludo.ComputationalGeometry
                         o2_3.SegPivot(ref os2);
                         if (os2.seg != dummysub)
                         {
-                            o2_3.SegDissolve();
-                            otri3.SegBond(ref os2);
+                            o2_3.DissolveBindToSegment();
+                            otri3.BindToSegment(ref os2);
                         }
                         if (flag1)
                         {
                             o2_5.SegPivot(ref os4);
                             if (os4.seg != dummysub)
                             {
-                                o2_5.SegDissolve();
-                                newotri.SegBond(ref os4);
+                                o2_5.DissolveBindToSegment();
+                                newotri.BindToSegment(ref os4);
                             }
                         }
                     }
@@ -597,9 +597,9 @@ namespace Ludo.ComputationalGeometry
                     }
                     if (checkquality)
                     {
-                        flipstack.Clear();
-                        flipstack.Push(new OrientedTriangle());
-                        flipstack.Push(otri1);
+                        _flipStack.Clear();
+                        _flipStack.Push(new OrientedTriangle());
+                        _flipStack.Push(otri1);
                     }
                     otri1.LnextSelf();
                     break;
@@ -610,18 +610,18 @@ namespace Ludo.ComputationalGeometry
                 default:
                     otri1.Lnext(ref o2_2);
                     otri1.Lprev(ref o2_3);
-                    o2_2.Sym(ref o2_6);
-                    o2_3.Sym(ref o2_7);
+                    o2_2.SetAsSymmetricTriangle(ref o2_6);
+                    o2_3.SetAsSymmetricTriangle(ref o2_7);
                     MakeTriangle(ref otri2);
                     MakeTriangle(ref otri3);
-                    Vertex ptr6 = otri1.Org();
-                    Vertex ptr7 = otri1.Dest();
+                    Vertex ptr6 = otri1.Origin();
+                    Vertex ptr7 = otri1.Destination();
                     Vertex ptr8 = otri1.Apex();
-                    otri2.SetOrg(ptr7);
-                    otri2.SetDest(ptr8);
+                    otri2.SetOrigin(ptr7);
+                    otri2.SetDestination(ptr8);
                     otri2.SetApex(newvertex);
-                    otri3.SetOrg(ptr8);
-                    otri3.SetDest(ptr6);
+                    otri3.SetOrigin(ptr8);
+                    otri3.SetDestination(ptr6);
                     otri3.SetApex(newvertex);
                     otri1.SetApex(newvertex);
                     otri2.triangle.region = otri1.triangle.region;
@@ -637,14 +637,14 @@ namespace Ludo.ComputationalGeometry
                         o2_2.SegPivot(ref os1);
                         if (os1.seg != dummysub)
                         {
-                            o2_2.SegDissolve();
-                            otri2.SegBond(ref os1);
+                            o2_2.DissolveBindToSegment();
+                            otri2.BindToSegment(ref os1);
                         }
                         o2_3.SegPivot(ref os2);
                         if (os2.seg != dummysub)
                         {
-                            o2_3.SegDissolve();
-                            otri3.SegBond(ref os2);
+                            o2_3.DissolveBindToSegment();
+                            otri3.BindToSegment(ref os2);
                         }
                     }
                     otri2.Bond(ref o2_6);
@@ -658,15 +658,15 @@ namespace Ludo.ComputationalGeometry
                     o2_3.Bond(ref otri3);
                     if (checkquality)
                     {
-                        flipstack.Clear();
-                        flipstack.Push(otri1);
+                        _flipStack.Clear();
+                        _flipStack.Push(otri1);
                     }
                     break;
             }
             VertexInsertionOutcome vertexInsertionOutcome = VertexInsertionOutcome.Successful;
-            Vertex vertex1 = otri1.Org();
+            Vertex vertex1 = otri1.Origin();
             Vertex vertex2 = vertex1;
-            Vertex vertex3 = otri1.Dest();
+            Vertex vertex3 = otri1.Destination();
             while (true)
             {
                 bool flag2;
@@ -679,13 +679,13 @@ namespace Ludo.ComputationalGeometry
                         if (osub1.seg != dummysub)
                         {
                             flag2 = false;
-                            if (segmentflaws && quality.CheckSeg4Encroach(ref osub1) > 0)
+                            if (segmentflaws && _quality.CheckSeg4Encroach(ref osub1) > 0)
                                 vertexInsertionOutcome = VertexInsertionOutcome.Encroaching;
                         }
                     }
                     if (flag2)
                     {
-                        otri1.Sym(ref o2_1);
+                        otri1.SetAsSymmetricTriangle(ref o2_1);
                         if (o2_1.triangle == dummytri)
                         {
                             flag2 = false;
@@ -697,13 +697,13 @@ namespace Ludo.ComputationalGeometry
                             if (flag2)
                             {
                                 o2_1.Lprev(ref o2_4);
-                                o2_4.Sym(ref o2_8);
+                                o2_4.SetAsSymmetricTriangle(ref o2_8);
                                 o2_1.Lnext(ref o2_5);
-                                o2_5.Sym(ref o2_9);
+                                o2_5.SetAsSymmetricTriangle(ref o2_9);
                                 otri1.Lnext(ref o2_2);
-                                o2_2.Sym(ref o2_6);
+                                o2_2.SetAsSymmetricTriangle(ref o2_6);
                                 otri1.Lprev(ref o2_3);
-                                o2_3.Sym(ref o2_7);
+                                o2_3.SetAsSymmetricTriangle(ref o2_7);
                                 o2_4.Bond(ref o2_6);
                                 o2_2.Bond(ref o2_7);
                                 o2_3.Bond(ref o2_9);
@@ -715,27 +715,27 @@ namespace Ludo.ComputationalGeometry
                                     o2_3.SegPivot(ref os2);
                                     o2_5.SegPivot(ref os4);
                                     if (os3.seg == dummysub)
-                                        o2_5.SegDissolve();
+                                        o2_5.DissolveBindToSegment();
                                     else
-                                        o2_5.SegBond(ref os3);
+                                        o2_5.BindToSegment(ref os3);
                                     if (os1.seg == dummysub)
-                                        o2_4.SegDissolve();
+                                        o2_4.DissolveBindToSegment();
                                     else
-                                        o2_4.SegBond(ref os1);
+                                        o2_4.BindToSegment(ref os1);
                                     if (os2.seg == dummysub)
-                                        o2_2.SegDissolve();
+                                        o2_2.DissolveBindToSegment();
                                     else
-                                        o2_2.SegBond(ref os2);
+                                        o2_2.BindToSegment(ref os2);
                                     if (os4.seg == dummysub)
-                                        o2_3.SegDissolve();
+                                        o2_3.DissolveBindToSegment();
                                     else
-                                        o2_3.SegBond(ref os4);
+                                        o2_3.BindToSegment(ref os4);
                                 }
-                                otri1.SetOrg(vertex4);
-                                otri1.SetDest(newvertex);
+                                otri1.SetOrigin(vertex4);
+                                otri1.SetDestination(newvertex);
                                 otri1.SetApex(vertex2);
-                                o2_1.SetOrg(newvertex);
-                                o2_1.SetDest(vertex4);
+                                o2_1.SetOrigin(newvertex);
+                                o2_1.SetDestination(vertex4);
                                 o2_1.SetApex(vertex3);
                                 int num1 = Math.Min(o2_1.triangle.region, otri1.triangle.region);
                                 o2_1.triangle.region = num1;
@@ -747,7 +747,7 @@ namespace Ludo.ComputationalGeometry
                                     otri1.triangle.area = num2;
                                 }
                                 if (checkquality)
-                                    flipstack.Push(otri1);
+                                    _flipStack.Push(otri1);
                                 otri1.LprevSelf();
                                 vertex3 = vertex4;
                             }
@@ -756,14 +756,14 @@ namespace Ludo.ComputationalGeometry
                 }
                 while (flag2);
                 if (triflaws)
-                    quality.TestTriangle(ref otri1);
+                    _quality.TestTriangle(ref otri1);
                 otri1.LnextSelf();
-                otri1.Sym(ref o2_10);
+                otri1.SetAsSymmetricTriangle(ref o2_10);
                 if (!(vertex3 == vertex1) && o2_10.triangle != dummytri)
                 {
                     o2_10.Lnext(ref otri1);
                     vertex2 = vertex3;
-                    vertex3 = otri1.Dest();
+                    vertex3 = otri1.Destination();
                 }
                 else
                     break;
@@ -779,8 +779,8 @@ namespace Ludo.ComputationalGeometry
         {
             OrientedTriangle o2 = new OrientedTriangle();
             OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
-            Vertex ptr1 = tri.Org();
-            Vertex ptr2 = tri.Dest();
+            Vertex ptr1 = tri.Origin();
+            Vertex ptr2 = tri.Destination();
             if (ptr1.mark == 0)
                 ptr1.mark = subsegmark;
             if (ptr2.mark == 0)
@@ -793,10 +793,10 @@ namespace Ludo.ComputationalGeometry
                 orientedSubSegment.SetDestination(ptr1);
                 orientedSubSegment.SetSegOrg(ptr2);
                 orientedSubSegment.SetSegDest(ptr1);
-                tri.SegBond(ref orientedSubSegment);
-                tri.Sym(ref o2);
+                tri.BindToSegment(ref orientedSubSegment);
+                tri.SetAsSymmetricTriangle(ref o2);
                 orientedSubSegment.SymSelf();
-                o2.SegBond(ref orientedSubSegment);
+                o2.BindToSegment(ref orientedSubSegment);
                 orientedSubSegment.seg.boundary = subsegmark;
             }
             else
@@ -822,19 +822,19 @@ namespace Ludo.ComputationalGeometry
             OrientedSubSegment os2 = new OrientedSubSegment();
             OrientedSubSegment os3 = new OrientedSubSegment();
             OrientedSubSegment os4 = new OrientedSubSegment();
-            Vertex ptr1 = flipedge.Org();
-            Vertex ptr2 = flipedge.Dest();
+            Vertex ptr1 = flipedge.Origin();
+            Vertex ptr2 = flipedge.Destination();
             Vertex ptr3 = flipedge.Apex();
-            flipedge.Sym(ref o2_5);
+            flipedge.SetAsSymmetricTriangle(ref o2_5);
             Vertex ptr4 = o2_5.Apex();
             o2_5.Lprev(ref o2_3);
-            o2_3.Sym(ref o2_8);
+            o2_3.SetAsSymmetricTriangle(ref o2_8);
             o2_5.Lnext(ref o2_4);
-            o2_4.Sym(ref o2_9);
+            o2_4.SetAsSymmetricTriangle(ref o2_9);
             flipedge.Lnext(ref o2_1);
-            o2_1.Sym(ref o2_6);
+            o2_1.SetAsSymmetricTriangle(ref o2_6);
             flipedge.Lprev(ref o2_2);
-            o2_2.Sym(ref o2_7);
+            o2_2.SetAsSymmetricTriangle(ref o2_7);
             o2_3.Bond(ref o2_6);
             o2_1.Bond(ref o2_7);
             o2_2.Bond(ref o2_9);
@@ -846,27 +846,27 @@ namespace Ludo.ComputationalGeometry
                 o2_2.SegPivot(ref os2);
                 o2_4.SegPivot(ref os4);
                 if (os3.seg == dummysub)
-                    o2_4.SegDissolve();
+                    o2_4.DissolveBindToSegment();
                 else
-                    o2_4.SegBond(ref os3);
+                    o2_4.BindToSegment(ref os3);
                 if (os1.seg == dummysub)
-                    o2_3.SegDissolve();
+                    o2_3.DissolveBindToSegment();
                 else
-                    o2_3.SegBond(ref os1);
+                    o2_3.BindToSegment(ref os1);
                 if (os2.seg == dummysub)
-                    o2_1.SegDissolve();
+                    o2_1.DissolveBindToSegment();
                 else
-                    o2_1.SegBond(ref os2);
+                    o2_1.BindToSegment(ref os2);
                 if (os4.seg == dummysub)
-                    o2_2.SegDissolve();
+                    o2_2.DissolveBindToSegment();
                 else
-                    o2_2.SegBond(ref os4);
+                    o2_2.BindToSegment(ref os4);
             }
-            flipedge.SetOrg(ptr4);
-            flipedge.SetDest(ptr3);
+            flipedge.SetOrigin(ptr4);
+            flipedge.SetDestination(ptr3);
             flipedge.SetApex(ptr1);
-            o2_5.SetOrg(ptr3);
-            o2_5.SetDest(ptr4);
+            o2_5.SetOrigin(ptr3);
+            o2_5.SetDestination(ptr4);
             o2_5.SetApex(ptr2);
         }
 
@@ -885,19 +885,19 @@ namespace Ludo.ComputationalGeometry
             OrientedSubSegment os2 = new OrientedSubSegment();
             OrientedSubSegment os3 = new OrientedSubSegment();
             OrientedSubSegment os4 = new OrientedSubSegment();
-            Vertex ptr1 = flipedge.Org();
-            Vertex ptr2 = flipedge.Dest();
+            Vertex ptr1 = flipedge.Origin();
+            Vertex ptr2 = flipedge.Destination();
             Vertex ptr3 = flipedge.Apex();
-            flipedge.Sym(ref o2_5);
+            flipedge.SetAsSymmetricTriangle(ref o2_5);
             Vertex ptr4 = o2_5.Apex();
             o2_5.Lprev(ref o2_3);
-            o2_3.Sym(ref o2_8);
+            o2_3.SetAsSymmetricTriangle(ref o2_8);
             o2_5.Lnext(ref o2_4);
-            o2_4.Sym(ref o2_9);
+            o2_4.SetAsSymmetricTriangle(ref o2_9);
             flipedge.Lnext(ref o2_1);
-            o2_1.Sym(ref o2_6);
+            o2_1.SetAsSymmetricTriangle(ref o2_6);
             flipedge.Lprev(ref o2_2);
-            o2_2.Sym(ref o2_7);
+            o2_2.SetAsSymmetricTriangle(ref o2_7);
             o2_3.Bond(ref o2_9);
             o2_1.Bond(ref o2_8);
             o2_2.Bond(ref o2_6);
@@ -909,27 +909,27 @@ namespace Ludo.ComputationalGeometry
                 o2_2.SegPivot(ref os2);
                 o2_4.SegPivot(ref os4);
                 if (os3.seg == dummysub)
-                    o2_1.SegDissolve();
+                    o2_1.DissolveBindToSegment();
                 else
-                    o2_1.SegBond(ref os3);
+                    o2_1.BindToSegment(ref os3);
                 if (os1.seg == dummysub)
-                    o2_2.SegDissolve();
+                    o2_2.DissolveBindToSegment();
                 else
-                    o2_2.SegBond(ref os1);
+                    o2_2.BindToSegment(ref os1);
                 if (os2.seg == dummysub)
-                    o2_4.SegDissolve();
+                    o2_4.DissolveBindToSegment();
                 else
-                    o2_4.SegBond(ref os2);
+                    o2_4.BindToSegment(ref os2);
                 if (os4.seg == dummysub)
-                    o2_3.SegDissolve();
+                    o2_3.DissolveBindToSegment();
                 else
-                    o2_3.SegBond(ref os4);
+                    o2_3.BindToSegment(ref os4);
             }
-            flipedge.SetOrg(ptr3);
-            flipedge.SetDest(ptr4);
+            flipedge.SetOrigin(ptr3);
+            flipedge.SetDestination(ptr4);
             flipedge.SetApex(ptr2);
-            o2_5.SetOrg(ptr4);
-            o2_5.SetDest(ptr3);
+            o2_5.SetOrigin(ptr4);
+            o2_5.SetDestination(ptr3);
             o2_5.SetApex(ptr1);
         }
 
@@ -945,14 +945,14 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle o2 = new OrientedTriangle();
             int num = 1;
             Vertex pa = lastedge.Apex();
-            Vertex pb = firstedge.Dest();
+            Vertex pb = firstedge.Destination();
             firstedge.Onext(ref firstedge1);
-            Vertex pc = firstedge1.Dest();
+            Vertex pc = firstedge1.Destination();
             firstedge1.Copy(ref orientedTriangle);
             for (int index = 2; index <= edgecount - 2; ++index)
             {
                 orientedTriangle.OnextSelf();
-                Vertex pd = orientedTriangle.Dest();
+                Vertex pd = orientedTriangle.Destination();
                 if (Primitives.InCircle(pa, pb, pc, pd) > 0.0)
                 {
                     orientedTriangle.Copy(ref firstedge1);
@@ -967,17 +967,17 @@ namespace Ludo.ComputationalGeometry
             }
             if (num < edgecount - 2)
             {
-                firstedge1.Sym(ref o2);
+                firstedge1.SetAsSymmetricTriangle(ref o2);
                 TriangulatePolygon(firstedge1, lastedge, edgecount - num, true, triflaws);
-                o2.Sym(ref firstedge1);
+                o2.SetAsSymmetricTriangle(ref firstedge1);
             }
             if (doflip)
             {
                 Flip(ref firstedge1);
                 if (triflaws)
                 {
-                    firstedge1.Sym(ref orientedTriangle);
-                    quality.TestTriangle(ref orientedTriangle);
+                    firstedge1.SetAsSymmetricTriangle(ref orientedTriangle);
+                    _quality.TestTriangle(ref orientedTriangle);
                 }
             }
             firstedge1.Copy(ref lastedge);
@@ -995,7 +995,7 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle o2_8 = new OrientedTriangle();
             OrientedSubSegment os1 = new OrientedSubSegment();
             OrientedSubSegment os2 = new OrientedSubSegment();
-            VertexDealloc(deltri.Org());
+            VertexDealloc(deltri.Origin());
             deltri.Onext(ref o2_1);
             int edgecount = 1;
             while (!deltri.Equal(o2_1))
@@ -1011,21 +1011,21 @@ namespace Ludo.ComputationalGeometry
             }
             deltri.Lprev(ref o2_4);
             deltri.Dnext(ref o2_5);
-            o2_5.Sym(ref o2_7);
+            o2_5.SetAsSymmetricTriangle(ref o2_7);
             o2_4.Oprev(ref o2_6);
-            o2_6.Sym(ref o2_8);
+            o2_6.SetAsSymmetricTriangle(ref o2_8);
             deltri.Bond(ref o2_7);
             o2_4.Bond(ref o2_8);
             o2_5.SegPivot(ref os1);
             if (os1.seg != dummysub)
-                deltri.SegBond(ref os1);
+                deltri.BindToSegment(ref os1);
             o2_6.SegPivot(ref os2);
             if (os2.seg != dummysub)
-                o2_4.SegBond(ref os2);
-            Vertex ptr = o2_5.Org();
-            deltri.SetOrg(ptr);
+                o2_4.BindToSegment(ref os2);
+            Vertex ptr = o2_5.Origin();
+            deltri.SetOrigin(ptr);
             if (behavior.NoBisect == 0)
-                quality.TestTriangle(ref deltri);
+                _quality.TestTriangle(ref deltri);
             TriangleDealloc(o2_5.triangle);
             TriangleDealloc(o2_6.triangle);
         }
@@ -1042,55 +1042,55 @@ namespace Ludo.ComputationalGeometry
             OrientedSubSegment os1 = new OrientedSubSegment();
             OrientedSubSegment os2 = new OrientedSubSegment();
             OrientedSubSegment os3 = new OrientedSubSegment();
-            while (flipstack.Count > 0)
+            while (_flipStack.Count > 0)
             {
-                OrientedTriangle flipedge = flipstack.Pop();
-                if (flipstack.Count == 0)
+                OrientedTriangle flipedge = _flipStack.Pop();
+                if (_flipStack.Count == 0)
                 {
                     flipedge.Dprev(ref o2_1);
                     o2_1.LnextSelf();
                     flipedge.Onext(ref o2_2);
                     o2_2.LprevSelf();
-                    o2_1.Sym(ref o2_4);
-                    o2_2.Sym(ref o2_5);
-                    Vertex ptr = o2_1.Dest();
+                    o2_1.SetAsSymmetricTriangle(ref o2_4);
+                    o2_2.SetAsSymmetricTriangle(ref o2_5);
+                    Vertex ptr = o2_1.Destination();
                     flipedge.SetApex(ptr);
                     flipedge.LnextSelf();
                     flipedge.Bond(ref o2_4);
                     o2_1.SegPivot(ref os1);
-                    flipedge.SegBond(ref os1);
+                    flipedge.BindToSegment(ref os1);
                     flipedge.LnextSelf();
                     flipedge.Bond(ref o2_5);
                     o2_2.SegPivot(ref os2);
-                    flipedge.SegBond(ref os2);
+                    flipedge.BindToSegment(ref os2);
                     TriangleDealloc(o2_1.triangle);
                     TriangleDealloc(o2_2.triangle);
                 }
-                else if (flipstack.Peek().triangle == null)
+                else if (_flipStack.Peek().triangle == null)
                 {
                     flipedge.Lprev(ref o2_7);
-                    o2_7.Sym(ref o2_2);
+                    o2_7.SetAsSymmetricTriangle(ref o2_2);
                     o2_2.LnextSelf();
-                    o2_2.Sym(ref o2_5);
-                    Vertex ptr = o2_2.Dest();
-                    flipedge.SetOrg(ptr);
+                    o2_2.SetAsSymmetricTriangle(ref o2_5);
+                    Vertex ptr = o2_2.Destination();
+                    flipedge.SetOrigin(ptr);
                     o2_7.Bond(ref o2_5);
                     o2_2.SegPivot(ref os2);
-                    o2_7.SegBond(ref os2);
+                    o2_7.BindToSegment(ref os2);
                     TriangleDealloc(o2_2.triangle);
-                    flipedge.Sym(ref o2_7);
+                    flipedge.SetAsSymmetricTriangle(ref o2_7);
                     if (o2_7.triangle != dummytri)
                     {
                         o2_7.LnextSelf();
                         o2_7.Dnext(ref o2_3);
-                        o2_3.Sym(ref o2_6);
-                        o2_7.SetOrg(ptr);
+                        o2_3.SetAsSymmetricTriangle(ref o2_6);
+                        o2_7.SetOrigin(ptr);
                         o2_7.Bond(ref o2_6);
                         o2_3.SegPivot(ref os3);
-                        o2_7.SegBond(ref os3);
+                        o2_7.BindToSegment(ref os3);
                         TriangleDealloc(o2_3.triangle);
                     }
-                    flipstack.Clear();
+                    _flipStack.Clear();
                 }
                 else
                     Unflip(ref flipedge);
@@ -1100,8 +1100,8 @@ namespace Ludo.ComputationalGeometry
         private PointPathOrientation FindDirection(ref OrientedTriangle searchtri, Vertex searchpoint)
         {
             OrientedTriangle o2 = new OrientedTriangle();
-            Vertex vertex = searchtri.Org();
-            Vertex pc1 = searchtri.Dest();
+            Vertex vertex = searchtri.Origin();
+            Vertex pc1 = searchtri.Destination();
             Vertex pc2 = searchtri.Apex();
             double num1 = Primitives.CounterClockwise(searchpoint, vertex, pc2);
             bool flag1 = num1 > 0.0;
@@ -1133,7 +1133,7 @@ namespace Ludo.ComputationalGeometry
                 {
                     throw new Exception("Unable to find a triangle on path.");
                 }
-                Vertex pc4 = searchtri.Dest();
+                Vertex pc4 = searchtri.Destination();
                 num1 = num2;
                 num2 = Primitives.CounterClockwise(vertex, searchpoint, pc4);
             }
@@ -1146,8 +1146,8 @@ namespace Ludo.ComputationalGeometry
         {
             OrientedSubSegment o2 = new OrientedSubSegment();
             Vertex searchpoint = splittri.Apex();
-            Vertex vertex1 = splittri.Org();
-            Vertex vertex2 = splittri.Dest();
+            Vertex vertex1 = splittri.Origin();
+            Vertex vertex2 = splittri.Destination();
             double num1 = vertex2.x - vertex1.x;
             double num2 = vertex2.y - vertex1.y;
             double num3 = endpoint2.x - searchpoint.x;
@@ -1162,16 +1162,16 @@ namespace Ludo.ComputationalGeometry
             }
             double num9 = (num4 * num5 - num3 * num6) / num8;
             Vertex vertex3 = new Vertex(vertex1.x + num9 * (vertex2.x - vertex1.x), vertex1.y + num9 * (vertex2.y - vertex1.y), splitsubseg.seg.boundary, nextras);
-            vertex3.hash = hash_vtx++;
+            vertex3.hash = hashVertex++;
             vertex3.id = vertex3.hash;
             for (int index = 0; index < nextras; ++index)
                 vertex3.attributes[index] = vertex1.attributes[index] + num9 * (vertex2.attributes[index] - vertex1.attributes[index]);
-            vertices.Add(vertex3.hash, vertex3);
+            VertexDictionary.Add(vertex3.hash, vertex3);
             if (InsertVertex(vertex3, ref splittri, ref splitsubseg, false, false) != VertexInsertionOutcome.Successful)
             {
                 throw new Exception("Failure to split a segment.");
             }
-            vertex3.tri = splittri;
+            vertex3.triangle = splittri;
             if (steinerleft > 0)
                 --steinerleft;
             splitsubseg.SymSelf();
@@ -1191,7 +1191,7 @@ namespace Ludo.ComputationalGeometry
             }
             while (o2.seg != dummysub);
             int direction = (int) FindDirection(ref splittri, searchpoint);
-            Vertex vertex4 = splittri.Dest();
+            Vertex vertex4 = splittri.Destination();
             Vertex vertex5 = splittri.Apex();
             if (vertex5.x == searchpoint.x && vertex5.y == searchpoint.y)
                 splittri.OnextSelf();
@@ -1206,7 +1206,7 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle orientedTriangle = new OrientedTriangle();
             OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
             PointPathOrientation direction = FindDirection(ref searchtri, endpoint2);
-            Vertex vertex1 = searchtri.Dest();
+            Vertex vertex1 = searchtri.Destination();
             Vertex vertex2 = searchtri.Apex();
             if (vertex2.x == endpoint2.x && vertex2.y == endpoint2.y || vertex1.x == endpoint2.x && vertex1.y == endpoint2.y)
             {
@@ -1243,15 +1243,15 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle otri2 = new OrientedTriangle();
             OrientedSubSegment os = new OrientedSubSegment();
             fixuptri.Lnext(ref otri1);
-            otri1.Sym(ref otri2);
+            otri1.SetAsSymmetricTriangle(ref otri2);
             if (otri2.triangle == dummytri)
                 return;
             otri1.SegPivot(ref os);
             if (os.seg != dummysub)
                 return;
             Vertex vertex1 = otri1.Apex();
-            Vertex vertex2 = otri1.Org();
-            Vertex vertex3 = otri1.Dest();
+            Vertex vertex2 = otri1.Origin();
+            Vertex vertex3 = otri1.Destination();
             Vertex vertex4 = otri2.Apex();
             if (leftside)
             {
@@ -1273,14 +1273,14 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle otri1 = new OrientedTriangle();
             OrientedTriangle otri2 = new OrientedTriangle();
             OrientedSubSegment orientedSubSegment = new OrientedSubSegment();
-            Vertex pa = starttri.Org();
+            Vertex pa = starttri.Origin();
             starttri.Lnext(ref otri1);
             Flip(ref otri1);
             bool flag1 = false;
             bool flag2 = false;
             do
             {
-                Vertex pc = otri1.Org();
+                Vertex pc = otri1.Origin();
                 if (pc.x == endpoint2.x && pc.y == endpoint2.y)
                 {
                     otri1.Oprev(ref otri2);
@@ -1338,14 +1338,14 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle otri1 = new OrientedTriangle();
             OrientedTriangle otri2 = new OrientedTriangle();
             Vertex vertex1 = null;
-            OrientedTriangle tri1 = endpoint1.tri;
+            OrientedTriangle tri1 = endpoint1.triangle;
             if (tri1.triangle != null)
-                vertex1 = tri1.Org();
+                vertex1 = tri1.Origin();
             if (vertex1 != endpoint1)
             {
                 tri1.triangle = dummytri;
                 tri1.orient = 0;
-                tri1.SymSelf();
+                tri1.SetSelfAsSymmetricTriangle();
                 if (locator.Locate(endpoint1, ref tri1) != PointLocationResult.OnVertex)
                 {
                     throw new Exception("Unable to locate PSLG vertex in triangulation.");
@@ -1354,16 +1354,16 @@ namespace Ludo.ComputationalGeometry
             locator.Update(ref tri1);
             if (ScoutSegment(ref tri1, endpoint2, newmark))
                 return;
-            endpoint1 = tri1.Org();
+            endpoint1 = tri1.Origin();
             Vertex vertex2 = null;
-            OrientedTriangle tri2 = endpoint2.tri;
+            OrientedTriangle tri2 = endpoint2.triangle;
             if (tri2.triangle != null)
-                vertex2 = tri2.Org();
+                vertex2 = tri2.Origin();
             if (vertex2 != endpoint2)
             {
                 tri2.triangle = dummytri;
                 tri2.orient = 0;
-                tri2.SymSelf();
+                tri2.SetSelfAsSymmetricTriangle();
                 if (locator.Locate(endpoint2, ref tri2) != PointLocationResult.OnVertex)
                 {
                     throw new Exception("Unable to locate PSLG vertex in triangulation.");
@@ -1372,7 +1372,7 @@ namespace Ludo.ComputationalGeometry
             locator.Update(ref tri2);
             if (ScoutSegment(ref tri2, endpoint1, newmark))
                 return;
-            endpoint2 = tri2.Org();
+            endpoint2 = tri2.Origin();
             ConstrainedEdge(ref tri1, endpoint2, newmark);
         }
 
@@ -1383,7 +1383,7 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle o2_2 = new OrientedTriangle();
             orientedTriangle.triangle = dummytri;
             orientedTriangle.orient = 0;
-            orientedTriangle.SymSelf();
+            orientedTriangle.SetSelfAsSymmetricTriangle();
             orientedTriangle.Copy(ref o2_2);
             do
             {
@@ -1404,7 +1404,7 @@ namespace Ludo.ComputationalGeometry
             insegments = 0;
             if (behavior.Poly)
             {
-                if (triangles.Count == 0)
+                if (TriangleDictionary.Count == 0)
                     return;
                 if (meshInput.HasSegments)
                     MakeVertexMap();
@@ -1424,8 +1424,8 @@ namespace Ludo.ComputationalGeometry
                     }
                     else
                     {
-                        Vertex vertex1 = vertices[p0];
-                        Vertex vertex2 = vertices[p1];
+                        Vertex vertex1 = VertexDictionary[p0];
+                        Vertex vertex2 = VertexDictionary[p1];
                         if (vertex1.x == vertex2.x && vertex1.y == vertex2.y)
                         {
 
@@ -1443,19 +1443,19 @@ namespace Ludo.ComputationalGeometry
         internal void TriangleDealloc(Triangle dyingtriangle)
         {
             OrientedTriangle.Kill(dyingtriangle);
-            triangles.Remove(dyingtriangle.hash);
+            TriangleDictionary.Remove(dyingtriangle.hash);
         }
 
         internal void VertexDealloc(Vertex dyingvertex)
         {
             dyingvertex.type = VertexType.DeadVertex;
-            vertices.Remove(dyingvertex.hash);
+            VertexDictionary.Remove(dyingvertex.hash);
         }
 
         internal void SubsegDealloc(Segment dyingsubseg)
         {
             OrientedSubSegment.Kill(dyingsubseg);
-            subsegs.Remove(dyingsubseg.hash);
+            SubSegmentDictionary.Remove(dyingsubseg.hash);
         }
     }
 }

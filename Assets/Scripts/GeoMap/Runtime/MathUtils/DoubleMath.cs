@@ -2,7 +2,7 @@ using System;
 
 namespace GeoMap.MathUtils
 {
-    public struct Mathd
+    public struct DoubleMath
     {
         public static double Acos(double d)
         {
@@ -57,12 +57,12 @@ namespace GeoMap.MathUtils
 
         public static double Repeat(double t, double length)
         {
-            return t - Mathd.Floor(t / length) * length;
+            return t - Floor(t / length) * length;
         }
 
         public static double DeltaAngle(double current, double target)
         {
-            double num = Mathd.Repeat(target - current, 360d);
+            double num = Repeat(target - current, 360d);
             if (num > 180.0d)
                 num -= 360d;
             return num;

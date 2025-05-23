@@ -5,9 +5,60 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ffd361a8-93c2-4afc-8d36-c58a22c84b3d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleMath.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleVector2.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/UI.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/UI/PulsateUI.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/UI/PulsateUI.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/UI/RotateUI.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/UI/RotateUI.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.GeoMap/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/DefaultVolumeProfile.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/DefaultVolumeProfile.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/DelaunayDualVoronoiDiagram.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/DelaunayDualVoronoiDiagram.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/DwyerTriangulator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/DwyerTriangulator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/IncrementalDelaunayTriangulator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/IncrementalDelaunayTriangulator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshAdjacencyGraph.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshAdjacencyGraph.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshBandwidthOptimizer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshBandwidthOptimizer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshEdgeEnumerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshEdgeEnumerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshRegionProcessor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/MeshRegionProcessor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/OrientedSubSegment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/OrientedSubSegment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/OrientedTriangle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/OrientedTriangle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Point.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Point.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Primitives.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Primitives.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Quality.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Quality.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/QualityViolatingTriangle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/QualityViolatingTriangle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/QualityViolatingTriangleQueue.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/QualityViolatingTriangleQueue.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/RegionIterator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/RegionIterator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/RegionPointer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/RegionPointer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Segment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Segment.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/SimpleMeshSmoother.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/SimpleMeshSmoother.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Statistic.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Statistic.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/StratifiedTriangleSampler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/StratifiedTriangleSampler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/SweepLine.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/SweepLine.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Triangle.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Triangle.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/TriangleLocator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/TriangleLocator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/TriangularMesh.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/TriangularMesh.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Vertex.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/Vertex.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/VertexPositionOptimizer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/VertexPositionOptimizer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/VoronoiRegion.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/VoronoiRegion.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Main.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Main.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CameraController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CameraController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CountryMeshBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CountryMeshBuilder.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/GeoMapController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/GeoMapController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MapBuilder.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MapBuilder.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Mathd.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Mathd.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleMath.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/RectD.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/RectD.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Vector2d.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Vector2d.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleVector2.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Vector3d.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleVector3.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/Vector3d.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/MathUtils/DoubleVector3.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/GeoConvert.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/GeoConvert.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/JsonNode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/JsonNode.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/MeshData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/Utils/MeshData.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +67,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/DelaunayDualVoronoiDiagram.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Ludo/ComputationalGeometry/Runtime/NonconformingSubsegment.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/GeoMap/Runtime/CameraController.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -33,6 +89,7 @@
   &quot;keyToString&quot;: {
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -105,6 +162,11 @@
       <workItem from="1747300832150" duration="3244000" />
       <workItem from="1747332256776" duration="418000" />
       <workItem from="1747332713777" duration="11344000" />
+      <workItem from="1747829154394" duration="10566000" />
+      <workItem from="1747918436830" duration="813000" />
+      <workItem from="1747921679378" duration="1883000" />
+      <workItem from="1747925599552" duration="5420000" />
+      <workItem from="1747934204417" duration="6734000" />
     </task>
     <servers />
   </component>

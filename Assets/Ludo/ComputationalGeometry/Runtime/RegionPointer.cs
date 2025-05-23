@@ -8,8 +8,8 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class RegionPointer
     {
-        internal Point point;
-        internal int id;
+        public Point point;
+        public int id;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RegionPointer"/> class with specified coordinates and identifier.

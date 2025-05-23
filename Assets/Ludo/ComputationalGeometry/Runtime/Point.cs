@@ -8,11 +8,11 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class Point : IComparable<Point>, IEquatable<Point>
     {
-        internal int id;
-        internal double x;
-        internal double y;
-        internal int mark;
-        internal double[] attributes;
+        public int id;
+        public double x;
+        public double y;
+        public int mark;
+        public double[] attributes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Point"/> class with default coordinates (0,0) and boundary mark 0.

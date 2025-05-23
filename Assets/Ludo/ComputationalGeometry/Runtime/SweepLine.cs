@@ -199,7 +199,7 @@ namespace Ludo.ComputationalGeometry
             int length = 3 * _triangularMesh.invertices / 2;
             eventheap = new SweepEvent[length];
             int num = 0;
-            foreach (Vertex vertex in _triangularMesh.vertices.Values)
+            foreach (Vertex vertex in _triangularMesh.VertexDictionary.Values)
                 HeapInsert(eventheap, num++, new SweepEvent
                 {
                     VertexEvent = vertex,
@@ -230,7 +230,7 @@ namespace Ludo.ComputationalGeometry
         {
             if (splaytree == null)
                 return null;
-            if (splaytree.Keyedge.Dest() == splaytree.Keydest)
+            if (splaytree.Keyedge.Destination() == splaytree.Keydest)
             {
                 bool flag1 = RightOfHyperbola(ref splaytree.Keyedge, searchpoint);
                 SplayNode splaytree1;
@@ -244,7 +244,7 @@ namespace Ludo.ComputationalGeometry
 
                 if (splaytree1 == null)
                     return splaytree;
-                if (splaytree1.Keyedge.Dest() != splaytree1.Keydest)
+                if (splaytree1.Keyedge.Destination() != splaytree1.Keydest)
                 {
                     splaytree1 = Splay(splaytree1, searchpoint, ref searchtri);
                     if (splaytree1 == null)
@@ -371,7 +371,7 @@ namespace Ludo.ComputationalGeometry
             SplayNode splayNode = new SplayNode();
             _splaynodes.Add(splayNode);
             newkey.Copy(ref splayNode.Keyedge);
-            splayNode.Keydest = newkey.Dest();
+            splayNode.Keydest = newkey.Destination();
             if (splayroot == null)
             {
                 splayNode.Lchild = null;
@@ -447,7 +447,7 @@ namespace Ludo.ComputationalGeometry
         private bool RightOfHyperbola(ref OrientedTriangle fronttri, Point newsite)
         {
             ++Statistic.HyperbolaCount;
-            Vertex vertex1 = fronttri.Dest();
+            Vertex vertex1 = fronttri.Destination();
             Vertex vertex2 = fronttri.Apex();
             if (vertex1.y < vertex2.y || vertex1.y == vertex2.y && vertex1.x < vertex2.x)
             {
@@ -508,13 +508,13 @@ namespace Ludo.ComputationalGeometry
             SweepEvent[] eventheap,
             ref int heapsize)
         {
-            SweepEventVertex sweepEventVertex = checktri.Org() as SweepEventVertex;
+            SweepEventVertex sweepEventVertex = checktri.Origin() as SweepEventVertex;
             if (!(sweepEventVertex != null))
                 return;
             int heapposition = sweepEventVertex.Evt.Heapposition;
             HeapDelete(eventheap, heapsize, heapposition);
             --heapsize;
-            checktri.SetOrg(null);
+            checktri.SetOrigin(null);
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle o23 = new OrientedTriangle();
             bool flag = !_triangularMesh.behavior.Poly;
             startghost.Lprev(ref o21);
-            o21.SymSelf();
+            o21.SetSelfAsSymmetricTriangle();
             TriangularMesh.dummytri.neighbors[0] = o21;
             startghost.Copy(ref o22);
             int num = 0;
@@ -575,16 +575,16 @@ namespace Ludo.ComputationalGeometry
                 ++num;
                 o22.Lnext(ref o23);
                 o22.LprevSelf();
-                o22.SymSelf();
+                o22.SetSelfAsSymmetricTriangle();
                 if (flag && o22.triangle != TriangularMesh.dummytri)
                 {
-                    Vertex vertex = o22.Org();
+                    Vertex vertex = o22.Origin();
                     if (vertex.mark == 0)
                         vertex.mark = 1;
                 }
 
                 o22.Dissolve();
-                o23.Sym(ref o22);
+                o23.SetAsSymmetricTriangle(ref o22);
                 _triangularMesh.TriangleDealloc(o23.triangle);
             } while (!o22.Equal(startghost));
 
@@ -655,10 +655,10 @@ namespace Ludo.ComputationalGeometry
 
                 if (vertexEvent1.x != vertexEvent2.x || vertexEvent1.y != vertexEvent2.y)
                 {
-                    newkey.SetOrg(vertexEvent1);
-                    newkey.SetDest(vertexEvent2);
-                    otri3.SetOrg(vertexEvent2);
-                    otri3.SetDest(vertexEvent1);
+                    newkey.SetOrigin(vertexEvent1);
+                    newkey.SetDestination(vertexEvent2);
+                    otri3.SetOrigin(vertexEvent2);
+                    otri3.SetDestination(vertexEvent1);
                     newkey.Lprev(ref otri1);
                     Vertex vertex = vertexEvent2;
                     while (heapsize > 0)
@@ -680,13 +680,13 @@ namespace Ludo.ComputationalGeometry
                             orientedTriangleEvent.SetApex(null);
                             orientedTriangleEvent.Lprev(ref newkey);
                             orientedTriangleEvent.Lnext(ref otri3);
-                            newkey.Sym(ref otri4);
+                            newkey.SetAsSymmetricTriangle(ref otri4);
                             if (Randomnation(_samplerate) == 0)
                             {
-                                orientedTriangleEvent.SymSelf();
-                                Vertex pa = orientedTriangleEvent.Dest();
+                                orientedTriangleEvent.SetSelfAsSymmetricTriangle();
+                                Vertex pa = orientedTriangleEvent.Destination();
                                 Vertex pb = orientedTriangleEvent.Apex();
-                                Vertex pc = orientedTriangleEvent.Org();
+                                Vertex pc = orientedTriangleEvent.Origin();
                                 splayroot = CircleTopInsert(splayroot, newkey, pa, pb, pc, sweepEvent1.Ykey);
                             }
                         }
@@ -710,14 +710,14 @@ namespace Ludo.ComputationalGeometry
                                     otri2.OnextSelf();
                                 Check4DeadEvent(ref otri2, eventheap, ref heapsize);
                                 otri2.Copy(ref otri5);
-                                otri2.Sym(ref otri4);
+                                otri2.SetAsSymmetricTriangle(ref otri4);
                                 triangularMesh.MakeTriangle(ref newkey);
                                 triangularMesh.MakeTriangle(ref otri3);
-                                Vertex ptr = otri5.Dest();
-                                newkey.SetOrg(ptr);
-                                newkey.SetDest(vertexEvent3);
-                                otri3.SetOrg(vertexEvent3);
-                                otri3.SetDest(ptr);
+                                Vertex ptr = otri5.Destination();
+                                newkey.SetOrigin(ptr);
+                                newkey.SetDestination(vertexEvent3);
+                                otri3.SetOrigin(vertexEvent3);
+                                otri3.SetDestination(ptr);
                                 newkey.Bond(ref otri3);
                                 newkey.LnextSelf();
                                 otri3.LprevSelf();
@@ -741,7 +741,7 @@ namespace Ludo.ComputationalGeometry
                         if (flag)
                         {
                             Vertex pa1 = otri4.Apex();
-                            Vertex pb1 = newkey.Dest();
+                            Vertex pb1 = newkey.Destination();
                             Vertex pc1 = newkey.Apex();
                             double ccwabc1 = Primitives.CounterClockwise(pa1, pb1, pc1);
                             if (ccwabc1 > 0.0)
@@ -752,11 +752,11 @@ namespace Ludo.ComputationalGeometry
                                 sweepEvent2.OrientedTriangleEvent = newkey;
                                 HeapInsert(eventheap, heapsize, sweepEvent2);
                                 ++heapsize;
-                                newkey.SetOrg(new SweepEventVertex(sweepEvent2));
+                                newkey.SetOrigin(new SweepEventVertex(sweepEvent2));
                             }
 
                             Vertex pa2 = otri3.Apex();
-                            Vertex pb2 = otri3.Org();
+                            Vertex pb2 = otri3.Origin();
                             Vertex pc2 = otri5.Apex();
                             double ccwabc2 = Primitives.CounterClockwise(pa2, pb2, pc2);
                             if (ccwabc2 > 0.0)
@@ -767,7 +767,7 @@ namespace Ludo.ComputationalGeometry
                                 sweepEvent3.OrientedTriangleEvent = otri5;
                                 HeapInsert(eventheap, heapsize, sweepEvent3);
                                 ++heapsize;
-                                otri5.SetOrg(new SweepEventVertex(sweepEvent3));
+                                otri5.SetOrigin(new SweepEventVertex(sweepEvent3));
                             }
                         }
                     }

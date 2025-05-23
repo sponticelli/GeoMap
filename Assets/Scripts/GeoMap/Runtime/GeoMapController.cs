@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace GeoMap
 {
@@ -19,6 +20,8 @@ namespace GeoMap
         [SerializeField] private bool autoInitialize = true;
         [SerializeField] private LayerMask countryLayerMask = -1; // Default to everything
 
+
+        
         /// <summary>
         /// Initializes the component.
         /// </summary>
@@ -117,9 +120,7 @@ namespace GeoMap
                     if (countriesParent != null)
                         countriesParentField.SetValue(cameraController, countriesParent);
                 }
-
-                // Initialize the camera controller
-                cameraController.Initialize();
+                
                 
             }
         }

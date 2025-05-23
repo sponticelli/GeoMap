@@ -67,17 +67,17 @@ namespace Ludo.ComputationalGeometry
         }
 
         /// <summary>
-        /// Sets o2 to be the symmetric (opposite) triangle of this triangle.
+        /// Sets orientedTriangle to be the symmetric (opposite) triangle of this triangle.
         /// </summary>
-        /// <param name="o2">When this method returns, contains the symmetric triangle.</param>
+        /// <param name="orientedTriangle">When this method returns, contains the symmetric triangle.</param>
         /// <remarks>
         /// The symmetric triangle is the one that shares the current edge but is on the opposite side.
         /// This operation is equivalent to finding the triangle adjacent to the current edge.
         /// </remarks>
-        public void Sym(ref OrientedTriangle o2)
+        public void SetAsSymmetricTriangle(ref OrientedTriangle orientedTriangle)
         {
-            o2.triangle = triangle.neighbors[orient].triangle;
-            o2.orient = triangle.neighbors[orient].orient;
+            orientedTriangle.triangle = triangle.neighbors[orient].triangle;
+            orientedTriangle.orient = triangle.neighbors[orient].orient;
         }
 
         /// <summary>
@@ -88,11 +88,11 @@ namespace Ludo.ComputationalGeometry
         /// It is equivalent to finding the triangle adjacent to the current edge and making
         /// that the current triangle.
         /// </remarks>
-        public void SymSelf()
+        public void SetSelfAsSymmetricTriangle()
         {
-            int orient = this.orient;
-            this.orient = triangle.neighbors[orient].orient;
-            triangle = triangle.neighbors[orient].triangle;
+            int currentOrient = orient;
+            orient = triangle.neighbors[currentOrient].orient;
+            triangle = triangle.neighbors[currentOrient].triangle;
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The origin vertex is the starting point of the current edge when traversing counterclockwise.
         /// </remarks>
-        public Vertex Org() => triangle.vertices[plus1Mod3[orient]];
+        public Vertex Origin() => triangle.vertices[plus1Mod3[orient]];
 
         /// <summary>
         /// Gets the destination vertex of the oriented edge.
@@ -267,7 +267,7 @@ namespace Ludo.ComputationalGeometry
         /// <remarks>
         /// The destination vertex is the ending point of the current edge when traversing counterclockwise.
         /// </remarks>
-        public Vertex Dest() => triangle.vertices[minus1Mod3[orient]];
+        public Vertex Destination() => triangle.vertices[minus1Mod3[orient]];
 
         /// <summary>
         /// Gets the apex vertex of the oriented triangle.
@@ -282,13 +282,13 @@ namespace Ludo.ComputationalGeometry
         /// Sets the origin vertex of the oriented edge.
         /// </summary>
         /// <param name="ptr">The vertex to set as the origin.</param>
-        public void SetOrg(Vertex ptr) => triangle.vertices[plus1Mod3[orient]] = ptr;
+        public void SetOrigin(Vertex ptr) => triangle.vertices[plus1Mod3[orient]] = ptr;
 
         /// <summary>
         /// Sets the destination vertex of the oriented edge.
         /// </summary>
         /// <param name="ptr">The vertex to set as the destination.</param>
-        public void SetDest(Vertex ptr) => triangle.vertices[minus1Mod3[orient]] = ptr;
+        public void SetDestination(Vertex ptr) => triangle.vertices[minus1Mod3[orient]] = ptr;
 
         /// <summary>
         /// Sets the apex vertex of the oriented triangle.
@@ -408,7 +408,7 @@ namespace Ludo.ComputationalGeometry
         /// This operation creates a two-way connection between the current edge of this triangle
         /// and the specified subsegment, establishing them as associated with each other.
         /// </remarks>
-        public void SegBond(ref OrientedSubSegment os)
+        public void BindToSegment(ref OrientedSubSegment os)
         {
             triangle.subsegs[orient] = os;
             os.seg.triangles[os.orient] = this;
@@ -421,6 +421,6 @@ namespace Ludo.ComputationalGeometry
         /// This operation breaks the connection between the current edge of this triangle
         /// and any associated subsegment, setting the subsegment to a dummy subsegment.
         /// </remarks>
-        public void SegDissolve() => triangle.subsegs[orient].seg = TriangularMesh.dummysub;
+        public void DissolveBindToSegment() => triangle.subsegs[orient].seg = TriangularMesh.dummysub;
     }
 }

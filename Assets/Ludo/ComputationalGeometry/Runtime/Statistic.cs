@@ -64,107 +64,107 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// The length of the shortest edge in the mesh.
         /// </summary>
-        private double minEdge;
+        private double _minEdge;
 
         /// <summary>
         /// The length of the longest edge in the mesh.
         /// </summary>
-        private double maxEdge;
+        private double _maxEdge;
 
         /// <summary>
         /// The shortest altitude (height) of any triangle in the mesh.
         /// </summary>
-        private double minAspect;
+        private double _minAspect;
 
         /// <summary>
         /// The largest aspect ratio of any triangle in the mesh.
         /// </summary>
-        private double maxAspect;
+        private double _maxAspect;
 
         /// <summary>
         /// The area of the smallest triangle in the mesh.
         /// </summary>
-        private double minArea;
+        private double _minArea;
 
         /// <summary>
         /// The area of the largest triangle in the mesh.
         /// </summary>
-        private double maxArea;
+        private double _maxArea;
 
         /// <summary>
         /// The smallest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        private double minAngle;
+        private double _minAngle;
 
         /// <summary>
         /// The largest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        private double maxAngle;
+        private double _maxAngle;
 
         /// <summary>
         /// The number of vertices in the input geometry.
         /// </summary>
-        private int inVetrices;
+        private int _inVetrices;
 
         /// <summary>
         /// The number of triangles in the input geometry.
         /// </summary>
-        private int inTriangles;
+        private int _inTriangles;
 
         /// <summary>
         /// The number of segments in the input geometry.
         /// </summary>
-        private int inSegments;
+        private int _inSegments;
 
         /// <summary>
         /// The number of holes in the input geometry.
         /// </summary>
-        private int inHoles;
+        private int _inHoles;
 
         /// <summary>
         /// The number of vertices in the output mesh.
         /// </summary>
-        private int outVertices;
+        private int _outVertices;
 
         /// <summary>
         /// The number of triangles in the output mesh.
         /// </summary>
-        private int outTriangles;
+        private int _outTriangles;
 
         /// <summary>
         /// The number of edges in the output mesh.
         /// </summary>
-        private int outEdges;
+        private int _outEdges;
 
         /// <summary>
         /// The number of boundary edges in the output mesh.
         /// </summary>
-        private int boundaryEdges;
+        private int _boundaryEdges;
 
         /// <summary>
         /// The number of interior boundary edges in the output mesh.
         /// </summary>
-        private int intBoundaryEdges;
+        private int _intBoundaryEdges;
 
         /// <summary>
         /// The number of constrained edges in the output mesh.
         /// </summary>
-        private int constrainedEdges;
+        private int _constrainedEdges;
 
         /// <summary>
         /// Histogram of angles in the mesh.
         /// </summary>
-        private int[] angleTable;
+        private int[] _angleTable;
 
         /// <summary>
         /// Histogram of minimum angles per triangle.
         /// </summary>
-        private int[] minAngles;
+        private int[] _minAngles;
 
         /// <summary>
         /// Histogram of maximum angles per triangle.
         /// </summary>
-        private int[] maxAngles;
+        private int[] _maxAngles;
 
         /// <summary>
         /// Lookup table for adding 1 modulo 3 to an index.
@@ -173,7 +173,7 @@ namespace Ludo.ComputationalGeometry
         /// This is used to efficiently cycle through the three vertices of a triangle
         /// in a clockwise direction.
         /// </remarks>
-        private static readonly int[] plus1Mod3 = new int[3]
+        private static readonly int[] Plus1Mod3 = new int[3]
         {
             1,
             2,
@@ -187,7 +187,7 @@ namespace Ludo.ComputationalGeometry
         /// This is used to efficiently cycle through the three vertices of a triangle
         /// in a counterclockwise direction.
         /// </remarks>
-        private static readonly int[] minus1Mod3 = new int[3]
+        private static readonly int[] Minus1Mod3 = new int[3]
         {
             2,
             0,
@@ -197,107 +197,107 @@ namespace Ludo.ComputationalGeometry
         /// <summary>
         /// Gets the length of the shortest edge in the mesh.
         /// </summary>
-        public double ShortestEdge => minEdge;
+        public double ShortestEdge => _minEdge;
 
         /// <summary>
         /// Gets the length of the longest edge in the mesh.
         /// </summary>
-        public double LongestEdge => maxEdge;
+        public double LongestEdge => _maxEdge;
 
         /// <summary>
         /// Gets the shortest altitude (height) of any triangle in the mesh.
         /// </summary>
-        public double ShortestAltitude => minAspect;
+        public double ShortestAltitude => _minAspect;
 
         /// <summary>
         /// Gets the largest aspect ratio of any triangle in the mesh.
         /// </summary>
-        public double LargestAspectRatio => maxAspect;
+        public double LargestAspectRatio => _maxAspect;
 
         /// <summary>
         /// Gets the area of the smallest triangle in the mesh.
         /// </summary>
-        public double SmallestArea => minArea;
+        public double SmallestArea => _minArea;
 
         /// <summary>
         /// Gets the area of the largest triangle in the mesh.
         /// </summary>
-        public double LargestArea => maxArea;
+        public double LargestArea => _maxArea;
 
         /// <summary>
         /// Gets the smallest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        public double SmallestAngle => minAngle;
+        public double SmallestAngle => _minAngle;
 
         /// <summary>
         /// Gets the largest angle (in degrees) of any triangle in the mesh.
         /// </summary>
-        public double LargestAngle => maxAngle;
+        public double LargestAngle => _maxAngle;
 
         /// <summary>
         /// Gets the number of vertices in the input geometry.
         /// </summary>
-        public int InputVertices => inVetrices;
+        public int InputVertices => _inVetrices;
 
         /// <summary>
         /// Gets the number of triangles in the input geometry.
         /// </summary>
-        public int InputTriangles => inTriangles;
+        public int InputTriangles => _inTriangles;
 
         /// <summary>
         /// Gets the number of segments in the input geometry.
         /// </summary>
-        public int InputSegments => inSegments;
+        public int InputSegments => _inSegments;
 
         /// <summary>
         /// Gets the number of holes in the input geometry.
         /// </summary>
-        public int InputHoles => inHoles;
+        public int InputHoles => _inHoles;
 
         /// <summary>
         /// Gets the number of vertices in the output mesh.
         /// </summary>
-        public int Vertices => outVertices;
+        public int Vertices => _outVertices;
 
         /// <summary>
         /// Gets the number of triangles in the output mesh.
         /// </summary>
-        public int Triangles => outTriangles;
+        public int Triangles => _outTriangles;
 
         /// <summary>
         /// Gets the number of edges in the output mesh.
         /// </summary>
-        public int Edges => outEdges;
+        public int Edges => _outEdges;
 
         /// <summary>
         /// Gets the number of boundary edges in the output mesh.
         /// </summary>
-        public int BoundaryEdges => boundaryEdges;
+        public int BoundaryEdges => _boundaryEdges;
 
         /// <summary>
         /// Gets the number of interior boundary edges in the output mesh.
         /// </summary>
-        public int InteriorBoundaryEdges => intBoundaryEdges;
+        public int InteriorBoundaryEdges => _intBoundaryEdges;
 
         /// <summary>
         /// Gets the number of constrained edges in the output mesh.
         /// </summary>
-        public int ConstrainedEdges => constrainedEdges;
+        public int ConstrainedEdges => _constrainedEdges;
 
         /// <summary>
         /// Gets the histogram of angles in the mesh.
         /// </summary>
-        public int[] AngleHistogram => angleTable;
+        public int[] AngleHistogram => _angleTable;
 
         /// <summary>
         /// Gets the histogram of minimum angles per triangle.
         /// </summary>
-        public int[] MinAngleHistogram => minAngles;
+        public int[] MinAngleHistogram => _minAngles;
 
         /// <summary>
         /// Gets the histogram of maximum angles per triangle.
         /// </summary>
-        public int[] MaxAngleHistogram => maxAngles;
+        public int[] MaxAngleHistogram => _maxAngles;
 
         /// <summary>
         /// Computes a histogram of aspect ratios for the triangles in the mesh.
@@ -339,17 +339,17 @@ namespace Ludo.ComputationalGeometry
             double[] numArray4 = new double[3];
             double[] numArray5 = new double[3];
             orientedTriangle.orient = 0;
-            foreach (Triangle triangle in triangularMesh.triangles.Values)
+            foreach (Triangle triangle in triangularMesh.TriangleDictionary.Values)
             {
                 orientedTriangle.triangle = triangle;
-                vertexArray[0] = orientedTriangle.Org();
-                vertexArray[1] = orientedTriangle.Dest();
+                vertexArray[0] = orientedTriangle.Origin();
+                vertexArray[1] = orientedTriangle.Destination();
                 vertexArray[2] = orientedTriangle.Apex();
                 double num1 = 0.0;
                 for (int index1 = 0; index1 < 3; ++index1)
                 {
-                    int index2 = plus1Mod3[index1];
-                    int index3 = minus1Mod3[index1];
+                    int index2 = Plus1Mod3[index1];
+                    int index3 = Minus1Mod3[index1];
                     numArray3[index1] = vertexArray[index2].x - vertexArray[index3].x;
                     numArray4[index1] = vertexArray[index2].y - vertexArray[index3].y;
                     numArray5[index1] = numArray3[index1] * numArray3[index1] + numArray4[index1] * numArray4[index1];
@@ -384,33 +384,29 @@ namespace Ludo.ComputationalGeometry
         ///
         /// The sampleDegrees parameter determines the resolution of the angle histograms.
         /// A higher value provides more detailed information but requires more memory.
-        ///
-        /// Note that this method overrides the sampleDegrees parameter with a fixed value of 60,
-        /// which provides a reasonable balance between detail and efficiency.
         /// </remarks>
-        public void Update(TriangularMesh triangularMesh, int sampleDegrees)
+        public void Update(TriangularMesh triangularMesh, int sampleDegrees = 60)
         {
-            inVetrices = triangularMesh.invertices;
-            inTriangles = triangularMesh.inelements;
-            inSegments = triangularMesh.insegments;
-            inHoles = triangularMesh.holes.Count;
-            outVertices = triangularMesh.vertices.Count - triangularMesh.undeads;
-            outTriangles = triangularMesh.triangles.Count;
-            outEdges = triangularMesh.edges;
-            boundaryEdges = triangularMesh.hullsize;
-            intBoundaryEdges = triangularMesh.subsegs.Count - triangularMesh.hullsize;
-            constrainedEdges = triangularMesh.subsegs.Count;
+            _inVetrices = triangularMesh.invertices;
+            _inTriangles = triangularMesh.inelements;
+            _inSegments = triangularMesh.insegments;
+            _inHoles = triangularMesh.holes.Count;
+            _outVertices = triangularMesh.VertexDictionary.Count - triangularMesh.undeads;
+            _outTriangles = triangularMesh.TriangleDictionary.Count;
+            _outEdges = triangularMesh.edges;
+            _boundaryEdges = triangularMesh.hullsize;
+            _intBoundaryEdges = triangularMesh.SubSegmentDictionary.Count - triangularMesh.hullsize;
+            _constrainedEdges = triangularMesh.SubSegmentDictionary.Count;
             Point[] pointArray = new Point[3];
-            sampleDegrees = 60;
             double[] numArray1 = new double[sampleDegrees / 2 - 1];
             double[] numArray2 = new double[3];
             double[] numArray3 = new double[3];
             double[] numArray4 = new double[3];
             double num1 = Math.PI / sampleDegrees;
             double num2 = 180.0 / Math.PI;
-            angleTable = new int[sampleDegrees];
-            minAngles = new int[sampleDegrees];
-            maxAngles = new int[sampleDegrees];
+            _angleTable = new int[sampleDegrees];
+            _minAngles = new int[sampleDegrees];
+            _maxAngles = new int[sampleDegrees];
             for (int index = 0; index < sampleDegrees / 2 - 1; ++index)
             {
                 numArray1[index] = Math.Cos(num1 * (index + 1));
@@ -418,19 +414,19 @@ namespace Ludo.ComputationalGeometry
             }
 
             for (int index = 0; index < sampleDegrees; ++index)
-                angleTable[index] = 0;
-            minAspect = triangularMesh.bounds.Width + triangularMesh.bounds.Height;
-            minAspect *= minAspect;
-            maxAspect = 0.0;
-            minEdge = minAspect;
-            maxEdge = 0.0;
-            minArea = minAspect;
-            maxArea = 0.0;
-            minAngle = 0.0;
-            maxAngle = 2.0;
+                _angleTable[index] = 0;
+            _minAspect = triangularMesh.bounds.Width + triangularMesh.bounds.Height;
+            _minAspect *= _minAspect;
+            _maxAspect = 0.0;
+            _minEdge = _minAspect;
+            _maxEdge = 0.0;
+            _minArea = _minAspect;
+            _maxArea = 0.0;
+            _minAngle = 0.0;
+            _maxAngle = 2.0;
             bool flag1 = true;
             bool flag2 = true;
-            foreach (Triangle triangle in triangularMesh.triangles.Values)
+            foreach (Triangle triangle in triangularMesh.TriangleDictionary.Values)
             {
                 double num3 = 0.0;
                 double num4 = 1.0;
@@ -440,35 +436,35 @@ namespace Ludo.ComputationalGeometry
                 double num5 = 0.0;
                 for (int index1 = 0; index1 < 3; ++index1)
                 {
-                    int index2 = plus1Mod3[index1];
-                    int index3 = minus1Mod3[index1];
+                    int index2 = Plus1Mod3[index1];
+                    int index3 = Minus1Mod3[index1];
                     numArray2[index1] = pointArray[index2].X - pointArray[index3].X;
                     numArray3[index1] = pointArray[index2].Y - pointArray[index3].Y;
                     numArray4[index1] = numArray2[index1] * numArray2[index1] + numArray3[index1] * numArray3[index1];
                     if (numArray4[index1] > num5)
                         num5 = numArray4[index1];
-                    if (numArray4[index1] > maxEdge)
-                        maxEdge = numArray4[index1];
-                    if (numArray4[index1] < minEdge)
-                        minEdge = numArray4[index1];
+                    if (numArray4[index1] > _maxEdge)
+                        _maxEdge = numArray4[index1];
+                    if (numArray4[index1] < _minEdge)
+                        _minEdge = numArray4[index1];
                 }
 
                 double num6 = Math.Abs((pointArray[2].X - pointArray[0].X) * (pointArray[1].Y - pointArray[0].Y) -
                                        (pointArray[1].X - pointArray[0].X) * (pointArray[2].Y - pointArray[0].Y));
-                if (num6 < minArea)
-                    minArea = num6;
-                if (num6 > maxArea)
-                    maxArea = num6;
+                if (num6 < _minArea)
+                    _minArea = num6;
+                if (num6 > _maxArea)
+                    _maxArea = num6;
                 double num7 = num6 * num6 / num5;
-                if (num7 < minAspect)
-                    minAspect = num7;
+                if (num7 < _minAspect)
+                    _minAspect = num7;
                 double num8 = num5 / num7;
-                if (num8 > maxAspect)
-                    maxAspect = num8;
+                if (num8 > _maxAspect)
+                    _maxAspect = num8;
                 for (int index4 = 0; index4 < 3; ++index4)
                 {
-                    int index5 = plus1Mod3[index4];
-                    int index6 = minus1Mod3[index4];
+                    int index5 = Plus1Mod3[index4];
+                    int index6 = Minus1Mod3[index4];
                     double num9 = numArray2[index5] * numArray2[index6] + numArray3[index5] * numArray3[index6];
                     double num10 = num9 * num9 / (numArray4[index5] * numArray4[index6]);
                     int index7 = sampleDegrees / 2 - 1;
@@ -480,11 +476,11 @@ namespace Ludo.ComputationalGeometry
 
                     if (num9 <= 0.0)
                     {
-                        ++angleTable[index7];
-                        if (num10 > minAngle)
-                            minAngle = num10;
-                        if (flag1 && num10 < maxAngle)
-                            maxAngle = num10;
+                        ++_angleTable[index7];
+                        if (num10 > _minAngle)
+                            _minAngle = num10;
+                        if (flag1 && num10 < _maxAngle)
+                            _maxAngle = num10;
                         if (num10 > num3)
                             num3 = num10;
                         if (flag2 && num10 < num4)
@@ -492,10 +488,10 @@ namespace Ludo.ComputationalGeometry
                     }
                     else
                     {
-                        ++angleTable[sampleDegrees - index7 - 1];
-                        if (flag1 || num10 > maxAngle)
+                        ++_angleTable[sampleDegrees - index7 - 1];
+                        if (flag1 || num10 > _maxAngle)
                         {
-                            maxAngle = num10;
+                            _maxAngle = num10;
                             flag1 = false;
                         }
 
@@ -514,7 +510,7 @@ namespace Ludo.ComputationalGeometry
                         index9 = index10;
                 }
 
-                ++minAngles[index9];
+                ++_minAngles[index9];
                 int index11 = sampleDegrees / 2 - 1;
                 for (int index12 = index11 - 1; index12 >= 0; --index12)
                 {
@@ -523,25 +519,25 @@ namespace Ludo.ComputationalGeometry
                 }
 
                 if (flag2)
-                    ++maxAngles[index11];
+                    ++_maxAngles[index11];
                 else
-                    ++maxAngles[sampleDegrees - index11 - 1];
+                    ++_maxAngles[sampleDegrees - index11 - 1];
                 flag2 = true;
             }
 
-            minEdge = Math.Sqrt(minEdge);
-            maxEdge = Math.Sqrt(maxEdge);
-            minAspect = Math.Sqrt(minAspect);
-            maxAspect = Math.Sqrt(maxAspect);
-            minArea *= 0.5;
-            maxArea *= 0.5;
-            minAngle = minAngle < 1.0 ? num2 * Math.Acos(Math.Sqrt(minAngle)) : 0.0;
-            if (maxAngle >= 1.0)
-                maxAngle = 180.0;
+            _minEdge = Math.Sqrt(_minEdge);
+            _maxEdge = Math.Sqrt(_maxEdge);
+            _minAspect = Math.Sqrt(_minAspect);
+            _maxAspect = Math.Sqrt(_maxAspect);
+            _minArea *= 0.5;
+            _maxArea *= 0.5;
+            _minAngle = _minAngle < 1.0 ? num2 * Math.Acos(Math.Sqrt(_minAngle)) : 0.0;
+            if (_maxAngle >= 1.0)
+                _maxAngle = 180.0;
             else if (flag1)
-                maxAngle = num2 * Math.Acos(Math.Sqrt(maxAngle));
+                _maxAngle = num2 * Math.Acos(Math.Sqrt(_maxAngle));
             else
-                maxAngle = 180.0 - num2 * Math.Acos(Math.Sqrt(maxAngle));
+                _maxAngle = 180.0 - num2 * Math.Acos(Math.Sqrt(_maxAngle));
         }
     }
 }

@@ -8,9 +8,9 @@ namespace Ludo.ComputationalGeometry
     [Serializable]
     public class Vertex : Point
     {
-        internal int hash;
-        internal VertexType type;
-        internal OrientedTriangle tri;
+        public int hash;
+        public VertexType type;
+        public OrientedTriangle triangle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Vertex"/> class with default coordinates (0,0), boundary mark 0, and no attributes.
@@ -72,11 +72,12 @@ namespace Ludo.ComputationalGeometry
         {
             get
             {
-                if (i == 0)
-                    return x;
-                if (i == 1)
-                    return y;
-                throw new ArgumentOutOfRangeException("Index must be 0 or 1.");
+                return i switch
+                {
+                    0 => x,
+                    1 => y,
+                    _ => throw new ArgumentOutOfRangeException("Index must be 0 or 1.")
+                };
             }
         }
 

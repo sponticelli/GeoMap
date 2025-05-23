@@ -66,7 +66,7 @@ namespace Ludo.ComputationalGeometry
                 func(orientedTriangle.triangle);
                 for (orientedTriangle.orient = 0; orientedTriangle.orient < 3; ++orientedTriangle.orient)
                 {
-                    orientedTriangle.Sym(ref o2);
+                    orientedTriangle.SetAsSymmetricTriangle(ref o2);
                     orientedTriangle.SegPivot(ref os);
                     if (o2.triangle != TriangularMesh.dummytri && !o2.IsInfected() && os.seg == TriangularMesh.dummysub)
                     {

@@ -30,21 +30,21 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void GetBoundingBox()
         {
-            OrientedTriangle newotri = new OrientedTriangle();
+            OrientedTriangle boundingTriangle = new OrientedTriangle();
             AxisAlignedBoundingBox2D bounds = _triangularMesh.bounds;
-            double num = bounds.Width;
-            if (bounds.Height > num)
-                num = bounds.Height;
-            if (num == 0.0)
-                num = 1.0;
-            _triangularMesh.infvertex1 = new Vertex(bounds.Xmin - 50.0 * num, bounds.Ymin - 40.0 * num);
-            _triangularMesh.infvertex2 = new Vertex(bounds.Xmax + 50.0 * num, bounds.Ymin - 40.0 * num);
-            _triangularMesh.infvertex3 = new Vertex(0.5 * (bounds.Xmin + bounds.Xmax), bounds.Ymax + 60.0 * num);
-            _triangularMesh.MakeTriangle(ref newotri);
-            newotri.SetOrg(_triangularMesh.infvertex1);
-            newotri.SetDest(_triangularMesh.infvertex2);
-            newotri.SetApex(_triangularMesh.infvertex3);
-            TriangularMesh.dummytri.neighbors[0] = newotri;
+            double maxDimension = bounds.Width;
+            if (bounds.Height > maxDimension)
+                maxDimension = bounds.Height;
+            if (maxDimension == 0.0)
+                maxDimension = 1.0;
+            _triangularMesh.infvertex1 = new Vertex(bounds.Xmin - 50.0 * maxDimension, bounds.Ymin - 40.0 * maxDimension);
+            _triangularMesh.infvertex2 = new Vertex(bounds.Xmax + 50.0 * maxDimension, bounds.Ymin - 40.0 * maxDimension);
+            _triangularMesh.infvertex3 = new Vertex(0.5 * (bounds.Xmin + bounds.Xmax), bounds.Ymax + 60.0 * maxDimension);
+            _triangularMesh.MakeTriangle(ref boundingTriangle);
+            boundingTriangle.SetOrigin(_triangularMesh.infvertex1);
+            boundingTriangle.SetDestination(_triangularMesh.infvertex2);
+            boundingTriangle.SetApex(_triangularMesh.infvertex3);
+            TriangularMesh.dummytri.neighbors[0] = boundingTriangle;
         }
 
         /// <summary>
@@ -59,53 +59,53 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private int RemoveBox()
         {
-            OrientedTriangle o2_1 = new OrientedTriangle();
-            OrientedTriangle o2_2 = new OrientedTriangle();
-            OrientedTriangle o2_3 = new OrientedTriangle();
-            OrientedTriangle o2_4 = new OrientedTriangle();
-            OrientedTriangle o2_5 = new OrientedTriangle();
-            OrientedTriangle o2_6 = new OrientedTriangle();
-            bool flag = !_triangularMesh.behavior.Poly;
-            o2_4.triangle = TriangularMesh.dummytri;
-            o2_4.orient = 0;
-            o2_4.SymSelf();
-            o2_4.Lprev(ref o2_5);
-            o2_4.LnextSelf();
-            o2_4.SymSelf();
-            o2_4.Lprev(ref o2_2);
-            o2_2.SymSelf();
-            o2_4.Lnext(ref o2_3);
-            o2_3.SymSelf();
-            if (o2_3.triangle == TriangularMesh.dummytri)
+            OrientedTriangle nextTriangle = new OrientedTriangle();
+            OrientedTriangle startTriangle = new OrientedTriangle();
+            OrientedTriangle adjacentTriangle = new OrientedTriangle();
+            OrientedTriangle currentTriangle = new OrientedTriangle();
+            OrientedTriangle endTriangle = new OrientedTriangle();
+            OrientedTriangle neighborTriangle = new OrientedTriangle();
+            bool markVertices = !_triangularMesh.behavior.Poly;
+            currentTriangle.triangle = TriangularMesh.dummytri;
+            currentTriangle.orient = 0;
+            currentTriangle.SetSelfAsSymmetricTriangle();
+            currentTriangle.Lprev(ref endTriangle);
+            currentTriangle.LnextSelf();
+            currentTriangle.SetSelfAsSymmetricTriangle();
+            currentTriangle.Lprev(ref startTriangle);
+            startTriangle.SetSelfAsSymmetricTriangle();
+            currentTriangle.Lnext(ref adjacentTriangle);
+            adjacentTriangle.SetSelfAsSymmetricTriangle();
+            if (adjacentTriangle.triangle == TriangularMesh.dummytri)
             {
-                o2_2.LprevSelf();
-                o2_2.SymSelf();
+                startTriangle.LprevSelf();
+                startTriangle.SetSelfAsSymmetricTriangle();
             }
 
-            TriangularMesh.dummytri.neighbors[0] = o2_2;
-            int num = -2;
-            while (!o2_4.Equal(o2_5))
+            TriangularMesh.dummytri.neighbors[0] = startTriangle;
+            int hullSize = -2;
+            while (!currentTriangle.Equal(endTriangle))
             {
-                ++num;
-                o2_4.Lprev(ref o2_6);
-                o2_6.SymSelf();
-                if (flag && o2_6.triangle != TriangularMesh.dummytri)
+                ++hullSize;
+                currentTriangle.Lprev(ref neighborTriangle);
+                neighborTriangle.SetSelfAsSymmetricTriangle();
+                if (markVertices && neighborTriangle.triangle != TriangularMesh.dummytri)
                 {
-                    Vertex vertex = o2_6.Org();
+                    Vertex vertex = neighborTriangle.Origin();
                     if (vertex.mark == 0)
                         vertex.mark = 1;
                 }
 
-                o2_6.Dissolve();
-                o2_4.Lnext(ref o2_1);
-                o2_1.Sym(ref o2_4);
-                _triangularMesh.TriangleDealloc(o2_1.triangle);
-                if (o2_4.triangle == TriangularMesh.dummytri)
-                    o2_6.Copy(ref o2_4);
+                neighborTriangle.Dissolve();
+                currentTriangle.Lnext(ref nextTriangle);
+                nextTriangle.SetAsSymmetricTriangle(ref currentTriangle);
+                _triangularMesh.TriangleDealloc(nextTriangle.triangle);
+                if (currentTriangle.triangle == TriangularMesh.dummytri)
+                    neighborTriangle.Copy(ref currentTriangle);
             }
 
-            _triangularMesh.TriangleDealloc(o2_5.triangle);
-            return num;
+            _triangularMesh.TriangleDealloc(endTriangle.triangle);
+            return hullSize;
         }
 
         /// <summary>
@@ -125,16 +125,16 @@ namespace Ludo.ComputationalGeometry
         public int Triangulate(TriangularMesh triangularMesh)
         {
             _triangularMesh = triangularMesh;
-            OrientedTriangle searchtri = new OrientedTriangle();
+            OrientedTriangle searchTriangle = new OrientedTriangle();
             GetBoundingBox();
-            foreach (Vertex newvertex in triangularMesh.vertices.Values)
+            foreach (Vertex vertexToInsert in triangularMesh.VertexDictionary.Values)
             {
-                searchtri.triangle = TriangularMesh.dummytri;
-                OrientedSubSegment splitseg = new OrientedSubSegment();
-                if (triangularMesh.InsertVertex(newvertex, ref searchtri, ref splitseg, false, false) ==
+                searchTriangle.triangle = TriangularMesh.dummytri;
+                OrientedSubSegment splitSegment = new OrientedSubSegment();
+                if (triangularMesh.InsertVertex(vertexToInsert, ref searchTriangle, ref splitSegment, false, false) ==
                     VertexInsertionOutcome.Duplicate)
                 {
-                    newvertex.type = VertexType.UndeadVertex;
+                    vertexToInsert.type = VertexType.UndeadVertex;
                     ++triangularMesh.undeads;
                 }
             }

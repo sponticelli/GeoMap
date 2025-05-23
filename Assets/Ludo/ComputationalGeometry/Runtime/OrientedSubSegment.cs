@@ -40,23 +40,23 @@ namespace Ludo.ComputationalGeometry
         /// Gets the subsegment connected to this oriented subsegment.
         /// </summary>
         /// <param name="o2">When this method returns, contains the connected subsegment.</param>
-        public void Pivot(ref OrientedSubSegment o2) => o2 = seg.subsegs[orient];
+        public void Pivot(ref OrientedSubSegment o2) => o2 = seg.OrientedSubSegments[orient];
 
         /// <summary>
         /// Transforms this oriented subsegment into the subsegment connected to it.
         /// </summary>
-        public void PivotSelf() => this = seg.subsegs[orient];
+        public void PivotSelf() => this = seg.OrientedSubSegments[orient];
 
         /// <summary>
         /// Gets the next subsegment in the sequence.
         /// </summary>
         /// <param name="o2">When this method returns, contains the next subsegment.</param>
-        public void Next(ref OrientedSubSegment o2) => o2 = seg.subsegs[1 - orient];
+        public void Next(ref OrientedSubSegment o2) => o2 = seg.OrientedSubSegments[1 - orient];
 
         /// <summary>
         /// Transforms this oriented subsegment into the next subsegment in the sequence.
         /// </summary>
-        public void NextSelf() => this = seg.subsegs[1 - orient];
+        public void NextSelf() => this = seg.OrientedSubSegments[1 - orient];
 
         /// <summary>
         /// Gets the origin vertex of this oriented subsegment.
@@ -124,14 +124,14 @@ namespace Ludo.ComputationalGeometry
         /// <param name="o2">The oriented subsegment to bond with.</param>
         public void Bond(ref OrientedSubSegment o2)
         {
-            seg.subsegs[orient] = o2;
-            o2.seg.subsegs[o2.orient] = this;
+            seg.OrientedSubSegments[orient] = o2;
+            o2.seg.OrientedSubSegments[o2.orient] = this;
         }
 
         /// <summary>
         /// Dissolves the bond between this oriented subsegment and any connected subsegment.
         /// </summary>
-        public void Dissolve() => seg.subsegs[orient].seg = TriangularMesh.dummysub;
+        public void Dissolve() => seg.OrientedSubSegments[orient].seg = TriangularMesh.dummysub;
 
         /// <summary>
         /// Copies this oriented subsegment to another oriented subsegment.
@@ -155,7 +155,7 @@ namespace Ludo.ComputationalGeometry
         /// </summary>
         /// <param name="sub">The segment to check.</param>
         /// <returns>True if the segment is dead; otherwise, false.</returns>
-        public static bool IsDead(Segment sub) => sub.subsegs[0].seg == null;
+        public static bool IsDead(Segment sub) => sub.OrientedSubSegments[0].seg == null;
 
         /// <summary>
         /// Kills the specified segment by setting its subsegments to null.
@@ -163,8 +163,8 @@ namespace Ludo.ComputationalGeometry
         /// <param name="sub">The segment to kill.</param>
         public static void Kill(Segment sub)
         {
-            sub.subsegs[0].seg = null;
-            sub.subsegs[1].seg = null;
+            sub.OrientedSubSegments[0].seg = null;
+            sub.OrientedSubSegments[1].seg = null;
         }
 
         /// <summary>

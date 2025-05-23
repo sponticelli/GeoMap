@@ -35,7 +35,7 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         public int[] Renumber(TriangularMesh triangularMesh)
         {
-            _nodeNum = triangularMesh.vertices.Count;
+            _nodeNum = triangularMesh.VertexDictionary.Count;
             triangularMesh.Renumber(VertexNumbering.Linear);
             _graph = new MeshAdjacencyGraph(triangularMesh);
             int num1 = _graph.Bandwidth();
@@ -96,16 +96,14 @@ namespace Ludo.ComputationalGeometry
             int num = 1;
             for (int index = 0; index < _nodeNum; ++index)
             {
-                if (mask[index] != 0)
+                if (mask[index] == 0) continue;
+                int root = index;
+                FindRoot(ref root, mask, ref levelNum, levelRow, rcm, num - 1);
+                Rcm(root, mask, rcm, num - 1, ref iccsze);
+                num += iccsze;
+                if (_nodeNum < num)
                 {
-                    int root = index;
-                    FindRoot(ref root, mask, ref levelNum, levelRow, rcm, num - 1);
-                    Rcm(root, mask, rcm, num - 1, ref iccsze);
-                    num += iccsze;
-                    if (_nodeNum < num)
-                    {
-                        return rcm;
-                    }
+                    return rcm;
                 }
             }
             return rcm;
@@ -150,12 +148,10 @@ namespace Ludo.ComputationalGeometry
                     for (int index3 = num4; index3 <= num5; ++index3)
                     {
                         int index4 = adjacency[index3 - 1];
-                        if (mask[index4] != 0)
-                        {
-                            ++num2;
-                            mask[index4] = 0;
-                            perm[offset + num2 - 1] = index4;
-                        }
+                        if (mask[index4] == 0) continue;
+                        ++num2;
+                        mask[index4] = 0;
+                        perm[offset + num2 - 1] = index4;
                     }
                     if (num2 > num6)
                     {

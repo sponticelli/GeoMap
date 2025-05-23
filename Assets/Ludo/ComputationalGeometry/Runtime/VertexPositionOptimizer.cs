@@ -320,8 +320,8 @@ namespace Ludo.ComputationalGeometry
                     double num43 = num18;
                     if (num41 == 0)
                     {
-                        Vertex torg1 = neighotri.Org();
-                        Vertex vertex1 = neighotri.Dest();
+                        Vertex torg1 = neighotri.Origin();
+                        Vertex vertex1 = neighotri.Destination();
                         Vertex vertex2 = neighotri.Apex();
                         Vertex tdest1 = vertex1;
                         Vertex tapex1 = vertex2;
@@ -412,8 +412,8 @@ namespace Ludo.ComputationalGeometry
                     double num55 = num18;
                     if (num53 == 0)
                     {
-                        Vertex torg2 = neighotri.Org();
-                        Vertex vertex3 = neighotri.Dest();
+                        Vertex torg2 = neighotri.Origin();
+                        Vertex vertex3 = neighotri.Destination();
                         Vertex vertex4 = neighotri.Apex();
                         Vertex tdest2 = vertex3;
                         Vertex tapex2 = vertex4;
@@ -822,8 +822,8 @@ namespace Ludo.ComputationalGeometry
                     double num57;
                     if (!neighborsVertex1)
                     {
-                        Vertex torg1 = orientedTriangle.Org();
-                        Vertex vertex1 = orientedTriangle.Dest();
+                        Vertex torg1 = orientedTriangle.Origin();
+                        Vertex vertex1 = orientedTriangle.Destination();
                         Vertex vertex2 = orientedTriangle.Apex();
                         Vertex tdest1 = vertex1;
                         Vertex tapex1 = vertex2;
@@ -1015,8 +1015,8 @@ namespace Ludo.ComputationalGeometry
                     double y1_3 = (point4.y + point2.y) / 2.0;
                     if (!neighborsVertex2)
                     {
-                        Vertex torg2 = orientedTriangle.Org();
-                        Vertex vertex3 = orientedTriangle.Dest();
+                        Vertex torg2 = orientedTriangle.Origin();
+                        Vertex vertex3 = orientedTriangle.Destination();
                         Vertex vertex4 = orientedTriangle.Apex();
                         Vertex tdest2 = vertex3;
                         Vertex tapex2 = vertex4;
@@ -1553,11 +1553,11 @@ namespace Ludo.ComputationalGeometry
             int num2 = 0;
             for (badotri.orient = 0; badotri.orient < 3; ++badotri.orient)
             {
-                badotri.Sym(ref o2);
+                badotri.SetAsSymmetricTriangle(ref o2);
                 if (o2.triangle != TriangularMesh.dummytri)
                 {
-                    vertex1 = o2.Org();
-                    vertex2 = o2.Dest();
+                    vertex1 = o2.Origin();
+                    vertex2 = o2.Destination();
                     vertex3 = o2.Apex();
                     if ((vertex1.x != vertex2.x || vertex1.y != vertex2.y) &&
                         (vertex2.x != vertex3.x || vertex2.y != vertex3.y) &&
@@ -2768,8 +2768,8 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle orientedTriangle = new OrientedTriangle();
             PointLocationResult pointLocationResult = PointLocationResult.Outside;
             Point point = new Point(newlocX, newlocY);
-            Vertex pa = searchtri.Org();
-            Vertex pb = searchtri.Dest();
+            Vertex pa = searchtri.Origin();
+            Vertex pb = searchtri.Destination();
             if (pa.x == point.x && pa.y == point.y)
             {
                 pointLocationResult = PointLocationResult.OnVertex;
@@ -2786,7 +2786,7 @@ namespace Ludo.ComputationalGeometry
                 double num = Primitives.CounterClockwise(pa, pb, point);
                 if (num < 0.0)
                 {
-                    searchtri.SymSelf();
+                    searchtri.SetSelfAsSymmetricTriangle();
                     searchtri.Copy(ref orientedTriangle);
                     pointLocationResult = _triangularMesh.locator.PreciseLocate(point, ref orientedTriangle, false);
                 }
@@ -2807,8 +2807,8 @@ namespace Ludo.ComputationalGeometry
 
             if (pointLocationResult == PointLocationResult.OnVertex || pointLocationResult == PointLocationResult.Outside)
                 return 0.0;
-            Vertex vertex1 = orientedTriangle.Org();
-            Vertex vertex2 = orientedTriangle.Dest();
+            Vertex vertex1 = orientedTriangle.Origin();
+            Vertex vertex2 = orientedTriangle.Destination();
             Vertex vertex3 = orientedTriangle.Apex();
             double neighbor = (vertex1.x - point.x) * (vertex1.x - point.x) +
                               (vertex1.y - point.y) * (vertex1.y - point.y);

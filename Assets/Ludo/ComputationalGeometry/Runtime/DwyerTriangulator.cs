@@ -111,10 +111,10 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void VertexMedian(int left, int right, int median, int axis)
         {
-            int num1 = right - left + 1;
-            int left1 = left;
-            int right1 = right;
-            if (num1 == 2)
+            int rangeSize = right - left + 1;
+            int originalLeft = left;
+            int originalRight = right;
+            if (rangeSize == 2)
             {
                 if (_sortarray[left][axis] <= _sortarray[right][axis] &&
                     (_sortarray[left][axis] != _sortarray[right][axis] ||
@@ -124,9 +124,9 @@ namespace Ludo.ComputationalGeometry
             }
             else
             {
-                int index = _rand.Next(left, right);
-                double num2 = _sortarray[index][axis];
-                double num3 = _sortarray[index][1 - axis];
+                int pivotIndex = _rand.Next(left, right);
+                double pivotCoord = _sortarray[pivotIndex][axis];
+                double pivotOtherCoord = _sortarray[pivotIndex][1 - axis];
                 --left;
                 ++right;
                 while (left < right)
@@ -134,16 +134,16 @@ namespace Ludo.ComputationalGeometry
                     do
                     {
                         ++left;
-                    } while (left <= right && (_sortarray[left][axis] < num2 ||
-                                               _sortarray[left][axis] == num2 &&
-                                               _sortarray[left][1 - axis] < num3));
+                    } while (left <= right && (_sortarray[left][axis] < pivotCoord ||
+                                               _sortarray[left][axis] == pivotCoord &&
+                                               _sortarray[left][1 - axis] < pivotOtherCoord));
 
                     do
                     {
                         --right;
-                    } while (left <= right && (_sortarray[right][axis] > num2 ||
-                                               _sortarray[right][axis] == num2 &&
-                                               _sortarray[right][1 - axis] > num3));
+                    } while (left <= right && (_sortarray[right][axis] > pivotCoord ||
+                                               _sortarray[right][axis] == pivotCoord &&
+                                               _sortarray[right][1 - axis] > pivotOtherCoord));
 
                     if (left < right)
                     {
@@ -153,14 +153,14 @@ namespace Ludo.ComputationalGeometry
 
                 if (left > median)
                 {
-                    VertexMedian(left1, left - 1, median, axis);
+                    VertexMedian(originalLeft, left - 1, median, axis);
                 }
 
                 if (right >= median - 1)
                 {
                     return;
                 }
-                VertexMedian(right + 1, right1, median, axis);
+                VertexMedian(right + 1, originalRight, median, axis);
             }
         }
 
@@ -177,23 +177,23 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private void AlternateAxes(int left, int right, int axis)
         {
-            int num1 = right - left + 1;
-            int num2 = num1 >> 1;
-            if (num1 <= 3)
+            int rangeSize = right - left + 1;
+            int halfSize = rangeSize >> 1;
+            if (rangeSize <= 3)
             {
                 axis = 0;
             }
-            VertexMedian(left, right, left + num2, axis);
-            if (num1 - num2 < 2)
+            VertexMedian(left, right, left + halfSize, axis);
+            if (rangeSize - halfSize < 2)
             {
                 return;
             }
 
-            if (num2 >= 2)
+            if (halfSize >= 2)
             {
-                AlternateAxes(left, left + num2 - 1, 1 - axis);
+                AlternateAxes(left, left + halfSize - 1, 1 - axis);
             }
-            AlternateAxes(left + num2, right, 1 - axis);
+            AlternateAxes(left + halfSize, right, 1 - axis);
         }
 
         /// <summary>
@@ -216,54 +216,54 @@ namespace Ludo.ComputationalGeometry
             ref OrientedTriangle farright,
             int axis)
         {
-            OrientedTriangle o21 = new OrientedTriangle();
-            OrientedTriangle o22 = new OrientedTriangle();
-            OrientedTriangle otri1 = new OrientedTriangle();
-            OrientedTriangle o23 = new OrientedTriangle();
-            OrientedTriangle o24 = new OrientedTriangle();
-            OrientedTriangle o25 = new OrientedTriangle();
-            OrientedTriangle o26 = new OrientedTriangle();
-            OrientedTriangle otri2 = new OrientedTriangle();
-            Vertex vertex1 = innerleft.Dest();
+            OrientedTriangle leftHullSym = new OrientedTriangle();
+            OrientedTriangle rightHullSym = new OrientedTriangle();
+            OrientedTriangle workingTriangle = new OrientedTriangle();
+            OrientedTriangle adjacentTriangle = new OrientedTriangle();
+            OrientedTriangle neighborTriangle = new OrientedTriangle();
+            OrientedTriangle connectingTriangle = new OrientedTriangle();
+            OrientedTriangle tempTriangle = new OrientedTriangle();
+            OrientedTriangle mergeTriangle = new OrientedTriangle();
+            Vertex vertex1 = innerleft.Destination();
             Vertex pb = innerleft.Apex();
-            Vertex vertex2 = innerright.Org();
+            Vertex vertex2 = innerright.Origin();
             Vertex pa = innerright.Apex();
             if (_useDwyer && axis == 1)
             {
-                Vertex vertex3 = farleft.Org();
+                Vertex vertex3 = farleft.Origin();
                 Vertex vertex4 = farleft.Apex();
-                Vertex vertex5 = farright.Dest();
+                Vertex vertex5 = farright.Destination();
                 Vertex vertex6 = farright.Apex();
                 for (; vertex4.y < vertex3.y; vertex4 = farleft.Apex())
                 {
                     farleft.LnextSelf();
-                    farleft.SymSelf();
+                    farleft.SetSelfAsSymmetricTriangle();
                     vertex3 = vertex4;
                 }
 
-                innerleft.Sym(ref o26);
-                for (Vertex vertex7 = o26.Apex(); vertex7.y > vertex1.y; vertex7 = o26.Apex())
+                innerleft.SetAsSymmetricTriangle(ref tempTriangle);
+                for (Vertex vertex7 = tempTriangle.Apex(); vertex7.y > vertex1.y; vertex7 = tempTriangle.Apex())
                 {
-                    o26.Lnext(ref innerleft);
+                    tempTriangle.Lnext(ref innerleft);
                     pb = vertex1;
                     vertex1 = vertex7;
-                    innerleft.Sym(ref o26);
+                    innerleft.SetAsSymmetricTriangle(ref tempTriangle);
                 }
 
                 for (; pa.y < vertex2.y; pa = innerright.Apex())
                 {
                     innerright.LnextSelf();
-                    innerright.SymSelf();
+                    innerright.SetSelfAsSymmetricTriangle();
                     vertex2 = pa;
                 }
 
-                farright.Sym(ref o26);
-                for (Vertex vertex8 = o26.Apex(); vertex8.y > vertex5.y; vertex8 = o26.Apex())
+                farright.SetAsSymmetricTriangle(ref tempTriangle);
+                for (Vertex vertex8 = tempTriangle.Apex(); vertex8.y > vertex5.y; vertex8 = tempTriangle.Apex())
                 {
-                    o26.Lnext(ref farright);
+                    tempTriangle.Lnext(ref farright);
                     vertex6 = vertex5;
                     vertex5 = vertex8;
-                    farright.Sym(ref o26);
+                    farright.SetAsSymmetricTriangle(ref tempTriangle);
                 }
             }
 
@@ -274,7 +274,7 @@ namespace Ludo.ComputationalGeometry
                 if (Primitives.CounterClockwise(vertex1, pb, vertex2) > 0.0)
                 {
                     innerleft.LprevSelf();
-                    innerleft.SymSelf();
+                    innerleft.SetSelfAsSymmetricTriangle();
                     vertex1 = pb;
                     pb = innerleft.Apex();
                     flag1 = true;
@@ -283,36 +283,36 @@ namespace Ludo.ComputationalGeometry
                 if (Primitives.CounterClockwise(pa, vertex2, vertex1) > 0.0)
                 {
                     innerright.LnextSelf();
-                    innerright.SymSelf();
+                    innerright.SetSelfAsSymmetricTriangle();
                     vertex2 = pa;
                     pa = innerright.Apex();
                     flag1 = true;
                 }
             } while (flag1);
 
-            innerleft.Sym(ref o21);
-            innerright.Sym(ref o22);
-            _triangularMesh.MakeTriangle(ref otri2);
-            otri2.Bond(ref innerleft);
-            otri2.LnextSelf();
-            otri2.Bond(ref innerright);
-            otri2.LnextSelf();
-            otri2.SetOrg(vertex2);
-            otri2.SetDest(vertex1);
-            Vertex vertex9 = farleft.Org();
+            innerleft.SetAsSymmetricTriangle(ref leftHullSym);
+            innerright.SetAsSymmetricTriangle(ref rightHullSym);
+            _triangularMesh.MakeTriangle(ref mergeTriangle);
+            mergeTriangle.Bond(ref innerleft);
+            mergeTriangle.LnextSelf();
+            mergeTriangle.Bond(ref innerright);
+            mergeTriangle.LnextSelf();
+            mergeTriangle.SetOrigin(vertex2);
+            mergeTriangle.SetDestination(vertex1);
+            Vertex vertex9 = farleft.Origin();
             if (vertex1 == vertex9)
             {
-                otri2.Lnext(ref farleft);
+                mergeTriangle.Lnext(ref farleft);
             }
-            Vertex vertex10 = farright.Dest();
+            Vertex vertex10 = farright.Destination();
             if (vertex2 == vertex10)
             {
-                otri2.Lprev(ref farright);
+                mergeTriangle.Lprev(ref farright);
             }
             Vertex vertex11 = vertex1;
             Vertex vertex12 = vertex2;
-            Vertex vertex13 = o21.Apex();
-            Vertex vertex14 = o22.Apex();
+            Vertex vertex13 = leftHullSym.Apex();
+            Vertex vertex14 = rightHullSym.Apex();
             while (true)
             {
                 bool flag2 = Primitives.CounterClockwise(vertex13, vertex11, vertex12) <= 0.0;
@@ -321,9 +321,9 @@ namespace Ludo.ComputationalGeometry
                 {
                     if (!flag2)
                     {
-                        o21.Lprev(ref otri1);
-                        otri1.SymSelf();
-                        Vertex vertex15 = otri1.Apex();
+                        leftHullSym.Lprev(ref workingTriangle);
+                        workingTriangle.SetSelfAsSymmetricTriangle();
+                        Vertex vertex15 = workingTriangle.Apex();
                         if (vertex15 != null)
                         {
                             for (bool flag4 = Primitives.InCircle(vertex11, vertex12, vertex13,
@@ -332,34 +332,34 @@ namespace Ludo.ComputationalGeometry
                                  flag4 = vertex15 != null && Primitives.InCircle(vertex11,
                                      vertex12, vertex13, vertex15) > 0.0)
                             {
-                                otri1.LnextSelf();
-                                otri1.Sym(ref o24);
-                                otri1.LnextSelf();
-                                otri1.Sym(ref o23);
-                                otri1.Bond(ref o24);
-                                o21.Bond(ref o23);
-                                o21.LnextSelf();
-                                o21.Sym(ref o25);
-                                otri1.LprevSelf();
-                                otri1.Bond(ref o25);
-                                o21.SetOrg(vertex11);
-                                o21.SetDest(null);
-                                o21.SetApex(vertex15);
-                                otri1.SetOrg(null);
-                                otri1.SetDest(vertex13);
-                                otri1.SetApex(vertex15);
+                                workingTriangle.LnextSelf();
+                                workingTriangle.SetAsSymmetricTriangle(ref neighborTriangle);
+                                workingTriangle.LnextSelf();
+                                workingTriangle.SetAsSymmetricTriangle(ref adjacentTriangle);
+                                workingTriangle.Bond(ref neighborTriangle);
+                                leftHullSym.Bond(ref adjacentTriangle);
+                                leftHullSym.LnextSelf();
+                                leftHullSym.SetAsSymmetricTriangle(ref connectingTriangle);
+                                workingTriangle.LprevSelf();
+                                workingTriangle.Bond(ref connectingTriangle);
+                                leftHullSym.SetOrigin(vertex11);
+                                leftHullSym.SetDestination(null);
+                                leftHullSym.SetApex(vertex15);
+                                workingTriangle.SetOrigin(null);
+                                workingTriangle.SetDestination(vertex13);
+                                workingTriangle.SetApex(vertex15);
                                 vertex13 = vertex15;
-                                o23.Copy(ref otri1);
-                                vertex15 = otri1.Apex();
+                                adjacentTriangle.Copy(ref workingTriangle);
+                                vertex15 = workingTriangle.Apex();
                             }
                         }
                     }
 
                     if (!flag3)
                     {
-                        o22.Lnext(ref otri1);
-                        otri1.SymSelf();
-                        Vertex vertex16 = otri1.Apex();
+                        rightHullSym.Lnext(ref workingTriangle);
+                        workingTriangle.SetSelfAsSymmetricTriangle();
+                        Vertex vertex16 = workingTriangle.Apex();
                         if (vertex16 != null)
                         {
                             for (bool flag5 = Primitives.InCircle(vertex11, vertex12, vertex14,
@@ -368,25 +368,25 @@ namespace Ludo.ComputationalGeometry
                                  flag5 = vertex16 != null && Primitives.InCircle(vertex11,
                                      vertex12, vertex14, vertex16) > 0.0)
                             {
-                                otri1.LprevSelf();
-                                otri1.Sym(ref o24);
-                                otri1.LprevSelf();
-                                otri1.Sym(ref o23);
-                                otri1.Bond(ref o24);
-                                o22.Bond(ref o23);
-                                o22.LprevSelf();
-                                o22.Sym(ref o25);
-                                otri1.LnextSelf();
-                                otri1.Bond(ref o25);
-                                o22.SetOrg(null);
-                                o22.SetDest(vertex12);
-                                o22.SetApex(vertex16);
-                                otri1.SetOrg(vertex14);
-                                otri1.SetDest(null);
-                                otri1.SetApex(vertex16);
+                                workingTriangle.LprevSelf();
+                                workingTriangle.SetAsSymmetricTriangle(ref neighborTriangle);
+                                workingTriangle.LprevSelf();
+                                workingTriangle.SetAsSymmetricTriangle(ref adjacentTriangle);
+                                workingTriangle.Bond(ref neighborTriangle);
+                                rightHullSym.Bond(ref adjacentTriangle);
+                                rightHullSym.LprevSelf();
+                                rightHullSym.SetAsSymmetricTriangle(ref connectingTriangle);
+                                workingTriangle.LnextSelf();
+                                workingTriangle.Bond(ref connectingTriangle);
+                                rightHullSym.SetOrigin(null);
+                                rightHullSym.SetDestination(vertex12);
+                                rightHullSym.SetApex(vertex16);
+                                workingTriangle.SetOrigin(vertex14);
+                                workingTriangle.SetDestination(null);
+                                workingTriangle.SetApex(vertex16);
                                 vertex14 = vertex16;
-                                o23.Copy(ref otri1);
-                                vertex16 = otri1.Apex();
+                                adjacentTriangle.Copy(ref workingTriangle);
+                                vertex16 = workingTriangle.Apex();
                             }
                         }
                     }
@@ -394,56 +394,56 @@ namespace Ludo.ComputationalGeometry
                     if (flag2 || !flag3 &&
                         Primitives.InCircle(vertex13, vertex11, vertex12, vertex14) > 0.0)
                     {
-                        otri2.Bond(ref o22);
-                        o22.Lprev(ref otri2);
-                        otri2.SetDest(vertex11);
+                        mergeTriangle.Bond(ref rightHullSym);
+                        rightHullSym.Lprev(ref mergeTriangle);
+                        mergeTriangle.SetDestination(vertex11);
                         vertex12 = vertex14;
-                        otri2.Sym(ref o22);
-                        vertex14 = o22.Apex();
+                        mergeTriangle.SetAsSymmetricTriangle(ref rightHullSym);
+                        vertex14 = rightHullSym.Apex();
                     }
                     else
                     {
-                        otri2.Bond(ref o21);
-                        o21.Lnext(ref otri2);
-                        otri2.SetOrg(vertex12);
+                        mergeTriangle.Bond(ref leftHullSym);
+                        leftHullSym.Lnext(ref mergeTriangle);
+                        mergeTriangle.SetOrigin(vertex12);
                         vertex11 = vertex13;
-                        otri2.Sym(ref o21);
-                        vertex13 = o21.Apex();
+                        mergeTriangle.SetAsSymmetricTriangle(ref leftHullSym);
+                        vertex13 = leftHullSym.Apex();
                     }
                 }
                 else
                     break;
             }
 
-            _triangularMesh.MakeTriangle(ref otri1);
-            otri1.SetOrg(vertex11);
-            otri1.SetDest(vertex12);
-            otri1.Bond(ref otri2);
-            otri1.LnextSelf();
-            otri1.Bond(ref o22);
-            otri1.LnextSelf();
-            otri1.Bond(ref o21);
+            _triangularMesh.MakeTriangle(ref workingTriangle);
+            workingTriangle.SetOrigin(vertex11);
+            workingTriangle.SetDestination(vertex12);
+            workingTriangle.Bond(ref mergeTriangle);
+            workingTriangle.LnextSelf();
+            workingTriangle.Bond(ref rightHullSym);
+            workingTriangle.LnextSelf();
+            workingTriangle.Bond(ref leftHullSym);
             if (!_useDwyer || axis != 1)
             {
                 return;
             }
-            Vertex vertex17 = farleft.Org();
+            Vertex vertex17 = farleft.Origin();
             Vertex vertex18 = farleft.Apex();
-            Vertex vertex19 = farright.Dest();
+            Vertex vertex19 = farright.Destination();
             Vertex vertex20 = farright.Apex();
-            farleft.Sym(ref o26);
-            for (Vertex vertex21 = o26.Apex(); vertex21.x < vertex17.x; vertex21 = o26.Apex())
+            farleft.SetAsSymmetricTriangle(ref tempTriangle);
+            for (Vertex vertex21 = tempTriangle.Apex(); vertex21.x < vertex17.x; vertex21 = tempTriangle.Apex())
             {
-                o26.Lprev(ref farleft);
+                tempTriangle.Lprev(ref farleft);
                 vertex18 = vertex17;
                 vertex17 = vertex21;
-                farleft.Sym(ref o26);
+                farleft.SetAsSymmetricTriangle(ref tempTriangle);
             }
 
             for (; vertex20.x > vertex19.x; vertex20 = farright.Apex())
             {
                 farright.LprevSelf();
-                farright.SymSelf();
+                farright.SetSelfAsSymmetricTriangle();
                 vertex19 = vertex20;
             }
         }
@@ -468,16 +468,16 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle otri3 = new OrientedTriangle();
             OrientedTriangle otri4 = new OrientedTriangle();
             OrientedTriangle otri5 = new OrientedTriangle();
-            int num1 = right - left + 1;
-            switch (num1)
+            int rangeSize = right - left + 1;
+            switch (rangeSize)
             {
                 case 2:
                     _triangularMesh.MakeTriangle(ref farleft);
-                    farleft.SetOrg(_sortarray[left]);
-                    farleft.SetDest(_sortarray[left + 1]);
+                    farleft.SetOrigin(_sortarray[left]);
+                    farleft.SetDestination(_sortarray[left + 1]);
                     _triangularMesh.MakeTriangle(ref farright);
-                    farright.SetOrg(_sortarray[left + 1]);
-                    farright.SetDest(_sortarray[left]);
+                    farright.SetOrigin(_sortarray[left + 1]);
+                    farright.SetDestination(_sortarray[left]);
                     farleft.Bond(ref farright);
                     farleft.LprevSelf();
                     farright.LnextSelf();
@@ -492,18 +492,18 @@ namespace Ludo.ComputationalGeometry
                     _triangularMesh.MakeTriangle(ref otri1);
                     _triangularMesh.MakeTriangle(ref otri2);
                     _triangularMesh.MakeTriangle(ref otri3);
-                    double num2 = Primitives.CounterClockwise(_sortarray[left],
+                    double orientation = Primitives.CounterClockwise(_sortarray[left],
                         _sortarray[left + 1], _sortarray[left + 2]);
-                    if (num2 == 0.0)
+                    if (orientation == 0.0)
                     {
-                        newotri.SetOrg(_sortarray[left]);
-                        newotri.SetDest(_sortarray[left + 1]);
-                        otri1.SetOrg(_sortarray[left + 1]);
-                        otri1.SetDest(_sortarray[left]);
-                        otri2.SetOrg(_sortarray[left + 2]);
-                        otri2.SetDest(_sortarray[left + 1]);
-                        otri3.SetOrg(_sortarray[left + 1]);
-                        otri3.SetDest(_sortarray[left + 2]);
+                        newotri.SetOrigin(_sortarray[left]);
+                        newotri.SetDestination(_sortarray[left + 1]);
+                        otri1.SetOrigin(_sortarray[left + 1]);
+                        otri1.SetDestination(_sortarray[left]);
+                        otri2.SetOrigin(_sortarray[left + 2]);
+                        otri2.SetDestination(_sortarray[left + 1]);
+                        otri3.SetOrigin(_sortarray[left + 1]);
+                        otri3.SetDestination(_sortarray[left + 2]);
                         newotri.Bond(ref otri1);
                         otri2.Bond(ref otri3);
                         newotri.LnextSelf();
@@ -523,26 +523,26 @@ namespace Ludo.ComputationalGeometry
                         break;
                     }
 
-                    newotri.SetOrg(_sortarray[left]);
-                    otri1.SetDest(_sortarray[left]);
-                    otri3.SetOrg(_sortarray[left]);
-                    if (num2 > 0.0)
+                    newotri.SetOrigin(_sortarray[left]);
+                    otri1.SetDestination(_sortarray[left]);
+                    otri3.SetOrigin(_sortarray[left]);
+                    if (orientation > 0.0)
                     {
-                        newotri.SetDest(_sortarray[left + 1]);
-                        otri1.SetOrg(_sortarray[left + 1]);
-                        otri2.SetDest(_sortarray[left + 1]);
+                        newotri.SetDestination(_sortarray[left + 1]);
+                        otri1.SetOrigin(_sortarray[left + 1]);
+                        otri2.SetDestination(_sortarray[left + 1]);
                         newotri.SetApex(_sortarray[left + 2]);
-                        otri2.SetOrg(_sortarray[left + 2]);
-                        otri3.SetDest(_sortarray[left + 2]);
+                        otri2.SetOrigin(_sortarray[left + 2]);
+                        otri3.SetDestination(_sortarray[left + 2]);
                     }
                     else
                     {
-                        newotri.SetDest(_sortarray[left + 2]);
-                        otri1.SetOrg(_sortarray[left + 2]);
-                        otri2.SetDest(_sortarray[left + 2]);
+                        newotri.SetDestination(_sortarray[left + 2]);
+                        otri1.SetOrigin(_sortarray[left + 2]);
+                        otri2.SetDestination(_sortarray[left + 2]);
                         newotri.SetApex(_sortarray[left + 1]);
-                        otri2.SetOrg(_sortarray[left + 1]);
-                        otri3.SetDest(_sortarray[left + 1]);
+                        otri2.SetOrigin(_sortarray[left + 1]);
+                        otri3.SetDestination(_sortarray[left + 1]);
                     }
 
                     newotri.Bond(ref otri1);
@@ -560,7 +560,7 @@ namespace Ludo.ComputationalGeometry
                     otri3.LprevSelf();
                     otri2.Bond(ref otri3);
                     otri1.Copy(ref farleft);
-                    if (num2 > 0.0)
+                    if (orientation > 0.0)
                     {
                         otri2.Copy(ref farright);
                         break;
@@ -569,9 +569,9 @@ namespace Ludo.ComputationalGeometry
                     farleft.Lnext(ref farright);
                     break;
                 default:
-                    int num3 = num1 >> 1;
-                    DivconqRecurse(left, left + num3 - 1, 1 - axis, ref farleft, ref otri4);
-                    DivconqRecurse(left + num3, right, 1 - axis, ref otri5, ref farright);
+                    int halfSize = rangeSize >> 1;
+                    DivconqRecurse(left, left + halfSize - 1, 1 - axis, ref farleft, ref otri4);
+                    DivconqRecurse(left + halfSize, right, 1 - axis, ref otri5, ref farright);
                     MergeHulls(ref farleft, ref otri4, ref otri5, ref farright, axis);
                     break;
             }
@@ -589,34 +589,34 @@ namespace Ludo.ComputationalGeometry
         /// </remarks>
         private int RemoveGhosts(ref OrientedTriangle startghost)
         {
-            OrientedTriangle o21 = new OrientedTriangle();
-            OrientedTriangle o22 = new OrientedTriangle();
-            OrientedTriangle o23 = new OrientedTriangle();
-            bool flag = !_triangularMesh.behavior.Poly;
-            startghost.Lprev(ref o21);
-            o21.SymSelf();
-            TriangularMesh.dummytri.neighbors[0] = o21;
-            startghost.Copy(ref o22);
-            int num = 0;
+            OrientedTriangle adjacentTriangle = new OrientedTriangle();
+            OrientedTriangle currentTriangle = new OrientedTriangle();
+            OrientedTriangle nextTriangle = new OrientedTriangle();
+            bool markVertices = !_triangularMesh.behavior.Poly;
+            startghost.Lprev(ref adjacentTriangle);
+            adjacentTriangle.SetSelfAsSymmetricTriangle();
+            TriangularMesh.dummytri.neighbors[0] = adjacentTriangle;
+            startghost.Copy(ref currentTriangle);
+            int ghostCount = 0;
             do
             {
-                ++num;
-                o22.Lnext(ref o23);
-                o22.LprevSelf();
-                o22.SymSelf();
-                if (flag && o22.triangle != TriangularMesh.dummytri)
+                ++ghostCount;
+                currentTriangle.Lnext(ref nextTriangle);
+                currentTriangle.LprevSelf();
+                currentTriangle.SetSelfAsSymmetricTriangle();
+                if (markVertices && currentTriangle.triangle != TriangularMesh.dummytri)
                 {
-                    Vertex vertex = o22.Org();
+                    Vertex vertex = currentTriangle.Origin();
                     if (vertex.mark == 0)
                         vertex.mark = 1;
                 }
 
-                o22.Dissolve();
-                o23.Sym(ref o22);
-                _triangularMesh.TriangleDealloc(o23.triangle);
-            } while (!o22.Equal(startghost));
+                currentTriangle.Dissolve();
+                nextTriangle.SetAsSymmetricTriangle(ref currentTriangle);
+                _triangularMesh.TriangleDealloc(nextTriangle.triangle);
+            } while (!currentTriangle.Equal(startghost));
 
-            return num;
+            return ghostCount;
         }
 
         /// <summary>
@@ -635,41 +635,41 @@ namespace Ludo.ComputationalGeometry
             OrientedTriangle farright = new OrientedTriangle();
             _triangularMesh = m;
             _sortarray = new Vertex[m.invertices];
-            int num1 = 0;
-            foreach (Vertex vertex in m.vertices.Values)
+            int vertexCount = 0;
+            foreach (Vertex vertex in m.VertexDictionary.Values)
             {
-                _sortarray[num1++] = vertex;
+                _sortarray[vertexCount++] = vertex;
             }
             VertexSort(0, m.invertices - 1);
-            int index1 = 0;
-            for (int index2 = 1; index2 < m.invertices; ++index2)
+            int uniqueIndex = 0;
+            for (int currentIndex = 1; currentIndex < m.invertices; ++currentIndex)
             {
-                if (_sortarray[index1].x == _sortarray[index2].x &&
-                    _sortarray[index1].y == _sortarray[index2].y)
+                if (_sortarray[uniqueIndex].x == _sortarray[currentIndex].x &&
+                    _sortarray[uniqueIndex].y == _sortarray[currentIndex].y)
                 {
-                    _sortarray[index2].type = VertexType.UndeadVertex;
+                    _sortarray[currentIndex].type = VertexType.UndeadVertex;
                     ++m.undeads;
                 }
                 else
                 {
-                    ++index1;
-                    _sortarray[index1] = _sortarray[index2];
+                    ++uniqueIndex;
+                    _sortarray[uniqueIndex] = _sortarray[currentIndex];
                 }
             }
 
-            int num2 = index1 + 1;
+            int uniqueVertexCount = uniqueIndex + 1;
             if (_useDwyer)
             {
-                int left = num2 >> 1;
-                if (num2 - left >= 2)
+                int midpoint = uniqueVertexCount >> 1;
+                if (uniqueVertexCount - midpoint >= 2)
                 {
-                    if (left >= 2)
-                        AlternateAxes(0, left - 1, 1);
-                    AlternateAxes(left, num2 - 1, 1);
+                    if (midpoint >= 2)
+                        AlternateAxes(0, midpoint - 1, 1);
+                    AlternateAxes(midpoint, uniqueVertexCount - 1, 1);
                 }
             }
 
-            DivconqRecurse(0, num2 - 1, 0, ref orientedTriangle, ref farright);
+            DivconqRecurse(0, uniqueVertexCount - 1, 0, ref orientedTriangle, ref farright);
             return RemoveGhosts(ref orientedTriangle);
         }
     }
