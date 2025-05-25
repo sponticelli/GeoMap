@@ -713,7 +713,7 @@ namespace GeoMap
                 meshData.Vertices.Add(lastPosition - normal);
             }
 
-            yield return null;
+            
 
             // Process indices in chunks
             int indicesProcessed = 0;
@@ -728,6 +728,7 @@ namespace GeoMap
 
                 indicesProcessed++;
             }
+            yield return null;
         }
 
         /// <summary>

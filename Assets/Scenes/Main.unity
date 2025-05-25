@@ -477,7 +477,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: -400, y: 0.000061035156}
-  m_SizeDelta: {x: 746, y: 565.76}
+  m_SizeDelta: {x: 483, y: 565.76}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &272714175
 MonoBehaviour:
@@ -505,7 +505,7 @@ MonoBehaviour:
     Data...  \n[TEXTURE] Rasterizing Terrain Tiles...  \n[LOAD] Importing GeoJSON
     Polygons...  \n[POLY] Triangulating Land Masses...  \n[MAP] Assigning Country
     IDs  \n[MAP] Optimizing Polygon Meshes...  \n[VIS] LOD Levels Computed  \n[DEBUG]
-    Island Detection Passed  \n[ALIGN] Magnetic North Calibration Complete  [SYS]
+    Island Detection Passed  \n[ALIGN] Magnetic North Calibration Complete  \n[SYS]
     Missile Defense Grid: OFFLINE  \n[SAT] Orbital Reconnaissance Sync... COMPLETE 
     \n[TRACK] Real-Time Target Tracking Initialized  \n[AI] Threat Analysis Module:
     WARMING UP  \n[INTEL] Parsing Open Source Intelligence...  \n[INFIL] Ghost Protocol
@@ -537,7 +537,7 @@ MonoBehaviour:
     (Y/N)?  \n[SYNC] World Events Timeline Active  \n[INIT] Console Echo Enabled 
     \n[FINAL] Terrain Mesh Verified  \n[READY] >> RUN MISSION SIMULATION  \n[ENGAGE]
     Scenario Set: COLD SUNRISE  \n[LOCK] Console Input Secured  \n[AUTH] Command
-    Input: ENABLED  \n[>_] Awaiting command...  "
+    In put: ENABLED  \n[>_] Awaiting command...  "
   timeForCharacter: 0.025
   timeForSpace: 0.075
   timeForNewline: 0.15
@@ -1163,8 +1163,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 190, y: -253}
-  m_SizeDelta: {x: -200, y: 50}
+  m_AnchoredPosition: {x: 0, y: -253}
+  m_SizeDelta: {x: 0, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &654777042
 MonoBehaviour:
@@ -1213,12 +1213,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 25
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
-  m_fontSizeMax: 36
+  m_fontSizeMax: 25
   m_fontStyle: 16
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -1251,7 +1251,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -376.33948, y: 0, z: 0, w: 0}
+  m_margin: {x: -4.1400146, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
